@@ -1,0 +1,10 @@
+.error {
+
+    color: red;
+    /*font-size: 14px;
+    font-weight: bold;*/
+}
+
+#tblPainel td, th {
+	font-size: 0.80rem;
+}
