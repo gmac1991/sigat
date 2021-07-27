@@ -2,7 +2,7 @@ var listaVerificada = false;
 var timeout;
 const url = 'https://sistemas.sorocaba.sp.gov.br/acesso_patrimonio/api/patrimonio/'; //API web do SIM (patrimônio)
 var toggle = 0;
-var g_requer_patri = null;
+const g_requer_patri = null;
 var fila_atual = null;
 var p_equips = [,];
 
@@ -204,14 +204,9 @@ function painel(id_fila) {
 	
 					}
 				})
-
 			})
-
-			
 		}
-
-	}); 
-	
+	}); 	
 }
 
 
@@ -264,11 +259,9 @@ function painelEncerrados(id_fila) {
 
 }
 
-// ------------ TRIAGEM
+// ------------  PAINEL TRIAGEM
 
 function triagem() {
-
-	
 
 	$('#tblTriagem').DataTable( { //  inicializacao do painel
 
@@ -585,7 +578,7 @@ function criaFormRegistro(p_id_chamado,p_id_fila_ant) {  //carregar o form no mo
 }
 
 
-
+// --- MODAL INTERACAO
 
 $('#modalRegistro').on('show.bs.modal', function (event) { //modal de registro de interacao
 	
@@ -664,6 +657,10 @@ $('#modalRegistro').on('hide.bs.modal', function (event) {
 
 });
 
+// --- /FIM MODAL INTERACAO
+
+// -- MODAL REGISTRO ENTREGA
+
 $('#modalRegistroEntrega').on('hide.bs.modal', function (event) {
 
 	$(this).find("#btnRegistrarEntrega").hide();
@@ -711,6 +708,8 @@ $('#modalRegistroEntrega').on('show.bs.modal', function (event) {
 
 });
 
+// -- /FIM MODAL REGISTRO ENTREGA
+
 $('#modalEquipamentos').on('show.bs.modal', function() {
 
 	$('#btnAdicionarEquipamentos').removeAttr('disabled');
@@ -726,8 +725,6 @@ $('#modalEquipamentos').on('hidden.bs.modal', function (event) {
 $('#modalEquipamentos').on('show.bs.modal', function (event) {
 	listaVerificada = false;
 });
-
-
 
 
 // ========== FIM MODAIS ================
@@ -1272,9 +1269,6 @@ function(e) {
 
 function carregaChamado(p_id_chamado, sem_patrimonios) {
 
-	
-	
-	
 	//atualiza os dados do chamado
 	
 	document.title = "Chamado #" + p_id_chamado + " - Sigat";
