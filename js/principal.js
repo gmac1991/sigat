@@ -2,7 +2,7 @@ var listaVerificada = false;
 var timeout;
 const url = 'https://sistemas.sorocaba.sp.gov.br/acesso_patrimonio/api/patrimonio/'; //API web do SIM (patrimônio)
 var toggle = 0;
-const g_requer_patri = null;
+var g_requer_patri = null;
 var fila_atual = null;
 var p_equips = [,];
 

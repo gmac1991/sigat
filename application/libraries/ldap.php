@@ -3,7 +3,7 @@
 class LDAP {
 
     private $usuario = 'PREFEITURA\gxmacedo';
-    private $senha = 'Prefeitura2021';
+    private $senha = 'Gustavo91';
     private $servidor = '172.16.1.8';
     private $dn = "DC=PREFEITURA,DC=LOCAL";
     private $ad = NULL;
