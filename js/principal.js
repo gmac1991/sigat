@@ -2,7 +2,7 @@ var listaVerificada = false;
 var timeout;
 const url = 'https://sistemas.sorocaba.sp.gov.br/acesso_patrimonio/api/patrimonio/'; //API web do SIM (patrimônio)
 var toggle = 0;
-var g_requer_patri = null;
+// var g_requer_patri = null;
 var fila_atual = null;
 var p_equips = [,];
 
@@ -481,18 +481,18 @@ function verificaTipo(fila_ant, id_chamado) { //verificar tipo da fila no modal 
 	switch ($('#slctTipo').val()) {
 
 		case 'ATENDIMENTO':
-			if (g_requer_patri == true) {
+			// if (g_requer_patri == true) {
 				buscaPatrimonios(id_chamado, fila_ant,true,false,false);
 				$('#divPatrimonios').show();
 				$('#divFila').show();
 				$('#slctFila').attr('disabled',true);
 
-			} else {
+			// } else {
 
-				$('#divPatrimonios').hide();
-				$('#divFila').hide();
-				$('#slctFila').attr('disabled',true);
-			}
+			// 	$('#divPatrimonios').hide();
+			// 	$('#divFila').hide();
+			// 	$('#slctFila').attr('disabled',true);
+			// }
 			
 			break;
 		case 'ALT_FILA':
@@ -636,15 +636,15 @@ $('#modalRegistro').on('shown.bs.modal', function (event) {
 							"<option value=\"OBSERVACAO\">Observação</option>" +
 							"<option value=\"ALT_FILA\">Alteração de fila</option>");
 
-	if (g_requer_patri == true) {
+	// if (g_requer_patri == true) {
 		$('#slctTipo').append('<option value=\"ESPERA\">Deixar em espera</option>');
 		$('#slctTipo').append('<option value=\"REM_ESPERA\">Remover da espera</option>');
 		$('#slctTipo').append('<option value=\"INSERVIVEL\">Classificar como inservível</option>');
 
 
-	} else {
-		$('#slctTipo').append('<option value=\"FECHAMENTO\">Finalizar</option>');
-	}
+	// } else {
+	// 	$('#slctTipo').append('<option value=\"FECHAMENTO\">Finalizar</option>');
+	// }
 
 	verificaTipo(fila_atual, g_id_chamado);
 
