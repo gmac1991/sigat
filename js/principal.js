@@ -587,6 +587,7 @@ $('#modalRegistro').on('show.bs.modal', function (event) { //modal de registro d
 
 	var modal = $(this);
 
+	/*
 	$.ajax({
 		url: base_url + 'backend/requer_patrimonio', 
 		data: { id_fila: fila_atual },
@@ -601,12 +602,13 @@ $('#modalRegistro').on('show.bs.modal', function (event) { //modal de registro d
 				modal.find('.modal-body #conteudo_form').prepend(criaFormRegistro(p_id_chamado,fila_atual));
 				
 			} else {
-
+	*/			
 				modal.find('.modal-body #conteudo_form').empty();
 				modal.find('.modal-body #conteudo_form').prepend(criaFormRegistro(p_id_chamado,fila_atual));
-			}
+	/*		}
 		}
-	});		
+	});	
+	*/	
 });
 
 $('#modalRegistro').on('shown.bs.modal', function (event) {
@@ -767,8 +769,8 @@ function precisaPatrimonio(id_fila,triagem) { // verifica se a fila escolhida na
 	
 	$( "#btnVerificaPatrimoniosTriagem" ).hide(); //TRIAGEM
 	
-	$.get(base_url + 'backend/requer_patrimonio', {id_fila: id_fila}, function(response) {
-		if (response == '1') { //caso a fila requeira patrimonio
+	// $.get(base_url + 'backend/requer_patrimonio', {id_fila: id_fila}, function(response) {
+		// if (response == '1') { //caso a fila requeira patrimonio
 			
 			if (!triagem) {
 
@@ -797,16 +799,16 @@ function precisaPatrimonio(id_fila,triagem) { // verifica se a fila escolhida na
 				$( "#btnVerificaPatrimoniosTriagem" ).show();
 			}
 		
-		} else { //senao
+		// } else { //senao
 
-			$( "#divTabelaPatrimonios" ).hide();
+			/*$( "#divTabelaPatrimonios" ).hide();
 			$( "#listaPatrimonios" ).hide();
 			$( "#flagPrecisaPatrimonio" ).val(0);
-			$( "#btnVerificaPatrimoniosTriagem" ).hide();
-		}
+			$( "#btnVerificaPatrimoniosTriagem" ).hide();*/
+		// }
 				
 			
-	});	
+	// });	
 }
 
 //--------- Verificaçao da lista de patrimonios ---------------
@@ -2766,7 +2768,7 @@ $("#filas-avulsas-grid").jsGrid({ // FILAS AVULSAS
 		//{ name: "id_fila", type: "text", readOnly:true },
 		{ name: "nome_fila", type: "text", validate: "required", title:"Nome"},
 		{ name: "status_fila", type: "select", items: estados, textField: "Name", valueField:"Id", title:"Situação"  },
-		{ name: "requer_patrimonio_fila", type: "select", items: opcoes_fila, textField: "Name", valueField:"Id", title:"Requer patrimônio?" },
+		//{ name: "requer_patrimonio_fila", type: "select", items: opcoes_fila, textField: "Name", valueField:"Id", title:"Requer patrimônio?" },
 		{ type: "control", deleteButton: false}
 	]
 });
