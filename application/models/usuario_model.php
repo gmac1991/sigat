@@ -9,40 +9,18 @@ class Usuario_model extends CI_Model {
     
     public function validaUsuario($dados) {
 
+        var_dump($dados);
+
         $busca = $this->db->query('select id_usuario, nome_usuario from usuario where login_usuario = \'' 
         . $dados['login_usuario'] . '\' and status_usuario = \'ATIVO\'');
+
+        if ($busca->num_rows() == 1) {
+
+            $this->load->library("consulta_ldap");
+
+            $ldap = new Consulta_LDAP($dados['login_usuario'],$dados['senha_usuario']);
         
-        $cont = $busca->num_rows();
-
-        if ($cont == 1) {
-
-            $adServer = "ldap://pms-indcr01.prefeitura.local";
-
-            $ldap = ldap_connect($adServer);
-            $username = $dados['login_usuario'];
-            $password = $dados['senha_usuario'];
-        
-            $ldaprdn = 'prefeitura' . "\\" . $username;
-        
-            ldap_set_option($ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
-            ldap_set_option($ldap, LDAP_OPT_REFERRALS, 0);
-        
-            $bind = ldap_bind($ldap, $ldaprdn, $password);
-        
-            if ($bind) {
-
-                $usuario = array();
-
-                $usuario['id_usuario'] = $busca->row()->id_usuario;
-                $usuario['nome_usuario'] = $busca->row()->nome_usuario;
-
-                return $usuario;
-            }
-
-            else {
-
-                return NULL;
-            }
+            return $ldap->validaLogin();
 
         }
             

@@ -9,7 +9,10 @@ class Backend extends CI_Controller {
     function __construct() {
         parent::__construct();  
 
-        $this->load->library('ldap');
+        $this->load->library('consulta_ldap');
+        $this->load->library('encryption');
+
+        $this->encryption->initialize(array('driver' => 'openssl'));
 
 
     }
@@ -20,7 +23,11 @@ class Backend extends CI_Controller {
 
             $termo = $this->input->get('q');
 
-            $ladp = new LDAP();
+            $usr =  $this->encryption->decrypt(get_cookie("usi"));
+            $pass =  $this->encryption->decrypt(get_cookie("psi"));
+            
+
+            $ladp = new LDAP($usr,$pass);
 
             $lista = array();
 

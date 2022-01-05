@@ -119,7 +119,11 @@ class Acesso extends CI_Controller {
     // -------------- /LOG ----------------
 
     session_destroy();
-    setcookie("ci_session", "", 1);
+    
+    $this->load->helper('cookie');
+    delete_cookie("usi");
+    delete_cookie("psi");
+    delete_cookie("ci_session");
     
     header('Location: ' . base_url());
 

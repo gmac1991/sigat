@@ -1,23 +1,52 @@
 <?php
 
-class LDAP {
+class Consulta_LDAP {
 
-    private $usuario = 'PREFEITURA\gxmacedo';
-    private $senha = 'Gustavo91';
+    private $usuario = '';
+    private $senha = '';
     private $servidor = '172.16.1.8';
     private $dn = "DC=PREFEITURA,DC=LOCAL";
     private $ad = NULL;
 
-    function __construct()
+    function __construct($usr,$pass)
     {
+        $this->$usuario = $usr;
+        $this->$senha = $pass;
+        
         $this->ad = ldap_connect($this->servidor)
         or die( "Não foi possível se conectar" );
 
         ldap_set_option($this->ad, LDAP_OPT_PROTOCOL_VERSION, 3);
         ldap_set_option($this->ad, LDAP_OPT_REFERRALS, 0);
 
-        ldap_bind($this->ad, $this->usuario, $this->senha)
-        or die ("Não foi possível autenticar");
+    }
+
+    function validaLogin() {
+
+        $bind = ldap_bind($this->ad, $this->usuario, $this->senha);
+    
+        if ($bind) {
+
+            $usuario = array();
+
+            $usuario['id_usuario'] = $busca->row()->id_usuario;
+            $usuario['nome_usuario'] = $busca->row()->nome_usuario;
+
+            $this->load->library('encryption');
+            $this->encryption->initialize(array('driver' => 'openssl'));
+            
+            $this->load->helper('cookie');
+            set_cookie("usi",$this->encryption->encrypt($username));
+            set_cookie("psi",$this->encryption->encrypt($password));
+
+
+            return $usuario;
+        }
+
+        else {
+
+            return NULL;
+        }
     }
 
     function buscaSolicitantes($termo) {
