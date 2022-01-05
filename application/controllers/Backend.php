@@ -7,56 +7,36 @@ class Backend extends CI_Controller {
     /*Classe para Respostas às requisições AJAX e outras do Frontend */
 
     function __construct() {
-        parent::__construct();  
-
+        parent::__construct();
         $this->load->library('consulta_ldap');
         $this->load->library('encryption');
-
         $this->encryption->initialize(array('driver' => 'openssl'));
-
-
     }
 
     public function solicitantes() {
-
+        $this->load->helper('cookie');
+        $this->load->library('encryption');
+        $this->encryption->initialize(array('driver' => 'openssl'));
         if (isset($_SESSION['id_usuario'])) {
-
             $termo = $this->input->get('q');
-
-            $usr =  $this->encryption->decrypt(get_cookie("usi"));
-            $pass =  $this->encryption->decrypt(get_cookie("psi"));
-            
-
-            $ladp = new LDAP($usr,$pass);
-
+            $usr = $this->encryption->decrypt($_SESSION["usi"]);
+            $pass = $this->encryption->decrypt($_SESSION["psi"]);          
+            $ldap = new Consulta_LDAP($usr,$pass);
             $lista = array();
-
-            $lista = $ladp->buscaSolicitantes($termo);
-
-            // var_dump($lista);
-
+            $lista = $ldap->buscaSolicitantes($termo);
             if (!empty($lista)) {
-
                 $nova_lista = array();
-
                 for($i = 1;$i<=count($lista); $i = $i+2) {
                     $nova_lista[] = $lista[$i];
 
                 }
-
                 header("Content-Type: application/json");
-
                 echo json_encode($nova_lista);
             }
 
 
-        } else {
-
+        } else
             die('Não autorizado!');
-        }
-
-        
-
     }
 
 

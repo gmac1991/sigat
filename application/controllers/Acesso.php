@@ -54,9 +54,23 @@ class Acesso extends CI_Controller {
     $dados['senha_usuario'] = str_replace('"', "", $dados['senha_usuario']);
     $dados['senha_usuario'] = str_replace("'", "", $dados['senha_usuario']);
 
-    $usuario = $this->usuario_model->validaUsuario($dados);
+    $this->load->library("consulta_ldap");
 
-    
+    $ldap = new Consulta_LDAP($dados['login_usuario'],$dados['senha_usuario']);
+
+
+    if ($ldap->validaLogin()) {
+
+      $this->load->library('encryption');
+      $this->encryption->initialize(array('driver' => 'openssl'));
+      
+      $_SESSION["usi"] = $this->encryption->encrypt($dados['login_usuario']);
+      $_SESSION["psi"] = $this->encryption->encrypt($dados['senha_usuario']);
+
+      $usuario = $this->usuario_model->validaUsuario($dados);
+
+    }
+
 
     if (!empty($usuario)) {
       $_SESSION['id_usuario'] = $usuario['id_usuario'];
@@ -94,7 +108,7 @@ class Acesso extends CI_Controller {
     // -------------- /LOG ----------------
       
       
-      header('Location: ' . base_url('/erro')); //caso usuario foi invalido, retornar valor 'erro' para o index via URL
+      //header('Location: ' . base_url('/erro')); //caso usuario foi invalido, retornar valor 'erro' para o index via URL
 
 
     }
@@ -121,8 +135,8 @@ class Acesso extends CI_Controller {
     session_destroy();
     
     $this->load->helper('cookie');
-    delete_cookie("usi");
-    delete_cookie("psi");
+    unset($_SESSION["usi"]);
+    unset($_SESSION["psi]"]);
     delete_cookie("ci_session");
     
     header('Location: ' . base_url());

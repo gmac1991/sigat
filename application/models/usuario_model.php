@@ -3,25 +3,20 @@
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Usuario_model extends CI_Model {
-	
-
-
-    
+	   
     public function validaUsuario($dados) {
 
-        var_dump($dados);
 
         $busca = $this->db->query('select id_usuario, nome_usuario from usuario where login_usuario = \'' 
         . $dados['login_usuario'] . '\' and status_usuario = \'ATIVO\'');
 
         if ($busca->num_rows() == 1) {
 
-            $this->load->library("consulta_ldap");
+                $usuario = array();
+                $usuario['id_usuario'] = $busca->row()->id_usuario;
+                $usuario['nome_usuario'] = $busca->row()->nome_usuario;
 
-            $ldap = new Consulta_LDAP($dados['login_usuario'],$dados['senha_usuario']);
-        
-            return $ldap->validaLogin();
-
+                return $usuario;
         }
             
         else
