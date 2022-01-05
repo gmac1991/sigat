@@ -109,46 +109,44 @@
 
 		</div>
 	</div>
-	  <hr>
-	  <div class="row">
-        <div class="form-group col-4">
-          <label for="fila">Fila</label>
-              <select class="form-control" name="id_fila" id="id_fila" onchange="precisaPatrimonio(this.value,true)">
-				<option value="">Selecione...</option>
-			  <?php foreach ($filas as $fila) : ?>
-                  <option value="<?= $fila['id_fila'] ?>"><?= $fila['nome_fila']?></option>
-              <?php endforeach; ?>
-              
-              </select>
-          </div>
-          
-      </div>
+  <hr>
+  <div class="row">
+      <div class="form-group col-4">
+        <label for="fila">Fila</label>
+            <select class="form-control" name="id_fila" id="id_fila" onchange="precisaPatrimonio(this.value,true)">
+      <option value="">Selecione...</option>
+      <?php foreach ($filas as $fila) : ?>
+                <option value="<?= $fila['id_fila'] ?>"><?= $fila['nome_fila']?></option>
+            <?php endforeach; ?>
+            
+            </select>
+        </div>
+        
+    </div>
 
-      <div class="row">
-          
-          <div class="form-group col">
-              <label for="nome_solicitante">Solicitante</label>
-              <input type="text" class="form-control col-7" name="nome_solicitante" id="listaSolicitantes">
-              <br />
-              <label for="telefone">Telefone</label>
-              <input type="text" maxlength="15" class="form-control col-4" name="telefone" aria-describedby="" placeholder="">
-			  <br />
-			  <label for="local">Local</label>
-			  <input type="text" class="form-control col-8" name="nome_local" id="listaLocais">
-          </div>
+    <div class="row">
+        
+        <div class="form-group col">
+            <label for="nome_solicitante">Solicitante</label>
+            <input type="text" class="form-control col-7" name="nome_solicitante" id="listaSolicitantes">
+            <br />
+            <label for="telefone">Telefone</label>
+            <input type="text" maxlength="15" class="form-control col-4" name="telefone" aria-describedby="" placeholder="">
+            <br />
+            <label for="local">Local</label>
+            <input type="text" class="form-control col-8" name="nome_local" id="listaLocais">
+        </div>
 
-      </div>
-	
-    
-      <div class="row">
+    </div>
+
+  
+    <div class="row">
+      
       <input type="hidden" id="flagPrecisaPatrimonio" value=""/>
       <input type="hidden" name="id_usuario" value=""/>
-      <div class="row">
-       <div class="col text-right">
-       <button type="submit" id="btnImportarChamado" class="btn btn-success"><i class="fas fa-check"></i> Importar Chamado</button>
-       </div>
-
+      <div class="form-group col text-right">
+        <button type="submit" id="btnImportarChamado" class="btn btn-success"><i class="fas fa-file-import"></i> Importar Chamado</button>
       </div>
-      
+    </div>
   </form>
 </div>

@@ -311,7 +311,7 @@ class Backend extends CI_Controller {
             $q_buscaChamado = "select id_chamado, id_fila, status_chamado, nome_solicitante_chamado, nome_local, DATE_FORMAT(data_chamado, '%d/%m/%Y - %H:%i:%s') as data_chamado, descricao_chamado, telefone_chamado,
                 (select usuario.nome_usuario from usuario where usuario.id_usuario = chamado.id_usuario_responsavel_chamado) as nome_responsavel,
                 (select usuario.id_usuario from usuario where usuario.id_usuario = chamado.id_usuario_responsavel_chamado) as id_responsavel,  
-                (select fila.nome_fila from fila where fila.id_fila = chamado.id_fila_chamado) as nome_fila_chamado, entrega_chamado, requer_patrimonio_fila
+                (select fila.nome_fila from fila where fila.id_fila = chamado.id_fila_chamado) as nome_fila_chamado, entrega_chamado
                 from local, fila, chamado
                 where local.id_local = chamado.id_local_chamado and
                 fila.id_fila = chamado.id_fila_chamado and
@@ -539,34 +539,34 @@ class Backend extends CI_Controller {
             
             // id da fila atual do chamado
             
-            $busca = $this->db->query("select id_fila, requer_patrimonio_fila from fila, chamado where id_fila = id_fila_chamado and id_chamado = " . $id_chamado);
+            $busca = $this->db->query("select id_fila from fila, chamado where id_fila = id_fila_chamado and id_chamado = " . $id_chamado);
 
             $result = $busca->row_array();
 
             $dados['id_fila'] = $result['id_fila'];
 
-            if ($result['requer_patrimonio_fila'] == 1) { // filas
+            // if ($result['requer_patrimonio_fila'] == 1) { // filas
 
-                $requer_patri = TRUE;
+            //     $requer_patri = TRUE;
 
-                $busca = $this->db->query("select id_fila, nome_fila from fila where requer_patrimonio_fila = 1");
+            //     $busca = $this->db->query("select id_fila, nome_fila from fila where requer_patrimonio_fila = 1");
 
-                $result = $busca->result_array();
+            //     $result = $busca->result_array();
 
-                $dados['filas'] = $result;
+            //     $dados['filas'] = $result;
 
-            } else {
+            // } else {
 
-                $busca = $this->db->query("select id_fila, nome_fila from fila where requer_patrimonio_fila = 0");
+            //     $busca = $this->db->query("select id_fila, nome_fila from fila where requer_patrimonio_fila = 0");
 
-                $result = $busca->result_array();
+            //     $result = $busca->result_array();
 
-                $dados['filas'] = $result;
-            }
+            //     $dados['filas'] = $result;
+            // }
 
             // patrimonios do chamado
 
-            if ( $requer_patri ) { //se a fila requer patrimonio
+            // if ( $requer_patri ) { //se a fila requer patrimonio
 
                 //var_dump($espera);
 
@@ -585,11 +585,11 @@ class Backend extends CI_Controller {
                 $result = $busca->result_array();
 
                 $dados['patrimonios'] = $result;
-            }
-            else {
+            // }
+            // else {
 
-                $dados['patrimonios'] = NULL;
-            }
+            //     $dados['patrimonios'] = NULL;
+            // }
 
             header("Content-Type: application/json");
 
@@ -616,33 +616,33 @@ class Backend extends CI_Controller {
         }
     }
 
-    public function requer_patrimonio() {
+    // public function requer_patrimonio() {
 
-        $id_fila = $this->input->get('id_fila');
+    //     $id_fila = $this->input->get('id_fila');
 
-        if (isset($_SESSION['id_usuario'])) {
+    //     if (isset($_SESSION['id_usuario'])) {
 
-            try {
-                $busca = $this->db->query("SELECT * FROM fila WHERE id_fila = " . $id_fila . " and requer_patrimonio_fila = 1");
+    //         try {
+    //             $busca = $this->db->query("SELECT * FROM fila WHERE id_fila = " . $id_fila . " and requer_patrimonio_fila = 1");
                 
-                $result = $busca->result_array();
+    //             $result = $busca->result_array();
                 
-                if ( count($result) ) { 
+    //             if ( count($result) ) { 
               
-                  echo '1';
+    //               echo '1';
                   
-                }
-              } catch(PDOException $e) {
-                  echo 'ERROR: ' . $e->getMessage();
-              }
+    //             }
+    //           } catch(PDOException $e) {
+    //               echo 'ERROR: ' . $e->getMessage();
+    //           }
         
         
-        } else {
-            die("Não autorizado!");
-        }
+    //     } else {
+    //         die("Não autorizado!");
+    //     }
         
 
-    }
+    // }
 
     public function atualiza_responsavel() {
 

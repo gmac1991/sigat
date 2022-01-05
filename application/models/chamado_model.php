@@ -37,8 +37,8 @@ class Chamado_model extends CI_Model {
                     $anexo = TRUE;
                 }
 
-                $requerPatrimonio = $this->db->query("select * from fila where id_fila = " . $dados['id_fila'] 
-                . " and requer_patrimonio_fila = 1");
+                // $requerPatrimonio = $this->db->query("select * from fila where id_fila = " . $dados['id_fila'] 
+                // . " and requer_patrimonio_fila = 1");
 
                 // ------------ FUNCAO PARA REGISTRAR ------------------ 
 
@@ -67,7 +67,7 @@ class Chamado_model extends CI_Model {
                 // ------------------------------------------------------
 
 
-                if ($requerPatrimonio->num_rows() == 1 && $dados['id_fila'] != 6) { //checando se a fila precisa de patrimonio (bypass na fila Sol. Equip.)
+                // if ($requerPatrimonio->num_rows() == 1 && $dados['id_fila'] != 6) { //checando se a fila precisa de patrimonio (bypass na fila Sol. Equip.)
 
                     preg_match_all("/[1-9]\d{5}/",$dados['listaPatrimonios'], $patrimonios);  // separando os itens da lista em um array (6 digitos consecutivos)
 
@@ -104,7 +104,7 @@ class Chamado_model extends CI_Model {
                     
                     }
 
-                } else {
+                // } else {
 
                     $id_chamado = registrar($this_model,$q_registraChamado,$nome_fila,$dados['id_usuario']); //registrando o chamado
 

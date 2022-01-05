@@ -632,7 +632,7 @@ class Interacao_model extends CI_Model {
             for ($i = 1; $i < count($equip); $i++) {
 
                $this->db->query("insert into equipamento_chamado values('" . //inserindo na tabela equipamento_chamado
-               $equip[$i][0] . "','" .  $equip[$i][1] . "'," . $dados['id_chamado'] . ",'ABERTO')");
+               $equip[$i][0] . "','" .  $equip[$i][1] . "'," . $dados['id_chamado'] . ",'ABERTO',NOW())");
 
                $log = array(
                   'acao_evento' => 'ADC_EQUIP_SOLICITACAO',

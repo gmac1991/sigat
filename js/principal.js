@@ -1364,7 +1364,7 @@ function carregaChamado(p_id_chamado, sem_patrimonios) {
 			}
 			
 			
-			if (sem_patrimonios != true && data.requer_patrimonio_fila == 1 ) { //puxar a descricao de cada patrimonio via api json do SIM
+			if (sem_patrimonios != true /*&& data.requer_patrimonio_fila == 1 */) { //puxar a descricao de cada patrimonio via api json do SIM
 				
 				$('#tblPatrimonios tbody').html('');
 
@@ -2718,7 +2718,7 @@ $("#filas-grid").jsGrid({ // FILAS FIXAS
 		//{ name: "id_fila", type: "text", readOnly:true },
 		{ name: "nome_fila", type: "text", validate: "required", title:"Nome"},
 		{ name: "status_fila", type: "select", items: estados, textField: "Name", valueField:"Id", title:"Situação"  },
-		{ name: "requer_patrimonio_fila", type: "select", items: opcoes_fila, textField: "Name", valueField:"Id", title:"Requer patrimônio?" },
+		// { name: "requer_patrimonio_fila", type: "select", items: opcoes_fila, textField: "Name", valueField:"Id", title:"Requer patrimônio?" },
 	]
 });
 
