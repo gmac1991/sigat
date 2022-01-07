@@ -52,16 +52,16 @@ if (isset($_SESSION['id_usuario'])) {
   
   
 <?php 
-if (isset($filas) && !isset($chamado)) { 
-  echo "<script type=\"text/javascript\">precisaPatrimonio(" .  $filas[0]['id_fila'] .")</script>"; 
-} 
+// if (isset($filas) && !isset($chamado)) { 
+//   echo "<script type=\"text/javascript\">precisaPatrimonio(" .  $filas[0]['id_fila'] .")</script>"; 
+// } 
  
 if (isset($chamado)) { 
  
   echo "<script type=\"text/javascript\">var fila_atual = " . $chamado->id_fila . "</script>";
   echo "<script type=\"text/javascript\">var g_id_chamado = " . $chamado->id_chamado . "</script>";
   echo "<script type=\"text/javascript\">carregaChamado(g_id_chamado)</script>";
-  echo "<script type=\"text/javascript\">precisaPatrimonio(fila_atual,false)</script>"; 
+  // echo "<script type=\"text/javascript\">precisaPatrimonio(fila_atual,false)</script>"; 
   echo "<script type=\"text/javascript\">atualizaInteracoes(g_id_chamado)</script>"; 
 }
 

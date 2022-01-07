@@ -14,9 +14,7 @@ class Backend extends CI_Controller {
     }
 
     public function solicitantes() {
-        $this->load->helper('cookie');
-        $this->load->library('encryption');
-        $this->encryption->initialize(array('driver' => 'openssl'));
+
         if (isset($_SESSION['id_usuario'])) {
             $termo = $this->input->get('q');
             $usr = $this->encryption->decrypt($_SESSION["usi"]);
@@ -534,16 +532,24 @@ class Backend extends CI_Controller {
             $espera = $this->input->post('espera');
 
             $dados = array();
-            $requer_patri = FALSE;
-
             
-            // id da fila atual do chamado
+            // removido verificaçao da fila
+
+            // $requer_patri = FALSE;
+
+            //id da fila atual do chamado
             
             $busca = $this->db->query("select id_fila from fila, chamado where id_fila = id_fila_chamado and id_chamado = " . $id_chamado);
 
             $result = $busca->row_array();
 
             $dados['id_fila'] = $result['id_fila'];
+
+            $busca = $this->db->query("select * from fila");
+
+            $result = $busca->result_array();
+
+            $dados['filas'] = $result;
 
             // if ($result['requer_patrimonio_fila'] == 1) { // filas
 

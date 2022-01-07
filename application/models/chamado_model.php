@@ -23,7 +23,7 @@ class Chamado_model extends CI_Model {
 
                 $q_registraChamado = "insert into chamado values(NULL, " . $id_local . ",'" 
                 . $dados['nome_solicitante'] . "', '" . $dados['descricao'] . "', '" . $dados['telefone'] . "'," . $dados['id_usuario'] . ", NULL, 'ABERTO'," 
-                . $dados['id_fila'] . ",NOW(),0)"; 
+                . $dados['id_fila'] . ",NOW(),0,NULL,NULL)"; 
 
                 $nome_fila = $this->db->query('select nome_fila from fila where id_fila = ' . $dados['id_fila'])->row()->nome_fila;
 
@@ -85,7 +85,21 @@ class Chamado_model extends CI_Model {
 
                         foreach($lista_abrir_chamado as $patrimonio) { //registrando na tabela patrimonio_chamado
 
-                            $this->db->query("insert into patrimonio_chamado values('" . $patrimonio . "', " . $id_chamado . ", 'ABERTO', NULL)");
+                            $busca_tag = $this->db->query("select ultima_tag_patrimonio from patrimonio_chamado where ultima_tag_patrimonio <> NULL 
+                                                            and num_patrimonio = " . $patrimonio .
+                                                            " order by data_registro_patrimonio asc limit 1");
+
+                            if ($busca_tag->num_rows() == 1) {
+                                $this->db->query("insert into patrimonio_chamado values('" . $patrimonio . 
+                                                    "', " . $id_chamado . ", 'ABERTO', NULL," . $busca_tag->ultima_tag_patrimonio . ",NOW())");
+                            }
+
+                            else {
+                                $this->db->query("insert into patrimonio_chamado values('" . $patrimonio . "', " . $id_chamado . ", 'ABERTO',NULL,NULL,NOW())");
+
+                            }
+
+                            
                         }
 
                         if ($anexo) { $this->db->query($q_registraAnexo . $id_chamado . ")"); } // registrando anexo
@@ -106,20 +120,20 @@ class Chamado_model extends CI_Model {
 
                 // } else {
 
-                    $id_chamado = registrar($this_model,$q_registraChamado,$nome_fila,$dados['id_usuario']); //registrando o chamado
+                    // $id_chamado = registrar($this_model,$q_registraChamado,$nome_fila,$dados['id_usuario']); //registrando o chamado
 
                     if ($anexo) { $this->db->query($q_registraAnexo . $id_chamado . ")"); } // registrando anexo
 
 
                     // ------------ LOG -------------------
 
-                    $log = array(
-                        'acao_evento' => 'INSERIR_CHAMADO',
-                        'desc_evento' => 'ID CHAMADO: ' . $id_chamado ,
-                        'id_usuario_evento' => $_SESSION['id_usuario']
-                    );
+                    // $log = array(
+                    //     'acao_evento' => 'INSERIR_CHAMADO',
+                    //     'desc_evento' => 'ID CHAMADO: ' . $id_chamado ,
+                    //     'id_usuario_evento' => $_SESSION['id_usuario']
+                    // );
                     
-                    $this->db->insert('evento', $log);
+                    // $this->db->insert('evento', $log);
 
                     // -------------- /LOG ----------------
                 // }
@@ -183,7 +197,7 @@ class Chamado_model extends CI_Model {
 
         
 
-        $texto_interacao = NULL;
+        $texto_alteracao = NULL;
 
 
         $chamado_original = $this->db->query('select id_usuario_responsavel_chamado, 
@@ -207,26 +221,31 @@ class Chamado_model extends CI_Model {
 
             
         }
-    
+
+        $this->db->query($q_alteraChamado); //executa a alteracao
+
+        //removido inserção de interacao
+
+        //inserindo na tabela alteracao
 
         if ($chamado_original->id_local_chamado != $id_local) {
 
             $novo_nome_local = $this->db->query('select nome_local from local where id_local = ' . $id_local)->row()->nome_local;
 
-            $texto_interacao .= '<p>Foi alterado o local <strong>' . $chamado_original->nome_local . '</strong>';
-            $texto_interacao .= ' para <strong>' . $novo_nome_local . '</strong></p>';
+            $texto_alteracao .= '<p>Foi alterado o local <strong>' . $chamado_original->nome_local . '</strong>';
+            $texto_alteracao .= ' para <strong>' . $novo_nome_local . '</strong></p>';
         }
 
         if ($chamado_original->telefone_chamado != $dados['telefone']) {
 
-            $texto_interacao .= '<p>Foi alterado o telefone de <strong>' . $chamado_original->telefone_chamado . '</strong>';
-            $texto_interacao .= ' para <strong>' . $dados['telefone'] . '</strong></p>';
+            $texto_alteracao .= '<p>Foi alterado o telefone de <strong>' . $chamado_original->telefone_chamado . '</strong>';
+            $texto_alteracao .= ' para <strong>' . $dados['telefone'] . '</strong></p>';
         }
 
         if ($chamado_original->nome_solicitante_chamado != $dados['nome_solicitante']) {
 
-            $texto_interacao .= '<p>Foi alterado o solicitante de <strong>' . $chamado_original->nome_solicitante_chamado . '</strong>';
-            $texto_interacao .= ' para <strong>' . $dados['nome_solicitante'] . '</strong></p>';
+            $texto_alteracao .= '<p>Foi alterado o solicitante de <strong>' . $chamado_original->nome_solicitante_chamado . '</strong>';
+            $texto_alteracao .= ' para <strong>' . $dados['nome_solicitante'] . '</strong></p>';
         }
 
         if ($dados['id_responsavel'] != NULL) { 
@@ -235,15 +254,15 @@ class Chamado_model extends CI_Model {
                 $novo_nome_responsavel = $this->db->query('select nome_usuario from usuario where id_usuario = ' . $dados['id_responsavel'])->row()->nome_usuario;
 
                 if ($chamado_original->id_usuario_responsavel_chamado != NULL) { 
-                    $texto_interacao .= '<p>Foi alterado o responsável de <strong>' . $chamado_original->nome_responsavel . '</strong>';
-                    $texto_interacao .= ' para <strong>' . $novo_nome_responsavel . '</strong></p>';
+                    $texto_alteracao .= '<p>Foi alterado o responsável de <strong>' . $chamado_original->nome_responsavel . '</strong>';
+                    $texto_alteracao .= ' para <strong>' . $novo_nome_responsavel . '</strong></p>';
 
                 }
 
                 else { //se a alteracao do responsavel for de NULL para algum valor...
 
-                    $texto_interacao .= '<p>Foi alterado o responsável';
-                    $texto_interacao .= ' para <strong>' . $novo_nome_responsavel . '</strong></p>';
+                    $texto_alteracao .= '<p>Foi alterado o responsável';
+                    $texto_alteracao .= ' para <strong>' . $novo_nome_responsavel . '</strong></p>';
                 }
                 
                 
@@ -253,20 +272,18 @@ class Chamado_model extends CI_Model {
 
         if($this->db->query($q_alteraChamado)) {
 
-            if ($texto_interacao != NULL) {
+            if ($texto_alteracao != NULL) {
 
-                $nova_interacao = array (
-                    'id_interacao' => NULL,
-                    'tipo_interacao' => 'ALT',
-                    'data_interacao' => date('Y-m-d H:i:s'),
-                    'texto_interacao' => $texto_interacao,
-                    'id_chamado_interacao' => $dados['id_chamado'],
-                    'id_usuario_interacao' => $dados['id_usuario'],
-                    'id_fila_ant_interacao' => NULL
+                $nova_alteracao = array (
+                    'id_alteracao' => NULL,
+                    'data_alteracao' => date('Y-m-d H:i:s'),
+                    'texto_alteracao' => $texto_alteracao,
+                    'id_chamado_alteracao' => $dados['id_chamado'],
+                    'id_usuario_alteracao' => $dados['id_usuario'],
            
                  ); 
                  
-                 $this->db->insert('interacao',$nova_interacao);
+                 $this->db->insert('alteracao_chamado',$nova_alteracao);
 
                  // ------------ LOG -------------------
 
@@ -281,7 +298,7 @@ class Chamado_model extends CI_Model {
                 // -------------- /LOG ----------------
 
             }
-            exit($msg);
+        //     exit($msg);
         }  
             
     }

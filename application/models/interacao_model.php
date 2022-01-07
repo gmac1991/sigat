@@ -474,7 +474,7 @@ class Interacao_model extends CI_Model {
          
          }
 
-         $this->db->query("update chamado set entrega_chamado = 0 where id_chamado = " . $dados['id_chamado']); // tirando o flag de Entrega
+         $this->db->query("update chamado set entrega_chamado = 0 where id_chamado = " . $dados['id_chamado']); // tirando o flag de Entrega 
 
          // ------------ LOG -------------------
 

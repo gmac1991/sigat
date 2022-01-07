@@ -139,9 +139,9 @@ function painel(id_fila) {
 			if( data[5] === 'FECHADO'){
 				$(row).addClass('table-success');
 			}
-			if( data[4] === null){
+			if( data[4] !== null){
 				$(row).removeClass('table-warning');
-				$(row).addClass('table-danger');
+				// $(row).addClass('table-danger');
 			}
 			
 		},
@@ -307,6 +307,8 @@ function triagem() {
 
 function buscaPatrimonios(p_id_chamado, p_id_fila_ant, p_atendimento, ins = false, p_espera = false, p_alt_fila = false) {
 
+	//console.log(p_atendimento);
+	
 	var lista_patrimonios = [];
 	$('#divPatrimonios').empty();
 	$('#btnRegistrarInteracao').removeAttr('disabled');
@@ -327,22 +329,23 @@ function buscaPatrimonios(p_id_chamado, p_id_fila_ant, p_atendimento, ins = fals
 
 			data.filas.forEach(function(fila) { //exibindo as filas
 			
-				if (fila.id_fila == 6 && p_alt_fila == true) {
-					return; // se for a fila de Sol. de Equipamentos (id 6) no modal de Interacao, pular e não exibir
-				} 
-				else if(p_id_fila_ant == 6 && fila.id_fila != 3)  { 
-					return;
-				}
-				else if(p_id_fila_ant != 6 && data.id_fila == 6 ) {
-					return;
-				}
-				else {
+				// if (fila.id_fila == 6 && p_alt_fila == true) {
+				// 	return; // se for a fila de Sol. de Equipamentos (id 6) no modal de Interacao, pular e não exibir
+				// } 
+				// else if(p_id_fila_ant == 6 && fila.id_fila != 3)  { 
+				// 	return;
+				// }
+				// else if(p_id_fila_ant != 6 && data.id_fila == 6 ) {
+				// 	return;
+				// }
+				// else {
 
-					if(p_id_fila_ant == 6) {
-						$('select[name=id_fila]').append("<option value=\"6\" >Solicitação de Equipamento</option>");
-					}
+				// 	if(p_id_fila_ant == 6) {
+				// 		$('select[name=id_fila]').append("<option value=\"6\" >Solicitação de Equipamento</option>");
+				// 	}
 					
 					$('select[name=id_fila]').append("<option value=\"" + fila.id_fila + "\" >" + fila.nome_fila + "</option>");
+
 				
 					if (p_atendimento == true) {
 
@@ -354,13 +357,13 @@ function buscaPatrimonios(p_id_chamado, p_id_fila_ant, p_atendimento, ins = fals
 						$('#slctFila option[value=' + p_id_fila_ant + ']').remove(); //se não, remover a fila atual da lista
 					}
 							
-				}
+				// }
 				
 			});
 
 			
 	
-			if (data.patrimonios != null && p_id_fila_ant != 6) { //se houver patrimonios no chamado para atender, exibi-los
+			if (data.patrimonios != null /*&& p_id_fila_ant != 6*/) { //se houver patrimonios no chamado para atender, exibi-los
 			
 				data.patrimonios.forEach(function(patrimonio) {
 				
@@ -1105,13 +1108,14 @@ function(e) {
 				minlength: 3,
 			},
 			listaPatrimonios: {
-				required: function() {
-					if ($('#flagPrecisaPatrimonio').val() == 1 && $('#id_fila').val() != 6) { //bypass da fila Solicitacao de Equipamentos
-						return true;
-					} else {
-						return false;
-					}
-				},
+				required: true,
+				// required: function() {
+				// 	if ($('#flagPrecisaPatrimonio').val() == 1 && $('#id_fila').val() != 6) { //bypass da fila Solicitacao de Equipamentos
+				// 		return true;
+				// 	} else {
+				// 		return false;
+				// 	}
+				// },
 				minlength: 6,
 				maxlength: 2000
 			},
@@ -1159,7 +1163,7 @@ function(e) {
 					processData: false,
 					beforeSend: function () {
 
-						if (listaVerificada == false && $( "#flagPrecisaPatrimonio" ).val() == 1) {
+						if (listaVerificada == false /*&& $( "#flagPrecisaPatrimonio" ).val() == 1*/) {
 
 							$("#msg div[id=alerta]").remove();
 							
@@ -1210,15 +1214,15 @@ function(e) {
 					}
 					
 					
-					if ($( "#flagPrecisaPatrimonio" ).val() == 0) {
+					// if ($( "#flagPrecisaPatrimonio" ).val() == 0) {
 
-						timeout = setTimeout(function() {
-							$('#btnAbrirChamado').removeAttr("disabled");
+					// 	timeout = setTimeout(function() {
+					// 		$('#btnAbrirChamado').removeAttr("disabled");
 			
-						},10000);
-					}
+					// 	},10000);
+					// }
 
-					else {
+					// else {
 
 						$('#btnAbrirChamado').removeAttr("disabled");
 
@@ -1232,7 +1236,7 @@ function(e) {
 							$( "#divTabelaPatrimonios" ).hide();
 						}
 							
-					}
+					// }
 
 					targetOffset = $('#msg').offset().top;
 			
@@ -1273,7 +1277,7 @@ function carregaChamado(p_id_chamado, sem_patrimonios) {
 
 	//atualiza os dados do chamado
 	
-	document.title = "Chamado #" + p_id_chamado + " - Sigat";
+	document.title = "#" + p_id_chamado + " - Sigat";
 
 	var p_id_responsavel = null;
 	
@@ -1318,52 +1322,52 @@ function carregaChamado(p_id_chamado, sem_patrimonios) {
 			var entrega = data.entrega_chamado;
 			var status_chamado = data.status_chamado;
 
-			if (data.id_fila == 6) {
+			// if (data.id_fila == 6) {
 
-				if (!$('#botoesAtendimento #btnModalEquipamentos').length && data.id_responsavel == g_id_usuario) {
-					$('#botoesAtendimento').prepend(
-						"<button type=\"button\" id=\"btnModalEquipamentos\" class=\"btn btn-primary\""+
-						" data-toggle=\"modal\" data-target=\"#modalEquipamentos\" data-chamado=\"" + p_id_chamado +
-						"\"><i class=\"fas fa-plus-square\"></i> Adicionar Equipamentos</button> ");
-				}
+			// 	if (!$('#botoesAtendimento #btnModalEquipamentos').length && data.id_responsavel == g_id_usuario) {
+			// 		$('#botoesAtendimento').prepend(
+			// 			"<button type=\"button\" id=\"btnModalEquipamentos\" class=\"btn btn-primary\""+
+			// 			" data-toggle=\"modal\" data-target=\"#modalEquipamentos\" data-chamado=\"" + p_id_chamado +
+			// 			"\"><i class=\"fas fa-plus-square\"></i> Adicionar Equipamentos</button> ");
+			// 	}
 
-				if (!$('#botoesAtendimento #btnModalRegistro').length && data.id_responsavel == g_id_usuario) {
+			// 	if (!$('#botoesAtendimento #btnModalRegistro').length && data.id_responsavel == g_id_usuario) {
 								
-					$('#botoesAtendimento').append(
-						"<button type=\"button\" id=\"btnModalRegistro\" class=\"btn btn-primary\""+
-						" data-toggle=\"modal\" data-target=\"#modalRegistro\" data-chamado=\"" + p_id_chamado +
-						"\"><i class=\"far fa-file-alt\"></i> Nova Interação</button> ");
-				}
-			}
+			// 		$('#botoesAtendimento').append(
+			// 			"<button type=\"button\" id=\"btnModalRegistro\" class=\"btn btn-primary\""+
+			// 			" data-toggle=\"modal\" data-target=\"#modalRegistro\" data-chamado=\"" + p_id_chamado +
+			// 			"\"><i class=\"far fa-stick-note\"></i> Registrar ação</button> ");
+			// 	}
+			// }
 
-			if (data.equipamentos.length > 0 && (data.id_fila == 6 || data.id_fila == 3)) {
+			// if (data.equipamentos.length > 0 && (data.id_fila == 6 || data.id_fila == 3)) {
 
-				$('#tblEquipamentosChamado tbody').html('');
+			// 	$('#tblEquipamentosChamado tbody').html('');
 
-				data.equipamentos.forEach(function(equip) {
+			// 	data.equipamentos.forEach(function(equip) {
 				
-					$('#tblEquipamentosChamado tbody').append(
-						"<tr>" +
-						"<td>" + equip.num_equipamento + "</td>" +
-						"<td>" + equip.desc_equipamento + "</td>" +
-						"<td>" + equip.status_equipamento + "</td>" +
-						"</tr>");
-				});
+			// 		$('#tblEquipamentosChamado tbody').append(
+			// 			"<tr>" +
+			// 			"<td>" + equip.num_equipamento + "</td>" +
+			// 			"<td>" + equip.desc_equipamento + "</td>" +
+			// 			"<td>" + equip.status_equipamento + "</td>" +
+			// 			"</tr>");
+			// 	});
 
 				if (!$('#botoesAtendimento #btnModalRegistro').length && data.id_responsavel == g_id_usuario) {
 								
 					$('#botoesAtendimento').append(
 						"<button type=\"button\" id=\"btnModalRegistro\" class=\"btn btn-primary\""+
 						" data-toggle=\"modal\" data-target=\"#modalRegistro\" data-chamado=\"" + p_id_chamado +
-						"\"><i class=\"far fa-file-alt\"></i> Nova Interação</button> ");
+						"\"><i class=\"far fa-sticky-note\"></i> Registrar ação</button> ");
 				}
 
-			}
+			// }
 
-			else {
+			// else {
 
-				$('#listaEquipamentosChamado').hide();
-			}
+			// 	$('#listaEquipamentosChamado').hide();
+			// }
 			
 			
 			if (sem_patrimonios != true /*&& data.requer_patrimonio_fila == 1 */) { //puxar a descricao de cada patrimonio via api json do SIM
@@ -1379,6 +1383,8 @@ function carregaChamado(p_id_chamado, sem_patrimonios) {
 						success: function(data) {
 
 							var status_patrimonio = null;
+							var ultima_tag_patrimonio = null;
+
 							if (patrimonio.status_patrimonio_chamado == 'FALHA') { // se o patrimonio estiver como falha de entrega, mostrar como aberto
 								status_patrimonio = 'ABERTO';
 							}
@@ -1386,10 +1392,23 @@ function carregaChamado(p_id_chamado, sem_patrimonios) {
 								status_patrimonio = patrimonio.status_patrimonio_chamado;
 							}
 
+							if (patrimonio.ultima_tag_patrimonio == null) {
+
+								ultima_tag_patrimonio = "N/A"
+
+
+							}
+
+							else {
+
+								ultima_tag_patrimonio = patrimonio.ultima_tag_patrimonio
+							}
+
 							$('#tblPatrimonios tbody').append(
 							"<tr>" +
 							"<td>" + patrimonio.num_patrimonio + "</td>" +
 							"<td>" + data.descricao + "</td>" +
+							"<td>" + ultima_tag_patrimonio + "</td>" +
 							"<td>" + status_patrimonio + "</td>" +
 							"</tr>");
 
@@ -1419,11 +1438,12 @@ function carregaChamado(p_id_chamado, sem_patrimonios) {
 								
 
 								if (!$('#botoesAtendimento #btnModalRegistro').length) {
+
 									
 									$('#botoesAtendimento').prepend(
 										"<button type=\"button\" id=\"btnModalRegistro\" class=\"btn btn-primary\""+
 										" data-toggle=\"modal\" data-target=\"#modalRegistro\" data-chamado=\"" + p_id_chamado +
-										"\"><i class=\"far fa-file-alt\"></i> Nova Interação</button> ");
+										"\"><i class=\"far fa-sticky-note\"></i> Registrar ação</button> ");
 								}	
 							} 		
 						}
@@ -1432,7 +1452,7 @@ function carregaChamado(p_id_chamado, sem_patrimonios) {
 
 				
 
-			} else { // criar o botao de Registrar Antendimento sem patrimonios
+			} /*else { // criar o botao de Registrar Antendimento sem patrimonios
 				if (!$('#botoesAtendimento #btnModalRegistro').length && data.id_responsavel == g_id_usuario) {
 									
 					$('#botoesAtendimento').append(
@@ -1442,7 +1462,7 @@ function carregaChamado(p_id_chamado, sem_patrimonios) {
 					}
 
 						
-			}		
+			}	)*/	
 				
 			if(data.status_chamado != 'ABERTO') {
 				$('#botoesAtendimento #btnModalRegistro').remove();

@@ -286,6 +286,7 @@
                                     <tr>
                                     <th>Patrimônio</th>
                                     <th>Descrição</th>
+                                    <th>Etiqueta</th>
                                     <th>Status</th>
                                     </tr>
                                 </thead>
