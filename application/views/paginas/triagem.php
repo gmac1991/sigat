@@ -52,7 +52,8 @@
             <label class="form-check-label" for="chkSoSelecaoTriagem">Somente seleção</label>
             
             <button type="button" class="btn btn-primary" id="btnVerificaPatrimoniosTriagem"><i class="fas fa-search"></i> Verificação automática</button>
-            <button type="button" class="btn btn-secondary" id="btnInsertManualTriagem"><i class="fas fa-pencil-alt"></i> Inserção manual</button>
+            <button type="button" class="btn btn-danger" id="btnInvalidaChamado"><i class="far fa-trash-alt"></i> Invalidar Chamado</button>
+            <!-- <button type="button" class="btn btn-secondary" id="btnInsertManualTriagem"><i class="fas fa-pencil-alt"></i> Inserção manual</button> -->
         </div>
         
         </div>

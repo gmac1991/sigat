@@ -192,6 +192,7 @@ class Chamado_model extends CI_Model {
                 $q_atualizaChamado = 
                 "update chamado set " .
                 "nome_solicitante_chamado = '" . $dados['nome_solicitante'] . "'," .
+                "id_local_chamado = " . $id_local . "," .
                 "telefone_chamado = " . $dados['telefone'] . "," .
                 "id_usuario_abertura_chamado = " . $dados['id_usuario'] . "," . 
                 "status_chamado = 'ABERTO'," .
@@ -229,9 +230,9 @@ class Chamado_model extends CI_Model {
                         echo "<div id=\"alerta\" class=\"alert alert-success alert-dismissible\">";
                         echo "<a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a>";
                         echo "<small class=\"float-right\">". date('G:i:s') . "</small>";
-                        echo "Foi importadp o chamado n. " 
+                        echo "Importação concluída! Chamado n. " 
                         . $p_id_chamado . "<br /><a href=". base_url() . "chamado/". 
-                        $p_id_chamado.">Ver agora -></a>";
+                        $p_id_chamado.">Ver agora</a>";
                         echo "</div>"; 
 
                         
@@ -258,8 +259,6 @@ class Chamado_model extends CI_Model {
                     if (!empty($lista_abrir_chamado)) {
 
                         $res = importar($this_model,$q_atualizaChamado,$nome_fila,$dados['id_usuario'],$dados['id_chamado']);
-
-                        var_dump($res);
 
                         if( $res === true ) {
 
@@ -294,7 +293,7 @@ class Chamado_model extends CI_Model {
 
                         $log = array(
                             'acao_evento' => 'INSERIR_CHAMADO',
-                            'desc_evento' => 'ID CHAMADO: ' . $id_chamado ,
+                            'desc_evento' => 'ID CHAMADO: ' . $dados['id_chamado'] ,
                             'id_usuario_evento' => $_SESSION['id_usuario']
                         );
                         
@@ -506,7 +505,7 @@ class Chamado_model extends CI_Model {
                 . $dados['id_chamado'] . "," . $dados['id_usuario'] . " ,NULL)"); //inserindo a interacao
 
 
-                echo '1';
+                //echo '1';
 
                 // ------------ LOG -------------------
 
@@ -534,9 +533,33 @@ class Chamado_model extends CI_Model {
         
     }
 
+    public function invalidaChamado($p_id_chamado) {
+
+        $this->db->query("update chamado set validade_chamado = 0 where id_chamado = " . $p_id_chamado);
+
+        $this->db->query("insert into alteracao_chamado ".
+                         "values(" . $p_id_chamado . 
+                         "," . $_SESSION['id_usuario'] .
+                         ",'<b>invalidou o chamado</b>',NOW()");
+
+         // ------------ LOG -------------------
+
+         $log = array(
+            'acao_evento' => 'INVALIDAR_CHAMADO',
+            'desc_evento' => 'ID CHAMADO: ' . $p_id_chamado,
+            'id_usuario_evento' => $_SESSION['id_usuario']
+        );
+        
+        $this->db->insert('evento', $log);
+
+        // -------------- /LOG ----------------
+
+
+    }
+
     public function buscaChamado($id_chamado, $status = '') {
 
-        $chamado = $this->db->query("select * from chamado where id_chamado = ". $id_chamado . " and id_fila_chamado is NULL")->row();
+        //$chamado = $this->db->query("select * from chamado where id_chamado = ". $id_chamado . " and id_fila_chamado is NULL")->row();
 
 
         // removida a verficaçao do solicitante, conforme solicitado
@@ -572,12 +595,12 @@ class Chamado_model extends CI_Model {
         return $result;
     }
 
-    public function buscaAnexo($id_chamado) {
+    // public function buscaAnexo($id_chamado) {
 
-        $q_buscaAnexos = "select nome_anexo from anexo where id_chamado_anexo = " . $id_chamado;
+    //     $q_buscaAnexos = "select nome_anexo from anexo where id_chamado_anexo = " . $id_chamado;
         
-        return $this->db->query($q_buscaAnexos)->row();
-    }
+    //     return $this->db->query($q_buscaAnexos)->row();
+    // }
 
 }
 

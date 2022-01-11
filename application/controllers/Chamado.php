@@ -164,6 +164,19 @@ class Chamado extends CI_Controller {
 
   }
 
+  public function invalidar_chamado() { 
+
+    $dados = array();
+
+    // campos
+
+    $dados['id_chamado'] =        $this->input->post("id_chamado");
+    $dados['id_usuario'] =        $_SESSION['id_usuario'];
+
+    $this->chamado_model->invalidaChamado($dados);
+
+  }
+
   public function listar_chamados_painel($id_fila = NULL) {
 
     $result_banco = $this->consultas_model->listaChamados($id_fila,$_SESSION['id_usuario']);

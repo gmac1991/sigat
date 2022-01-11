@@ -323,7 +323,7 @@
 
                 <div class="tab-pane" id="descricao" role="tabpanel" aria-labelledby="descricao-tab">
                     <div class="col-0 my-3">
-                        <textarea class="form-control" name="descricao" rows="10" disabled></textarea>
+                        <div name="descricao"></div>
                     </div>
                     <?php if ($anexos != NULL): ?>
                     <h4>Anexo</h4>

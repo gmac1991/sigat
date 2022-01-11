@@ -1308,7 +1308,7 @@ function carregaChamado(p_id_chamado, sem_patrimonios) {
 			$('input[name=telefone]').val(data.telefone_chamado);
 			$('input[name=nome_local]').val(data.nome_local);
 			$('input[name=id_fila_ant]').val(data.id_fila);
-			$('textarea[name=descricao]').val(data.descricao_chamado);
+			$('div[name=descricao]').html(UTF8.decode(data.descricao_chamado));
 
 			if (data.id_responsavel == null)  {
 				$('select[name=id_responsavel]').empty();
@@ -3163,7 +3163,21 @@ $("#btnAlteraPatrimoniosTriagem").click(function() {
 		listaVerificada = false;
 	
 	});
+
 	
+$("#btnInvalidaChamado").click(function() {
+
+	
+	$('#tblPatrimoniosAbertos tbody tr').remove();
+	$('#btnVerificaPatrimoniosTriagem').removeAttr('disabled');
+	$("#btnAlteraPatrimoniosEquip").hide();
+
+	$('#divTabelaPatrimonios').hide();
+	$('#divTabelaChamadosAbertos').hide();
+
+	listaVerificada = false;
+
+});
 	//------------------ SUBMIT DA TRIGEM --------------
 
 
