@@ -170,6 +170,192 @@ class Chamado_model extends CI_Model {
             
     }
     
+    public function importaChamado($dados) {
+        $msg = NULL;
+
+        $this_model = new self; //re-instancia a classe Chamado_model para utilizar seus métodos na função 'registrar'
+        
+        // if (!isset($dados['erros_upload'])) { //se não houver erros com o upload
+                       
+            $q_buscaIdLocal = "select id_local from local where nome_local = '". addslashes($dados['nome_local']) . "'";
+
+            //$r_id_solicitante = $this->db->query($q_buscaIdSolicitante);
+            $r_id_local = $this->db->query($q_buscaIdLocal);
+
+            if ($r_id_local->num_rows() > 0) { // validando local
+
+
+                
+                
+                $id_local = $r_id_local->row()->id_local;
+
+                $q_atualizaChamado = 
+                "update chamado set " .
+                "nome_solicitante_chamado = '" . $dados['nome_solicitante'] . "'," .
+                "telefone_chamado = " . $dados['telefone'] . "," .
+                "id_usuario_abertura_chamado = " . $dados['id_usuario'] . "," . 
+                "status_chamado = 'ABERTO'," .
+                "id_fila_chamado = " . $dados['id_fila'] . ",data_chamado = NOW() where id_chamado = " . $dados['id_chamado'];
+
+
+                $nome_fila = $this->db->query('select nome_fila from fila where id_fila = ' . $dados['id_fila'])->row()->nome_fila;
+
+                // removida a verficação do solicitante, conforme solicitado
+
+                // $anexo = FALSE;
+
+                // if(isset($dados['nome_anexo'])) {
+
+                //     $q_registraAnexo = "insert into anexo values(NULL, '" . $dados['nome_anexo'] . "', NOW(), ";
+                //     $anexo = TRUE;
+                // }
+
+                // $requerPatrimonio = $this->db->query("select * from fila where id_fila = " . $dados['id_fila'] 
+                // . " and requer_patrimonio_fila = 1");
+
+                // ------------ FUNCAO PARA IMPORTAR------------------ 
+
+                function importar($inst,$sql_insert,$p_nome_fila,$p_id_usuario, $p_id_chamado) {
+
+            
+
+                        $inst->db->query($sql_insert); //registrando o chamado
+
+                        // $id_novo_chamado = $inst->db->insert_id(); // buscando o ID do chamado recem aberto
+
+                        $inst->db->query('insert into interacao values(NULL, \'ABERTURA\', NOW(), \' abriu o chamado na fila <b>' //criando a interacao de abertura
+                        . $p_nome_fila . '</b>\',' . $p_id_chamado . ',' . $p_id_usuario . ',NULL)'); 
+
+                        echo "<div id=\"alerta\" class=\"alert alert-success alert-dismissible\">";
+                        echo "<a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a>";
+                        echo "<small class=\"float-right\">". date('G:i:s') . "</small>";
+                        echo "Foi importadp o chamado n. " 
+                        . $p_id_chamado . "<br /><a href=". base_url() . "chamado/". 
+                        $p_id_chamado.">Ver agora -></a>";
+                        echo "</div>"; 
+
+                        
+                    
+                        return true;
+                    
+                }
+
+                // ------------------------------------------------------
+
+
+                // if ($requerPatrimonio->num_rows() == 1 && $dados['id_fila'] != 6) { //checando se a fila precisa de patrimonio (bypass na fila Sol. Equip.)
+
+                    preg_match_all("/[1-9]\d{5}/",$dados['listaPatrimonios'], $patrimonios);  // separando os itens da lista em um array (6 digitos consecutivos)
+
+                    $lista_abrir_chamado = array();
+
+                    foreach ($patrimonios[0] as $patrimonio) { //patrimonios[0] é o vetor com a lista de patrimonios informados
+
+                        array_push($lista_abrir_chamado,$patrimonio);
+
+                    }
+
+                    if (!empty($lista_abrir_chamado)) {
+
+                        $res = importar($this_model,$q_atualizaChamado,$nome_fila,$dados['id_usuario'],$dados['id_chamado']);
+
+                        var_dump($res);
+
+                        if( $res === true ) {
+
+                            foreach($lista_abrir_chamado as $patrimonio) { //registrando na tabela patrimonio_chamado
+
+                                $busca_tag = $this->db->query("select ultima_tag_patrimonio from patrimonio_chamado where ultima_tag_patrimonio <> NULL 
+                                                                and num_patrimonio = " . $patrimonio .
+                                                                " order by data_registro_patrimonio asc limit 1");
+    
+                                if ($busca_tag->num_rows() == 1) {
+                                    $this->db->query("insert into patrimonio_chamado values('" . $patrimonio . 
+                                                        "', " . $dados['id_chamado'] . ", 'ABERTO', NULL," . $busca_tag->ultima_tag_patrimonio . ",NOW())");
+                                }
+    
+                                else {
+                                    $this->db->query("insert into patrimonio_chamado values('" . $patrimonio . "', " . $dados['id_chamado'] . ", 'ABERTO',NULL,NULL,NOW())");
+                                }
+    
+            
+                            }
+
+                        }
+
+                        else
+                            die($res);
+
+                        
+
+                        // if ($anexo) { $this->db->query($q_registraAnexo . $id_chamado . ")"); } // registrando anexo
+
+                        // ------------ LOG -------------------
+
+                        $log = array(
+                            'acao_evento' => 'INSERIR_CHAMADO',
+                            'desc_evento' => 'ID CHAMADO: ' . $id_chamado ,
+                            'id_usuario_evento' => $_SESSION['id_usuario']
+                        );
+                        
+                        $this->db->insert('evento', $log);
+
+                        // -------------- /LOG ----------------
+                    
+                    }
+
+                // } else {
+
+                    // $id_chamado = registrar($this_model,$q_registraChamado,$nome_fila,$dados['id_usuario']); //registrando o chamado
+
+                    // if ($anexo) { $this->db->query($q_registraAnexo . $id_chamado . ")"); } // registrando anexo
+
+
+                    // ------------ LOG -------------------
+
+                    // $log = array(
+                    //     'acao_evento' => 'INSERIR_CHAMADO',
+                    //     'desc_evento' => 'ID CHAMADO: ' . $id_chamado ,
+                    //     'id_usuario_evento' => $_SESSION['id_usuario']
+                    // );
+                    
+                    // $this->db->insert('evento', $log);
+
+                    // -------------- /LOG ----------------
+                // }
+                
+            } else {
+
+                $msg .= "<div id=\"alerta\" class=\"alert alert-warning alert-dismissible\">" .
+                "<a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a>" .
+                "Local inválido!" .
+                "</div>";
+
+                exit($msg);
+            }
+            
+
+                       
+                        
+        // } else {
+            
+        //     $msg .= "<div id=\"alerta\" class=\"alert alert-warning alert-dismissible\">";
+        //     $msg .= "<a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a>";
+        //     $msg .= "Ocorreram o(s) seguinte(s) problema(s) com o anexo:";
+        //     $msg .= "<ul>";
+            
+        //     foreach ($dados['erros_upload'] as $erro) {
+        //         $msg .= "<li>" . $erro . "</li>";
+        //     }
+            
+        //     $msg .= "</ul>";
+        //     $msg .= "</div>";
+
+        //     echo $msg;
+        // }
+            
+    }
+
     public function alteraChamado($dados) {
 
         $msg = NULL;

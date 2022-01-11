@@ -2892,6 +2892,7 @@ function carregaTriagem(p_id_chamado) {
 			//preencher os campos conforme o json
 			
 			$('input[name=nome_solicitante]').val(data.chamado.nome_solicitante_chamado);
+			$('input[name=id_chamado]').val(p_id_chamado);
 			$('div[name=descricao_triagem]').html(UTF8.decode(data.chamado.descricao_chamado));
 			
 			if (data.anexos_otrs.length > 0) {
@@ -2933,7 +2934,7 @@ async function criaTabelaPatrimoniosTriagem(vetor,url) {
 	var vetorPatrAbertoDesc = [];
 	var vetorPatrAbertoChamado = [];
 	
-	$('[for="descricao"]').append("<div class=\"spinner-border spinner-border-sm\" role=\"status\">&nbsp;&nbsp;<span class=\"sr-only\">Carregando...</span\></div>");
+	$('[for="descricao_triagem"]').append("<div class=\"spinner-border spinner-border-sm\" role=\"status\">&nbsp;&nbsp;<span class=\"sr-only\">Carregando...</span\></div>");
 	
 	
 	for (var item of vetor) { 
@@ -2980,7 +2981,7 @@ async function criaTabelaPatrimoniosTriagem(vetor,url) {
 	if (vetorPatrInv.length > 0) { //se houverem patrimonios invalidos...
 
 		$('#listaVerificada div').remove();
-		$('[for="descricao"] .spinner-border').remove();
+		$('[for="descricao_triagem"] .spinner-border').remove();
 		
 		vetorPatrInv.forEach(function (item){
 			$("#msgPatr").append("<div class=\"alert alert-warning alert-dismissible fade show\" role=\"alert\">Patrimônio inválido: <strong>" + item + "</strong><button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\"><span aria-hidden=\"true\">&times;</span></button></div>");
@@ -2988,12 +2989,13 @@ async function criaTabelaPatrimoniosTriagem(vetor,url) {
 		
 		$("#btnAlteraPatrimoniosTriagem").hide();
 		$('#btnVerificaPatrimoniosTriagem').show();
+		$('#btnVerificaPatrimoniosTriagem').removeAttr('disabled');
 		$('#divTabelaPatrimonios').hide();
 		
 
 	} else { //se não houverem patrimonios inválidos ...
 		
-		$('[for="descricao"] .spinner-border').remove();
+		$('[for="descricao_triagem"] .spinner-border').remove();
 
 		if (vetorPatrIns.length > 0) { // se houverem patrimonios inservie...
 
@@ -3010,6 +3012,7 @@ async function criaTabelaPatrimoniosTriagem(vetor,url) {
 			listaVerificada = false;
 
 			$('#btnRemovePatrimoniosTriagem').show();
+			$('#btnVerificaPatrimoniosTriagem').removeAttr('disabled');
 
 		}
 		
@@ -3030,6 +3033,7 @@ async function criaTabelaPatrimoniosTriagem(vetor,url) {
 			listaVerificada = false;
 		
 			$('#btnRemovePatrimoniosTriagem').show();
+			$('#btnVerificaPatrimoniosTriagem').removeAttr('disabled');
 		} 
 		if (vetorPatrOK.length > 0) { //se houverem patrimonios válidos...
 
@@ -3060,10 +3064,21 @@ async function criaTabelaPatrimoniosTriagem(vetor,url) {
 
 $("#btnVerificaPatrimoniosTriagem").click(function() {
 	
+	var listaTriagem;
+	
+	if (($("#chkSoSelecaoTriagem").is(':checked'))) {
 
-	var lista = $('[name=descricao]').val();
+		listaTriagem = window.getSelection().toString();
+	}
+	
+	else {
+		
+		var listaTriagem = $('[name=descricao_triagem]').html();
+	}
 
-	var vetor = lista.match(/[1-9]\d{5}/g);
+	
+
+	const vetor = listaTriagem.match(/[1-9]\d{5}/g);
 
 	if (vetor != null) {
 		
@@ -3098,7 +3113,7 @@ $("#btnVerificaPatrimoniosTriagem").click(function() {
 
 		if (duplicado == true) {
 
-			$('[for="descricao"] .spinner-border').remove();
+			$('[for="descricao_triagem"] .spinner-border').remove();
 			
 			
 			$("#msgPatr").append("<div class=\"alert alert-warning alert-dismissible fade show\" role=\"alert\">Existem patrimônios duplicados na lista!<button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\"><span aria-hidden=\"true\">&times;</span></button></div>");
@@ -3106,6 +3121,7 @@ $("#btnVerificaPatrimoniosTriagem").click(function() {
 			$("#btnAlteraPatrimoniosTriagem").hide();
 			$('#btnVerificaPatrimoniosTriagem').show();
 			$('#divTabelaPatrimonios').hide();
+			$('#btnVerificaPatrimoniosTriagem').removeAttr('disabled');
 		}
 		else {
 			
@@ -3151,7 +3167,7 @@ $("#btnAlteraPatrimoniosTriagem").click(function() {
 	//------------------ SUBMIT DA TRIGEM --------------
 
 
-$('#frmRegistrarChamado').on('submit', 
+$('#frmImportarChamado').on('submit', 
 
 function(e) {
 	
@@ -3167,24 +3183,28 @@ function(e) {
 				minlength: 3,
 			},
 			listaPatrimonios: {
-				required: function() {
-					if ($('#flagPrecisaPatrimonio').val() == 1 && $('#id_fila').val() != 6) { //bypass da fila Solicitacao de Equipamentos
-						return true;
-					} else {
-						return false;
-					}
-				},
+				// required: function() {
+				// 	if ($('#flagPrecisaPatrimonio').val() == 1 && $('#id_fila').val() != 6) { //bypass da fila Solicitacao de Equipamentos
+				// 		return true;
+				// 	} else {
+				// 		return false;
+				// 	}
+				// },
+				required: true,
 				minlength: 6,
-				maxlength: 2000
+				// maxlength: 2000
 			},
 			descricao: {
 				required: true,
-				maxlength: 2000,
+				// maxlength: 2000,
 				minlength: 10,
 				normalizer: function(value) {
 					return $.trim(value);
 				}
-			}
+			},
+			id_fila: {
+				required: true,
+			},
 		},
 		messages: {
 			nome_solicitante: "Campo obrigatório!",
@@ -3200,16 +3220,22 @@ function(e) {
 				maxlength: "Tamanha máximo excedido!"
 			},
 
-			listaPatrimonios: {
-				required: "Campo obrigatório!",
-				minlength: "Informe pelo menos 1 patrimônio!",
-				maxlength: "Tamanha máximo excedido!"
+			// listaPatrimonios: {
+			// 	required: "Campo obrigatório!",
+			// 	minlength: "Informe pelo menos 1 patrimônio!",
+			// 	maxlength: "Tamanha máximo excedido!"
+			// },
+
+			id_fila: {
+				required: "Selecione uma fila válida!",
 			},
 		},
 		submitHandler: function(form) {
-			var script_url = base_url + "chamado/registrar_chamado";
+			var script_url = base_url + "chamado/importar_chamado";
 	
 			var dados = new FormData(form);
+
+			dados.append('listaPatrimonios',vetorListaOK)
 			
 			$.ajax({
 					
@@ -3221,13 +3247,13 @@ function(e) {
 					processData: false,
 					beforeSend: function () {
 
-						if (listaVerificada == false && $( "#flagPrecisaPatrimonio" ).val() == 1) {
+						if (listaVerificada == false /* && $( "#flagPrecisaPatrimonio" ).val() == 1 */) {
 
 							$("#msg div[id=alerta]").remove();
 							
 							$("#msg").append("<div id=\"alerta\" class=\"alert alert-warning alert-dismissible\">");
 							$("#alerta").append("<a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a>É necessário verificar a lista de patrimônios!");
-							$("#btnVerificaPatrimonios").focus();
+							$("#btnVerificaPatrimoniosTriagem").focus();
 
 							targetOffset = $('#msg').offset().top;
 			
@@ -3240,7 +3266,7 @@ function(e) {
 
 						
 
-						$('#btnAbrirChamado').prop("disabled","true");
+						$('#btnImportarChamado').prop("disabled","true");
 						
 					},
 				success: function(msg) {
@@ -3251,7 +3277,7 @@ function(e) {
 
 					listaVerificada = false;
 
-					if (msg.includes('anexo') == false && msg.includes('Local') == false) {
+					if (/*msg.includes('anexo') == false && */ msg.includes('Local') == false) {
 
 						$(form).trigger('reset'); //só resetar o form se não houver erros no upload ou no anexo
 					}
@@ -3262,39 +3288,39 @@ function(e) {
 							$('input[name=nome_local').focus();
 						}
 
-						if (msg.includes('anexo')) {
+						// if (msg.includes('anexo')) {
 
-							$('input[name=anexo').focus();
-						}
+						// 	$('input[name=anexo').focus();
+						// }
 
 						listaVerificada = true;
-						$('#btnAbrirChamado').removeAttr("disabled");
+						$('#btnImportarChamado').removeAttr("disabled");
 					}
 					
 					
-					if ($( "#flagPrecisaPatrimonio" ).val() == 0) {
+					// if ($( "#flagPrecisaPatrimonio" ).val() == 0) {
 
-						timeout = setTimeout(function() {
-							$('#btnAbrirChamado').removeAttr("disabled");
+					// 	timeout = setTimeout(function() {
+					// 		$('#btnAbrirChamado').removeAttr("disabled");
 			
-						},10000);
-					}
+					// 	},10000);
+					// }
 
-					else {
+					// else {
 
-						$('#btnAbrirChamado').removeAttr("disabled");
+						$('#btnImportarChamado').removeAttr("disabled");
 
 						if (listaVerificada == false) {
 
 							$('#tblPatrimonios tr').remove();
-							$('#btnVerificaPatrimonios').show();
+							$('#btnVerificaPatrimoniosTriagem').show();
 							$("#btnAlteraPatrimonios").hide();
 							$('#txtPatrimonios').removeAttr('readonly');
 							$("#txtPatrimonios").focus();
 							$( "#divTabelaPatrimonios" ).hide();
 						}
 							
-					}
+					// }
 
 					targetOffset = $('#msg').offset().top;
 			
@@ -3318,7 +3344,7 @@ function(e) {
 						scrollTop: targetOffset - 100
 					}, 200);
 
-					$('#btnAbrirChamado').removeAttr("disabled");
+					$('#btnImportarChamado').removeAttr("disabled");
 				}
 	
 			});
