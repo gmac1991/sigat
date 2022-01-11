@@ -27,7 +27,7 @@
   <hr />
   <div id="msg"></div>
 
-  <form enctype="multipart/form-data" method="post" id="frmRegistrarChamado" class="mb-5">
+  <form enctype="multipart/form-data" method="post" id="frmImportarChamado" class="mb-5">
   
       
 	  
@@ -141,8 +141,6 @@
 
   
     <div class="row">
-      
-      <input type="hidden" id="flagPrecisaPatrimonio" value=""/>
       <input type="hidden" name="id_usuario" value=""/>
       <div class="form-group col text-right">
         <button type="submit" id="btnImportarChamado" class="btn btn-success"><i class="fas fa-file-import"></i> Importar Chamado</button>
