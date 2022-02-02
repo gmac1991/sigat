@@ -231,8 +231,7 @@ class Chamado_model extends CI_Model {
                         echo "<a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a>";
                         echo "<small class=\"float-right\">". date('G:i:s') . "</small>";
                         echo "Importação concluída! Chamado n. " 
-                        . $p_id_chamado . "<br /><a href=". base_url() . "chamado/". 
-                        $p_id_chamado.">Ver agora</a>";
+                        . $p_id_chamado . "<br /><a href=". base_url('/painel?v=triagem') . ">Voltar para o painel</a>";
                         echo "</div>"; 
 
                         
@@ -533,14 +532,15 @@ class Chamado_model extends CI_Model {
         
     }
 
-    public function invalidaChamado($p_id_chamado) {
+    public function devolveChamado($p_id_chamado) {
 
-        $this->db->query("update chamado set validade_chamado = 0 where id_chamado = " . $p_id_chamado);
+        $this->db->query("delete from chamado where id_chamado = " . $p_id_chamado);
+        $this->db->query("delete from anexos_otrs where id_chamado_sigat = " . $p_id_chamado);
 
         $this->db->query("insert into alteracao_chamado ".
-                         "values(" . $p_id_chamado . 
+                         "values(NULL," . $p_id_chamado . 
                          "," . $_SESSION['id_usuario'] .
-                         ",'<b>invalidou o chamado</b>',NOW()");
+                         ",'<b>invalidou o chamado</b>',NOW())");
 
          // ------------ LOG -------------------
 
@@ -555,6 +555,13 @@ class Chamado_model extends CI_Model {
         // -------------- /LOG ----------------
 
 
+    }
+
+    public function buscaTicket($id_chamado) {
+
+        $result = $this->db->query("select ticket_chamado from chamado where id_chamado = " . $id_chamado);
+
+        return $result->row()->ticket_chamado;
     }
 
     public function buscaChamado($id_chamado, $status = '') {

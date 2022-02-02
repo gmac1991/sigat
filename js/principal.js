@@ -82,6 +82,14 @@ $(function() {
 	// TRIAGEM
 	triagem(); //incializa o painel de triagem
 	
+	const queryString = window.location.search;
+	const urlParams = new URLSearchParams(queryString);
+	const view = urlParams.get('v');
+
+	if (view == 'triagem') {
+
+		$('#triagem-tab').tab('show');
+	}
 	
 	/* ---- Pagina de abertura de chamado ---*/
 	
@@ -1088,6 +1096,7 @@ $('#chkAnexo').on('click', function() {
 
 
 });
+
 
 //------------------ SUBMIT DA ABERTURA DE CHAMADO --------------
 
@@ -3153,21 +3162,6 @@ $("#btnRemovePatrimoniosTriagem").click(function() {
 $("#btnAlteraPatrimoniosTriagem").click(function() {
 
 		
-		$('#tblPatrimoniosAbertos tbody tr').remove();
-		$('#btnVerificaPatrimoniosTriagem').removeAttr('disabled');
-		$("#btnAlteraPatrimoniosEquip").hide();
-	
-		$('#divTabelaPatrimonios').hide();
-		$('#divTabelaChamadosAbertos').hide();
-	
-		listaVerificada = false;
-	
-	});
-
-	
-$("#btnInvalidaChamado").click(function() {
-
-	
 	$('#tblPatrimoniosAbertos tbody tr').remove();
 	$('#btnVerificaPatrimoniosTriagem').removeAttr('disabled');
 	$("#btnAlteraPatrimoniosEquip").hide();
@@ -3176,9 +3170,34 @@ $("#btnInvalidaChamado").click(function() {
 	$('#divTabelaChamadosAbertos').hide();
 
 	listaVerificada = false;
-
+	
 });
-	//------------------ SUBMIT DA TRIGEM --------------
+
+	
+$("#btnDevolveChamado").click(function() {
+
+	if(confirm('Deseja realmente devolver esse ticket? Isso não poderá ser desfeito!'))
+	{
+
+		$.ajax({
+			url: base_url + 'chamado/devolver_chamado',
+			async: true,
+			method: 'post',
+			data: { id_chamado: g_id_chamado },
+			beforeSend: function() {
+
+				$("#frmImportarChamado").html('');
+
+			},
+			success: function(data) {
+
+				document.location.href = base_url + 'painel?v=triagem'
+			}
+	
+		});
+	}
+});	
+//------------------ SUBMIT DA TRIGEM --------------
 
 
 $('#frmImportarChamado').on('submit', 
@@ -3193,7 +3212,7 @@ function(e) {
 			nome_local: "required",
 			telefone: {
 				required: true, 
-				digits: true,
+				//digits: true,
 				minlength: 3,
 			},
 			listaPatrimonios: {
@@ -3225,7 +3244,7 @@ function(e) {
 			nome_local: "Campo obrigatório!",
 			telefone: {
 				required: "Campo obrigatório!",
-				digits: "Somente dígitos (0-9)!",
+				//digits: "Somente dígitos (0-9)!",
 				minlength: "Mínimo 3 dígitos!"
 			} ,
 			descricao: {
@@ -3343,6 +3362,8 @@ function(e) {
 					}, 200);
 
 					msg = null;
+
+					$('#divTriagem').html('');
 	
 				
 				},

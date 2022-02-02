@@ -164,16 +164,55 @@ class Chamado extends CI_Controller {
 
   }
 
-  public function invalidar_chamado() { 
+  public function devolver_chamado() { 
 
     $dados = array();
 
     // campos
 
-    $dados['id_chamado'] =        $this->input->post("id_chamado");
-    $dados['id_usuario'] =        $_SESSION['id_usuario'];
+    $id_chamado =        $this->input->post("id_chamado");
+   // $dados['id_usuario'] =        $_SESSION['id_usuario'];
 
-    $this->chamado_model->invalidaChamado($dados);
+    $this->chamado_model->devolveChamado($id_chamado);
+
+    $ticket = $this->chamado_model->buscaTicket($id_chamado);
+
+    $mail = new PHPMailer(true);
+
+    try {
+        //Server settings
+        $mail->SMTPDebug = SMTP::DEBUG_SERVER;                      //Enable verbose debug output
+        $mail->isSMTP();                                            //Send using SMTP
+        $mail->Host       = 'webmail.sorocaba.sp.gov.br';                     //Set the SMTP server to send through
+        $mail->SMTPAuth   = true;                                   //Enable SMTP authentication
+        $mail->Username   = $_SESSION["usi"];                     //SMTP username
+        $mail->Password   = $_SESSION["psi"];                               //SMTP password
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;            //Enable implicit TLS encryption
+        $mail->Port       = 587;                                    //TCP port to connect to; use 587 if you have set `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
+
+        //Recipients
+        $mail->setFrom('sigat@sorocaba.sp.gov.br', 'SIGAT');
+        $mail->addAddress('informatica@sorocaba.sp.gov.br');     //Add a recipient
+        // $mail->addAddress('ellen@example.com');               //Name is optional
+        // $mail->addReplyTo('info@example.com', 'Information');
+        // $mail->addCC('cc@example.com');
+        // $mail->addBCC('bcc@example.com');
+
+        // //Attachments
+        // $mail->addAttachment('/var/tmp/file.tar.gz');         //Add attachments
+        // $mail->addAttachment('/tmp/image.jpg', 'new.jpg');    //Optional name
+
+        //Content
+        $mail->isHTML(true);                                  //Set email format to HTML
+        $mail->Subject = 'TICKET RECUSADO ' . $ticket;
+        $mail->Body    = 'Este ticket foi recusado pelo SIGAT. <br>Esta mensagem e automatica. <br> DEVOLUCAO_SIGAT';
+        $mail->AltBody = 'Este ticket foi recusado pelo SIGAT. Esta mensagem e automatica. DEVOLUCAO__SIGAT';
+
+        $mail->send();
+        //header("Location: " . base_url('painel?v=triagem'));
+    } catch (Exception $e) {
+        echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+    }
 
   }
 

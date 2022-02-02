@@ -9,17 +9,17 @@ class Backend extends CI_Controller {
     function __construct() {
         parent::__construct();
         $this->load->library('consulta_ldap');
-        $this->load->library('encryption');
-        $this->encryption->initialize(array('driver' => 'openssl'));
+        /* $this->load->library('encryption');
+        $this->encryption->initialize(array('driver' => 'openssl')); */
     }
 
     public function solicitantes() {
 
         if (isset($_SESSION['id_usuario'])) {
             $termo = $this->input->get('q');
-            $usr = $this->encryption->decrypt($_SESSION["usi"]);
-            $pass = $this->encryption->decrypt($_SESSION["psi"]);          
-            $ldap = new Consulta_LDAP($usr,$pass);
+            /* $usr = $this->encryption->decrypt($_SESSION["usi"]);
+            $pass = $this->encryption->decrypt($_SESSION["psi"]);   */        
+            $ldap = new Consulta_LDAP($_SESSION["usi"],$_SESSION["psi"]);
             $lista = array();
             $lista = $ldap->buscaSolicitantes($termo);
             if (!empty($lista)) {
@@ -779,6 +779,8 @@ class Backend extends CI_Controller {
 
 
     }
+
+   
 
 }
 

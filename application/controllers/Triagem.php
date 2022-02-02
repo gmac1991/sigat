@@ -75,7 +75,7 @@ public function listar_triagem() {
                               4 => $linha->ticket_chamado,
                               5 => $linha->status_chamado,
                               6 => "<a href=\"" . base_url('triagem/' . $linha->id_chamado) . 
-                              "\" rel=\"noopener\" target=\"_blank\" role=\"button\"" .
+                              "\" rel=\"noopener\" role=\"button\"" .
                               " class=\"d-block btn btn-sm btn-info\"><i class=\"fas fa-search\"></i></a> "); //detalhes
 
     }

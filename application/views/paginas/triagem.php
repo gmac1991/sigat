@@ -18,14 +18,25 @@
 
 <nav aria-label="breadcrumb">
       <ol class="breadcrumb">
-        <li class="breadcrumb-item active"><a href="<?= base_url('painel'); ?>">Painel</a></li>
-        <li class="breadcrumb-item" aria-current="page">Triagem</li>
+        <li class="breadcrumb-item active"><a href="<?= base_url('painel?v=triagem'); ?>">Painel</a></li>
+        <li class="breadcrumb-item" aria-current="page">Triagem #<?= $triagem->id_chamado; ?></li>
       </ol>
 </nav>
 <div class="container py-2">
-  <h2>Triagem #<?= $triagem->id_chamado; ?> <small>(<?= $triagem->ticket_chamado; ?>)</small></h2>
-  <hr />
   <div id="msg"></div>
+</div>
+<div id="divTriagem" class="container py-2">
+<div class="row">
+    <div class="col-8">
+      <h2>Triagem #<?= $triagem->id_chamado; ?> <small>(<?= $triagem->ticket_chamado; ?>)</small></h2> 
+    </div>
+    <div class="col-4">
+      <button type="button" class="btn btn-warning" id="btnDevolveChamado"><i class="fas fa-file-export"></i> Devolver Ticket</button>
+    </div>
+  </div>
+  
+  <hr />
+  
 
   <form enctype="multipart/form-data" method="post" id="frmImportarChamado" class="mb-5">
   
@@ -33,7 +44,7 @@
 	  
 	  <div class="row">
         <div class="form-group col">
-            <div name="descricao_triagem" class="border rounded p-2"></div>
+            <div name="descricao_triagem" class="border rounded p-2 overflow-auto" style="max-height: 450px;"></div>
         
 			
 		</div>
@@ -48,11 +59,11 @@
           <hr>
           <div id="msgPatr"></div>
           <div class="text-right">
-            <input type="checkbox" class="form-check-input align-middle" id="chkSoSelecaoTriagem">
+            <input type="checkbox" class="form-check-input align-middle" id="chkSoSelecaoTriagem" checked>
             <label class="form-check-label" for="chkSoSelecaoTriagem">Somente seleção</label>
             
             <button type="button" class="btn btn-primary" id="btnVerificaPatrimoniosTriagem"><i class="fas fa-search"></i> Verificação automática</button>
-            <button type="button" class="btn btn-danger" id="btnInvalidaChamado"><i class="far fa-trash-alt"></i> Invalidar Chamado</button>
+           
             <!-- <button type="button" class="btn btn-secondary" id="btnInsertManualTriagem"><i class="fas fa-pencil-alt"></i> Inserção manual</button> -->
         </div>
         

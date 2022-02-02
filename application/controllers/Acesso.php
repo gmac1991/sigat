@@ -61,14 +61,18 @@ class Acesso extends CI_Controller {
 
     if ($ldap->validaLogin()) {
 
-      $this->load->library('encryption');
+      /* $this->load->library('encryption');
       $this->encryption->initialize(array('driver' => 'openssl'));
       
       $_SESSION["usi"] = $this->encryption->encrypt($dados['login_usuario']);
-      $_SESSION["psi"] = $this->encryption->encrypt($dados['senha_usuario']);
+      $_SESSION["psi"] = $this->encryption->encrypt($dados['senha_usuario']); */
+	  
+	  $_SESSION["usi"] = $dados['login_usuario'];
+	  $_SESSION["psi"] = $dados['senha_usuario'];
+		
 
       $usuario = $this->usuario_model->validaUsuario($dados);
-
+		
     }
 
 
@@ -77,6 +81,7 @@ class Acesso extends CI_Controller {
 
       /*$fila_usuario = $this->usuario_model->buscaUsuario($_SESSION['id_usuario'])->fila_usuario;
       header('Location: ' . base_url('painel/' . $fila_usuario));*/
+	  
       header('Location: ' . base_url('painel'));
 
       // ------------ LOG -------------------

@@ -4,7 +4,7 @@ class Consulta_LDAP {
 
     public $usuario = '';
     private $senha = '';
-    private $servidor = '172.16.1.8';
+    private $servidor = '10.28.10.13';
     private $dn = "DC=PREFEITURA,DC=LOCAL";
     private $ad = NULL;
 

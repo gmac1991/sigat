@@ -1,14 +1,31 @@
     <div class="content m-3">
 	
 		<ul class="nav nav-tabs" role="tablist">
-		  <li class="nav-item">
-			<a class="nav-link active" id="painel-tab" data-toggle="tab" href="#painel" aria-controls="painel" aria-selected="true">Painel de chamados</a>
-		  </li>
-		  <li class="nav-item">
-			<a class="nav-link" id="triagem-tab"  data-toggle="tab" href="#triagem" aria-controls="triagem" aria-selected="true">Painel de triagem</a>
-		  </li>
+			<li class="nav-item">
+				<a class="nav-link" id="triagem-tab"  data-toggle="tab" href="#triagem" aria-controls="triagem" aria-selected="true">Triagem</a>
+		 	</li>
+			<li class="nav-item">
+				<a class="nav-link active" id="painel-tab" data-toggle="tab" href="#painel" aria-controls="painel" aria-selected="true">Chamados</a>
+			</li>
 		</ul>
 		<div class="tab-content mt-3">
+		<div class="tab-pane fade show " id="triagem" role="tabpanel" aria-labelledby="triagem-tab">
+			<div class="mb-5">
+				<table id="tblTriagem" style="width:100%" class="display">
+					<thead >
+					<tr>
+						<th>Número</th>
+						<th>Solicitante</th>
+						<th>E-mail</th>
+						<th>Data de abertura</th>
+						<th>Ticket OTRS</th>		
+						<th>Status</th>
+						<th>&nbsp;</th>
+					</tr>
+					</thead>
+				</table>
+			</div>	
+		  </div>
 		  <div class="tab-pane fade show active" id="painel" role="tabpanel" aria-labelledby="painel-tab">
 			<a class="btn btn-primary" href="<?= base_url('chamado') . "/abrir" ?>" role="button"><i class="far fa-file"></i> Novo Chamado</a>
 			<button class="btn btn-info" id="btnChamados" href="#" role="button" onclick="painelEncerrados(0)">
@@ -44,23 +61,7 @@
 				</table>
 			</div>	
 		  </div>
-		  <div class="tab-pane fade show " id="triagem" role="tabpanel" aria-labelledby="triagem-tab">
-			<div class="mb-5">
-				<table id="tblTriagem" style="width:100%" class="display">
-					<thead >
-					<tr>
-						<th>Número</th>
-						<th>Solicitante</th>
-						<th>E-mail</th>
-						<th>Data de abertura</th>
-						<th>Ticket OTRS</th>		
-						<th>Status</th>
-						<th>&nbsp;</th>
-					</tr>
-					</thead>
-				</table>
-			</div>	
-		  </div>
+		  
 		</div>
 		
     </div>
