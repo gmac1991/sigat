@@ -177,6 +177,7 @@ switch (ENVIRONMENT)
  * Un-comment the $assign_to_config array below to use this feature
  */
 	$assign_to_config['versao'] = '0.9.9';
+	$assign_to_config['caminho_termos'] = './termos/';
 
 
 

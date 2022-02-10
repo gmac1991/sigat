@@ -22,6 +22,11 @@
         <li class="breadcrumb-item" aria-current="page">Triagem #<?= $triagem->id_chamado; ?></li>
       </ol>
 </nav>
+
+
+
+
+
 <div class="container py-2">
   <div id="msg"></div>
 </div>
@@ -156,7 +161,7 @@
             <input type="text" maxlength="15" class="form-control col-4" name="telefone" aria-describedby="" placeholder="">
             <br />
             <label for="local">Local</label>
-            <input type="text" class="form-control col-8" name="nome_local" id="listaLocais">
+            <input type="text" class="form-control col-8" name="nome_local" id="listaLocais" data-toggle="popover">
         </div>
 
     </div>

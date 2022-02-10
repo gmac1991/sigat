@@ -27,10 +27,10 @@
 			</div>	
 		  </div>
 		  <div class="tab-pane fade show active" id="painel" role="tabpanel" aria-labelledby="painel-tab">
-			<a class="btn btn-primary" href="<?= base_url('chamado') . "/abrir" ?>" role="button"><i class="far fa-file"></i> Novo Chamado</a>
-			<button class="btn btn-info" id="btnChamados" href="#" role="button" onclick="painelEncerrados(0)">
-			<i class="fas fa-binoculars"></i> Chamados Encerrados</button>
-			<button class="btn btn-info" href="#" role="button" disabled><i class="fas fa-search"></i> Pesquisar</button>
+			
+			<!-- <button class="btn btn-info" id="btnChamados" href="#" role="button" onclick="painelEncerrados(0)">
+			<i class="fas fa-binoculars"></i> Chamados Encerrados</button> -->
+			
 			
 			<div class="form-group d-inline-flex float-right">	
 				<label for="id_fila" class="align-middle"><strong>Fila&nbsp;</strong></label>
@@ -43,12 +43,12 @@
 					
 				</select>
 			</div>
-			<hr />
+			
 			<div class="mb-5">
 				<table id="tblPainel" style="width:100%" class="display">
 					<thead >
 					<tr>
-						<th>Número</th>
+						<th>Ticket</th>
 						<th>Solicitante</th>
 						<th>Local</th>
 						<th>Data de abertura</th>

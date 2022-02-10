@@ -52,7 +52,7 @@ class Interacao extends CI_Controller {
         
         $config = array();
         
-        $config['upload_path']          = './termos/';
+        $config['upload_path']          = $this->config->item('caminho_termos');
         $config['overwrite']            = TRUE;
         $config['allowed_types']        = 'pdf'; //tipos de arquivos permitidos
         $config['max_size']             = 5000; //tamanho maximo: 5 Megabytes
@@ -81,7 +81,7 @@ class Interacao extends CI_Controller {
 
             $config = array();
 
-            $config['upload_path']          = './termos/';
+            $config['upload_path']          = $this->config->item('caminho_termos');
             $config['overwrite']            = TRUE;
             $config['allowed_types']        = 'pdf'; //tipos de arquivos permitidos
             $config['max_size']             = 5000; //tamanho maximo: 5 Megabytes

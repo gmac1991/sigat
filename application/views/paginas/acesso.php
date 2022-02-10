@@ -63,9 +63,13 @@
         <script type="text/javascript">
             $('#frmAcesso').on('submit',function(e) {
 
-            if ($('#frmAcesso input[name=login_usuario]').val() != '' || $('#frmAcesso input[name=senha_usuario]').val() != '') {
+            if ($('#frmAcesso input[name=login_usuario]').val() != '' && $('#frmAcesso input[name=senha_usuario]').val() != '') {
+                
+                $('#frmAcesso button').attr('disabled');
                 
                 return;
+                
+            } else {
                 
             }
 

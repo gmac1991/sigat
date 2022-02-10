@@ -2,7 +2,7 @@
 
 class Consulta_LDAP {
 
-    public $usuario = '';
+    private $usuario = '';
     private $senha = '';
     private $servidor = '10.28.10.13';
     private $dn = "DC=PREFEITURA,DC=LOCAL";
@@ -27,7 +27,7 @@ class Consulta_LDAP {
     
         if ($bind) {
 
-            ldap_unbind($this->ad);
+            ldap_unbind($this->ad);   
 
             return TRUE;
         }

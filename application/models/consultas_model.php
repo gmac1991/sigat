@@ -12,7 +12,7 @@ class Consultas_model extends CI_Model {
         $nivel_usuario = $this->db->query('select autorizacao_usuario from usuario where id_usuario = ' . $id_usuario)->row()->autorizacao_usuario;
 
 
-        $q = "select id_chamado, id_fila_chamado, nome_solicitante_chamado, 
+        $q = "select id_chamado, ticket_chamado, id_fila_chamado, nome_solicitante_chamado, 
         (select nome_local from local where id_local = id_local_chamado) as nome_local, 
 		data_chamado, 
         (select usuario.nome_usuario 

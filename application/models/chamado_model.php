@@ -329,6 +329,7 @@ class Chamado_model extends CI_Model {
                 "Local inválido!" .
                 "</div>";
 
+
                 exit($msg);
             }
             
@@ -504,7 +505,7 @@ class Chamado_model extends CI_Model {
                 . $dados['id_chamado'] . "," . $dados['id_usuario'] . " ,NULL)"); //inserindo a interacao
 
 
-                //echo '1';
+                echo '1';
 
                 // ------------ LOG -------------------
 

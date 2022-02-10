@@ -204,7 +204,7 @@ class Chamado extends CI_Controller {
 
         //Content
         $mail->isHTML(true);                                  //Set email format to HTML
-        $mail->Subject = 'TICKET RECUSADO ' . $ticket;
+        $mail->Subject = 'DEVOLUÇÃO ' . $ticket;
         $mail->Body    = 'Este ticket foi recusado pelo SIGAT. <br>Esta mensagem e automatica. <br> DEVOLUCAO_SIGAT';
         $mail->AltBody = 'Este ticket foi recusado pelo SIGAT. Esta mensagem e automatica. DEVOLUCAO__SIGAT';
 
@@ -257,7 +257,7 @@ class Chamado extends CI_Controller {
 			$nome_local .= " <span class=\"badge badge-success\" title=\"Entrega\"><i class=\"fas fa-truck\"></i></span>"; //inserindo badge de entrega
 	
 
-		$lista_painel['data'][] = array(0 => $linha->id_chamado,
+		$lista_painel['data'][] = array(0 => $linha->ticket_chamado,
                               1 => $linha->nome_solicitante_chamado,
                               2 => $nome_local,
                               3 => $linha->data_chamado,

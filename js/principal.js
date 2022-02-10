@@ -1098,186 +1098,191 @@ $('#chkAnexo').on('click', function() {
 });
 
 
+
+
+
+
+
 //------------------ SUBMIT DA ABERTURA DE CHAMADO --------------
 
 
-$('#frmAbrirChamado').on('submit', 
+// $('#frmAbrirChamado').on('submit', 
 
-function(e) {
+// function(e) {
 	
-	e.preventDefault();
+// 	e.preventDefault();
 	
-	}).validate ({
-		rules: {
-			nome_solicitante: "required",
-			nome_local: "required",
-			telefone: {
-				required: true, 
-				digits: true,
-				minlength: 3,
-			},
-			listaPatrimonios: {
-				required: true,
-				// required: function() {
-				// 	if ($('#flagPrecisaPatrimonio').val() == 1 && $('#id_fila').val() != 6) { //bypass da fila Solicitacao de Equipamentos
-				// 		return true;
-				// 	} else {
-				// 		return false;
-				// 	}
-				// },
-				minlength: 6,
-				maxlength: 2000
-			},
-			descricao: {
-				required: true,
-				maxlength: 2000,
-				minlength: 10,
-				normalizer: function(value) {
-					return $.trim(value);
-				}
-			}
-		},
-		messages: {
-			nome_solicitante: "Campo obrigatório!",
-			nome_local: "Campo obrigatório!",
-			telefone: {
-				required: "Campo obrigatório!",
-				digits: "Somente dígitos (0-9)!",
-				minlength: "Mínimo 3 dígitos!"
-			} ,
-			descricao: {
-				required: "Campo obrigatório!",
-				minlength: "Descrição insuficiente!",
-				maxlength: "Tamanha máximo excedido!"
-			},
+// 	}).validate ({
+// 		rules: {
+// 			nome_solicitante: "required",
+// 			nome_local: "required",
+// 			telefone: {
+// 				required: true, 
+// 				digits: true,
+// 				minlength: 3,
+// 			},
+// 			listaPatrimonios: {
+// 				required: true,
+// 				// required: function() {
+// 				// 	if ($('#flagPrecisaPatrimonio').val() == 1 && $('#id_fila').val() != 6) { //bypass da fila Solicitacao de Equipamentos
+// 				// 		return true;
+// 				// 	} else {
+// 				// 		return false;
+// 				// 	}
+// 				// },
+// 				minlength: 6,
+// 				maxlength: 2000
+// 			},
+// 			descricao: {
+// 				required: true,
+// 				maxlength: 2000,
+// 				minlength: 10,
+// 				normalizer: function(value) {
+// 					return $.trim(value);
+// 				}
+// 			}
+// 		},
+// 		messages: {
+// 			nome_solicitante: "Campo obrigatório!",
+// 			nome_local: "Campo obrigatório!",
+// 			telefone: {
+// 				required: "Campo obrigatório!",
+// 				digits: "Somente dígitos (0-9)!",
+// 				minlength: "Mínimo 3 dígitos!"
+// 			} ,
+// 			descricao: {
+// 				required: "Campo obrigatório!",
+// 				minlength: "Descrição insuficiente!",
+// 				maxlength: "Tamanha máximo excedido!"
+// 			},
 
-			listaPatrimonios: {
-				required: "Campo obrigatório!",
-				minlength: "Informe pelo menos 1 patrimônio!",
-				maxlength: "Tamanha máximo excedido!"
-			},
-		},
-		submitHandler: function(form) {
-			var script_url = base_url + "chamado/registrar_chamado";
+// 			listaPatrimonios: {
+// 				required: "Campo obrigatório!",
+// 				minlength: "Informe pelo menos 1 patrimônio!",
+// 				maxlength: "Tamanha máximo excedido!"
+// 			},
+// 		},
+// 		submitHandler: function(form) {
+// 			var script_url = base_url + "chamado/registrar_chamado";
 	
-			var dados = new FormData(form);
+// 			var dados = new FormData(form);
 			
-			$.ajax({
+// 			$.ajax({
 					
-					url: script_url,
-					type: 'POST',
-					data: dados,
-					contentType: false,
-					cache: false,
-					processData: false,
-					beforeSend: function () {
+// 					url: script_url,
+// 					type: 'POST',
+// 					data: dados,
+// 					contentType: false,
+// 					cache: false,
+// 					processData: false,
+// 					beforeSend: function () {
 
-						if (listaVerificada == false /*&& $( "#flagPrecisaPatrimonio" ).val() == 1*/) {
+// 						if (listaVerificada == false /*&& $( "#flagPrecisaPatrimonio" ).val() == 1*/) {
 
-							$("#msg div[id=alerta]").remove();
+// 							$("#msg div[id=alerta]").remove();
 							
-							$("#msg").append("<div id=\"alerta\" class=\"alert alert-warning alert-dismissible\">");
-							$("#alerta").append("<a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a>É necessário verificar a lista de patrimônios!");
-							$("#btnVerificaPatrimonios").focus();
+// 							$("#msg").append("<div id=\"alerta\" class=\"alert alert-warning alert-dismissible\">");
+// 							$("#alerta").append("<a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a>É necessário verificar a lista de patrimônios!");
+// 							$("#btnVerificaPatrimonios").focus();
 
-							targetOffset = $('#msg').offset().top;
+// 							targetOffset = $('#msg').offset().top;
 			
-							$('html, body').animate({ 
-								scrollTop: targetOffset - 100
-							}, 200);
+// 							$('html, body').animate({ 
+// 								scrollTop: targetOffset - 100
+// 							}, 200);
 							
-							return false;
-						}
+// 							return false;
+// 						}
 
 						
 
-						$('#btnAbrirChamado').prop("disabled","true");
+// 						$('#btnAbrirChamado').prop("disabled","true");
 						
-					},
-				success: function(msg) {
+// 					},
+// 				success: function(msg) {
 
-					$("#msg div[id=alerta]").remove();
+// 					$("#msg div[id=alerta]").remove();
 					
-					$("#msg").append(msg);
+// 					$("#msg").append(msg);
 
-					listaVerificada = false;
+// 					listaVerificada = false;
 
-					if (msg.includes('anexo') == false && msg.includes('Local') == false) {
+// 					if (msg.includes('anexo') == false && msg.includes('Local') == false) {
 
-						$(form).trigger('reset'); //só resetar o form se não houver erros no upload ou no anexo
-					}
-					else {
+// 						$(form).trigger('reset'); //só resetar o form se não houver erros no upload ou no anexo
+// 					}
+// 					else {
 
-						if (msg.includes('Local')) {
+// 						if (msg.includes('Local')) {
 
-							$('input[name=nome_local').focus();
-						}
+// 							$('input[name=nome_local').focus();
+// 						}
 
-						if (msg.includes('anexo')) {
+// 						if (msg.includes('anexo')) {
 
-							$('input[name=anexo').focus();
-						}
+// 							$('input[name=anexo').focus();
+// 						}
 
-						listaVerificada = true;
-						$('#btnAbrirChamado').removeAttr("disabled");
-					}
+// 						listaVerificada = true;
+// 						$('#btnAbrirChamado').removeAttr("disabled");
+// 					}
 					
 					
-					// if ($( "#flagPrecisaPatrimonio" ).val() == 0) {
+// 					// if ($( "#flagPrecisaPatrimonio" ).val() == 0) {
 
-					// 	timeout = setTimeout(function() {
-					// 		$('#btnAbrirChamado').removeAttr("disabled");
+// 					// 	timeout = setTimeout(function() {
+// 					// 		$('#btnAbrirChamado').removeAttr("disabled");
 			
-					// 	},10000);
-					// }
+// 					// 	},10000);
+// 					// }
 
-					// else {
+// 					// else {
 
-						$('#btnAbrirChamado').removeAttr("disabled");
+// 						$('#btnAbrirChamado').removeAttr("disabled");
 
-						if (listaVerificada == false) {
+// 						if (listaVerificada == false) {
 
-							$('#tblPatrimonios tr').remove();
-							$('#btnVerificaPatrimonios').show();
-							$("#btnAlteraPatrimonios").hide();
-							$('#txtPatrimonios').removeAttr('readonly');
-							$("#txtPatrimonios").focus();
-							$( "#divTabelaPatrimonios" ).hide();
-						}
+// 							$('#tblPatrimonios tr').remove();
+// 							$('#btnVerificaPatrimonios').show();
+// 							$("#btnAlteraPatrimonios").hide();
+// 							$('#txtPatrimonios').removeAttr('readonly');
+// 							$("#txtPatrimonios").focus();
+// 							$( "#divTabelaPatrimonios" ).hide();
+// 						}
 							
-					// }
+// 					// }
 
-					targetOffset = $('#msg').offset().top;
+// 					targetOffset = $('#msg').offset().top;
 			
-					$('html, body').animate({ 
-						scrollTop: targetOffset - 100
-					}, 200);
+// 					$('html, body').animate({ 
+// 						scrollTop: targetOffset - 100
+// 					}, 200);
 
-					msg = null;
+// 					msg = null;
 	
 				
-				},
-				error: function(xhr, ajaxOptions, thrownError) {
+// 				},
+// 				error: function(xhr, ajaxOptions, thrownError) {
 					
-					$("#msg").prepend("<div id=\"alerta\" class=\"alert alert-danger alert-dismissible\">");
-					$("#alerta").append("<a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a>" + thrownError);
+// 					$("#msg").prepend("<div id=\"alerta\" class=\"alert alert-danger alert-dismissible\">");
+// 					$("#alerta").append("<a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a>" + thrownError);
 					
 					
-					targetOffset = $('#msg').offset().top;
+// 					targetOffset = $('#msg').offset().top;
 			
-					$('html, body').animate({ 
-						scrollTop: targetOffset - 100
-					}, 200);
+// 					$('html, body').animate({ 
+// 						scrollTop: targetOffset - 100
+// 					}, 200);
 
-					$('#btnAbrirChamado').removeAttr("disabled");
-				}
+// 					$('#btnAbrirChamado').removeAttr("disabled");
+// 				}
 	
-			});
+// 			});
 
-	return false;
+// 	return false;
 			
-	}
-});
+// 	}
+// });
 
 //------------- CARREGA CHAMADO ---------------------
 
@@ -1934,7 +1939,7 @@ function encerrarChamado() {
 
 	var btn = $('#btnEncerrarChamado');
 
-	if (g_auto_usuario == 4) {
+	if (g_auto_usuario >= 3) { // Permissão de ADM+
 		if (confirm('Deseja realmente encerrar? Isso não poderá ser desfeito!')) {
 			
 			$.ajax({
@@ -1948,7 +1953,7 @@ function encerrarChamado() {
 				beforeSend: function() { btn.prop('disabled','true') },
 				success: function(msg) {
 					if (msg != 0) { // se for autorizado
-
+						console.log('ok');
 						btn.removeAttr('disabled');
 						atualizaInteracoes(g_id_chamado);
 						carregaChamado(g_id_chamado, true);
@@ -3212,7 +3217,7 @@ function(e) {
 			nome_local: "required",
 			telefone: {
 				required: true, 
-				//digits: true,
+				digits: true,
 				minlength: 3,
 			},
 			listaPatrimonios: {
@@ -3244,7 +3249,7 @@ function(e) {
 			nome_local: "Campo obrigatório!",
 			telefone: {
 				required: "Campo obrigatório!",
-				//digits: "Somente dígitos (0-9)!",
+				digits: "Somente dígitos (0-9)!",
 				minlength: "Mínimo 3 dígitos!"
 			} ,
 			descricao: {
@@ -3304,21 +3309,30 @@ function(e) {
 					},
 				success: function(msg) {
 
-					$("#msg div[id=alerta]").remove();
 					
-					$("#msg").append(msg);
 
 					listaVerificada = false;
 
 					if (/*msg.includes('anexo') == false && */ msg.includes('Local') == false) {
 
-						$(form).trigger('reset'); //só resetar o form se não houver erros no upload ou no anexo
+						$('#divTriagem').html('');
+						
+						$("#msg div[id=alerta]").remove();
+					
+						$("#msg").append(msg);
+						
+						//$(form).trigger('reset'); //só resetar o form se não houver erros no upload ou no anexo
 					}
 					else {
 
 						if (msg.includes('Local')) {
 
 							$('input[name=nome_local').focus();
+							$('#listaLocais').popover({
+								content: 'Local inválido!',
+								trigger: 'focus',
+							  });
+							$('#listaLocais').popover('toggle');
 						}
 
 						// if (msg.includes('anexo')) {
@@ -3355,15 +3369,15 @@ function(e) {
 							
 					// }
 
-					targetOffset = $('#msg').offset().top;
+					// targetOffset = $('#msg').offset().top;
 			
-					$('html, body').animate({ 
-						scrollTop: targetOffset - 100
-					}, 200);
+					// $('html, body').animate({ 
+					// 	scrollTop: targetOffset - 100
+					// }, 200);
 
 					msg = null;
 
-					$('#divTriagem').html('');
+					
 	
 				
 				},

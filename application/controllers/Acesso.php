@@ -48,32 +48,29 @@ if (!isset($_SESSION['id_usuario'])) {
 
     $ldap = new Consulta_LDAP($dados['login_usuario'],$dados['senha_usuario']);
 
+    $autentica_LDAP = $ldap->validaLogin();
+    
+    $usuario = $this->usuario_model->validaUsuario($dados);
 
-    if ($ldap->validaLogin()) {
+
+
+      
+      
+    if ($autentica_LDAP === TRUE && $usuario !== NULL) {
 
       /* $this->load->library('encryption');
       $this->encryption->initialize(array('driver' => 'openssl'));
       
       $_SESSION["usi"] = $this->encryption->encrypt($dados['login_usuario']);
       $_SESSION["psi"] = $this->encryption->encrypt($dados['senha_usuario']); */
-	  
+    
       $_SESSION["usi"] = $dados['login_usuario'];
       $_SESSION["psi"] = $dados['senha_usuario'];
-		
 
-      $usuario = $this->usuario_model->validaUsuario($dados);
-		
-    }
-
-
-    if (!empty($usuario)) {
       $_SESSION['id_usuario'] = $usuario['id_usuario'];
-
-      /*$fila_usuario = $this->usuario_model->buscaUsuario($_SESSION['id_usuario'])->fila_usuario;
-      header('Location: ' . base_url('painel/' . $fila_usuario));*/
-	  
+    
       header('Location: ' . base_url('painel'));
-
+      
       // ------------ LOG -------------------
 
       $log = array(
@@ -84,9 +81,11 @@ if (!isset($_SESSION['id_usuario'])) {
   
       $this->db->insert('evento', $log);
 
-    // -------------- /LOG ----------------
+      // -------------- /LOG ----------------
+    
+    }
 
-    } else {
+     else {
 		
 		//var_dump($usuario);
 		
@@ -103,7 +102,7 @@ if (!isset($_SESSION['id_usuario'])) {
     // -------------- /LOG ----------------
       
       
-      //header('Location: ' . base_url('/erro')); //caso usuario foi invalido, retornar valor 'erro' para o index via URL
+      header('Location: ' . base_url('/erro')); //caso usuario foi invalido, retornar valor 'erro' para o index via URL
 
 
     }
