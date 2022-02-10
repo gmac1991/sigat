@@ -6,23 +6,13 @@ class Acesso extends CI_Controller {
 
   function __construct() {
     parent::__construct();
-
-    
-
-    
-    
     $this->load->model("consultas_model"); //carregando o model das consultas 
     $this->load->model("usuario_model");  //carregando o model usuario 
-    
-    
-    
-
-    
   }
   
   public function index($resposta = NULL) {
 
-   if (!isset($_SESSION['id_usuario'])) {
+if (!isset($_SESSION['id_usuario'])) {
 
     $dados = array();
 
@@ -67,8 +57,8 @@ class Acesso extends CI_Controller {
       $_SESSION["usi"] = $this->encryption->encrypt($dados['login_usuario']);
       $_SESSION["psi"] = $this->encryption->encrypt($dados['senha_usuario']); */
 	  
-	  $_SESSION["usi"] = $dados['login_usuario'];
-	  $_SESSION["psi"] = $dados['senha_usuario'];
+      $_SESSION["usi"] = $dados['login_usuario'];
+      $_SESSION["psi"] = $dados['senha_usuario'];
 		
 
       $usuario = $this->usuario_model->validaUsuario($dados);
