@@ -4,5 +4,6 @@ anexos/*
 termos/*
 icon/Thumbs.db
 application/config/config.php
-application/config/database.php
 
+
+application/config/database.php
