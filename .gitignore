@@ -3,5 +3,6 @@
 anexos/*
 termos/*
 icon/Thumbs.db
-application/config/*
+application/config/config.php
+application/config/database.php
 sessions/*
