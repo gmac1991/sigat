@@ -1439,10 +1439,10 @@ function carregaChamado(p_id_chamado, sem_patrimonios) {
 								+ p_id_chamado + "\" data-target=\"#modalRegistroEntrega\"><i class=\"fas fa-file-signature\"></i> Registrar entrega</button> " +
 								"<a href=\"" + base_url + "chamado/gerar_termo/"
 								+ p_id_chamado + "\" id=\"baixarTermoEntrega\" role=\"button\" class=\"btn btn-info\">" + 
-								"<i class=\"fas fa-file-download\"></i> Baixar Termo de Entrega</a> " + 
+								"<i class=\"fas fa-file-download\"></i> Termo de Entrega</a> " + 
 								"<a href=\"" + base_url + "chamado/gerar_termo_resp/" +
 								+ p_id_chamado + "\" id=\"baixarTermoResp\" role=\"button\" class=\"btn btn-info\">" + 
-								"<i class=\"fas fa-file-download\"></i> Baixar Termo de Responsabilidade</a>");
+								"<i class=\"fas fa-file-download\"></i> Termo de Responsabilidade</a>");
 
 							} 
 
@@ -1489,7 +1489,7 @@ function carregaChamado(p_id_chamado, sem_patrimonios) {
 			// -------------------- PERMISSOES ----------------------------
 
 
-			if (g_auto_usuario == 4 && data.status_chamado == 'FECHADO') { //somente MASTER encerra ou reabre o chamado
+			if (g_auto_usuario > 3 && data.status_chamado == 'FECHADO') { //somente ADM+ encerra o chamado
 
 				if(!$('#btnEncerrarChamado').length) {
 
@@ -1601,7 +1601,7 @@ function removeInteracao(p_id_interacao, p_id_chamado) {
 				}
 			});
 
-			if (bloqueado) {
+			if (bloqueado && g_auto_usuario <= 3) {
 
 				$('#btnDesfazer').removeAttr('disabled');
 				alert('Operação não permitida!');
