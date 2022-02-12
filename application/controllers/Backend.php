@@ -306,7 +306,7 @@ class Backend extends CI_Controller {
             $id_chamado = $this->input->get('id_chamado');
 
    
-            $q_buscaChamado = "select id_chamado, id_fila, status_chamado, nome_solicitante_chamado, nome_local, DATE_FORMAT(data_chamado, '%d/%m/%Y - %H:%i:%s') as data_chamado, descricao_chamado, telefone_chamado,
+            $q_buscaChamado = "select ticket_chamado, id_chamado, id_fila, status_chamado, nome_solicitante_chamado, nome_local, DATE_FORMAT(data_chamado, '%d/%m/%Y - %H:%i:%s') as data_chamado, descricao_chamado, telefone_chamado,
                 (select usuario.nome_usuario from usuario where usuario.id_usuario = chamado.id_usuario_responsavel_chamado) as nome_responsavel,
                 (select usuario.id_usuario from usuario where usuario.id_usuario = chamado.id_usuario_responsavel_chamado) as id_responsavel,  
                 (select fila.nome_fila from fila where fila.id_fila = chamado.id_fila_chamado) as nome_fila_chamado, entrega_chamado
@@ -319,9 +319,13 @@ class Backend extends CI_Controller {
 
             $q_buscaEquipamentos = "select * from equipamento_chamado where id_chamado_equipamento = " . $id_chamado;
             
-            $q_buscaAnexos = "select nome_anexo from anexo where id_chamado_anexo = " . $id_chamado;
+            //$q_buscaAnexos = "select nome_anexo from anexo where id_chamado_anexo = " . $id_chamado;
 
             $result = $this->db->query($q_buscaChamado)->row_array();
+
+            $result['nome_solicitante_chamado'] = str_replace(array('"', "'"), '', $result['nome_solicitante_chamado']);
+            
+            $result['descricao_chamado'] = strip_tags($result['descricao_chamado'],"<p><br>");
 
             if ($result['id_fila'] == 3 && $result['entrega_chamado'] == 1) {
                 $result['nome_fila_chamado'] = 'Entrega';
@@ -331,7 +335,7 @@ class Backend extends CI_Controller {
             
             $result['equipamentos'] = $this->db->query($q_buscaEquipamentos)->result_array();
             
-            $result['anexo'] = $this->db->query($q_buscaAnexos)->result_array();
+            //$result['anexo'] = $this->db->query($q_buscaAnexos)->result_array();
 
             header("Content-Type: application/json");
                 
@@ -361,6 +365,11 @@ class Backend extends CI_Controller {
             
 
             $result['chamado'] = $this->db->query($q_buscaChamado)->row_array();
+
+            $result['chamado']['descricao_chamado'] = 
+            strip_tags($result['chamado']['descricao_chamado'],"<p><br>");
+            
+            
             $result['anexos_otrs'] = $this->db->query($q_buscaAnexosOTRS)->result_array();
 			
 			

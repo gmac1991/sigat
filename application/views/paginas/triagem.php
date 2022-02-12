@@ -33,14 +33,12 @@
 <div id="divTriagem" class="container py-2">
 <div class="row">
     <div class="col-8">
-      <h2>Triagem #<?= $triagem->id_chamado; ?> <small>(<?= $triagem->ticket_chamado; ?>)</small></h2> 
+      <h3><?= $triagem->ticket_chamado; ?></h3> 
     </div>
-    <div class="col-4">
-      <button type="button" class="btn btn-warning" id="btnDevolveChamado"><i class="fas fa-file-export"></i> Devolver Ticket</button>
+    <div class="col-4 text-right">
+      <button type="button" class="btn btn-warning" id="btnDevolveChamado"><i class="fas fa-file-export"></i> Devolver ao OTRS</button>
     </div>
   </div>
-  
-  <hr />
   
 
   <form enctype="multipart/form-data" method="post" id="frmImportarChamado" class="mb-5">
@@ -57,7 +55,7 @@
 	  </div>
 	  
 	  <div class="row">
-      <div class="form-group col-10">
+      <div class="form-group w-100 p-3">
       
 
           <p class="h5">Equipamentos</p>
@@ -110,7 +108,7 @@
 	  <button type="button" class="btn btn-primary btn-sm mb-3" id="btnRemovePatrimoniosTriagem" style="display: none">Fechar</button>
       <div class="row" id="divTabelaPatrimonios" style="display: none">
         <div class="col">
-        <div class="my-3"><h5 class="d-inline">Lista de patrimônios <button type="button" class="btn btn-primary btn-sm" id="btnAlteraPatrimoniosTriagem">Alterar</button></h5></div>
+        
           <table class="table table-sm" id="tblPatrimonios">
           <thead>
               <tr>

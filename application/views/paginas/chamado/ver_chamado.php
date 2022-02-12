@@ -185,7 +185,7 @@
         
         <div class="container py-2">
 
-            <h3>Chamado #<?= $chamado->id_chamado ?></h3>
+            <h3><?= $chamado->ticket_chamado ?> <small>(#<?= $chamado->id_chamado ?>)</small></h3>
             
             <hr />
             
@@ -323,7 +323,7 @@
 
                 <div class="tab-pane" id="descricao" role="tabpanel" aria-labelledby="descricao-tab">
                     <div class="col-0 my-3">
-                        <div name="descricao"></div>
+                        <div name="descricao" class="border rounded p-2 overflow-auto" style="max-height: 450px;"></div>
                     </div>
                     <?php if ($anexos != NULL): ?>
                     <h4>Anexo</h4>

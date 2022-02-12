@@ -574,7 +574,7 @@ class Chamado_model extends CI_Model {
 
 		
 
-	   $q_buscaChamado = "select id_chamado, id_fila, nome_solicitante_chamado, nome_local, DATE_FORMAT(data_chamado, '%d/%m/%Y - %H:%i:%s') as data_chamado, descricao_chamado, telefone_chamado,
+	   $q_buscaChamado = "select ticket_chamado, id_chamado, id_fila, nome_solicitante_chamado, nome_local, DATE_FORMAT(data_chamado, '%d/%m/%Y - %H:%i:%s') as data_chamado, descricao_chamado, telefone_chamado,
         (select usuario.id_usuario from usuario where usuario.id_usuario = chamado.id_usuario_responsavel_chamado) as id_responsavel, 
         (select fila.nome_fila from fila where fila.id_fila = chamado.id_fila_chamado) as nome_fila_chamado
         from local, fila, chamado
