@@ -119,7 +119,7 @@ class Chamado extends CI_Controller {
   
       $dados['id_fila'] =           $this->input->post("id_fila");
       $dados['id_chamado'] =        $this->input->post("id_chamado");
-      $dados['nome_solicitante'] =  $this->input->post("nome_solicitante");
+      $dados['nome_solicitante'] =  str_replace(array("'","\""),"",$this->input->post("nome_solicitante"));
       $dados['nome_local'] =        $this->input->post("nome_local");
       $dados['telefone'] =          $this->input->post("telefone");
       $dados['listaPatrimonios'] =  $this->input->post("listaPatrimonios");
