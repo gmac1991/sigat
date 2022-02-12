@@ -6,3 +6,4 @@ icon/Thumbs.db
 application/config/config.php
 sessions/ci_session*
 application/config/database.php
+
