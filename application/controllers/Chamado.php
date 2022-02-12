@@ -206,7 +206,7 @@ class Chamado extends CI_Controller {
         $mail->isHTML(true);                                  //Set email format to HTML
         $mail->Subject = 'DEVOLUÇÃO ' . $ticket;
         $mail->Body    = 'Este ticket foi recusado pelo SIGAT. <br>Esta mensagem e automatica. <br> DEVOLUCAO_SIGAT';
-        $mail->AltBody = 'Este ticket foi recusado pelo SIGAT. Esta mensagem e automatica. DEVOLUCAO__SIGAT';
+        $mail->AltBody = 'Este ticket foi recusado pelo SIGAT. Esta mensagem e automatica. DEVOLUCAO_SIGAT';
 
         $mail->send();
         //header("Location: " . base_url('painel?v=triagem'));

@@ -1,5 +1,7 @@
 <?php
 
+date_default_timezone_set('America/Sao_Paulo');
+
 
 defined('BASEPATH') OR exit('No direct script access allowed');
 
@@ -143,12 +145,10 @@ class Interacao extends CI_Controller {
         $pdf->Cell(0,10,'Termo de Entrega',0,0,'C');
         $pdf->Ln(10);
         $pdf->SetFont('Arial','',11);
-        $pdf->Cell(0,10,date('d/m/Y'),0,0,'R');
+        $pdf->Cell(0,10,date('d/m/Y - H:i:s'),0,0,'R');
         $pdf->Ln(15);
         $pdf->SetFont('Arial','B',13);
-        $pdf->Cell(42,10,'Num. do chamado ',1);
-        $pdf->SetFont('Arial','',13);
-        $pdf->Cell(30,10,$dados['chamado']->id_chamado,1);
+        $pdf->Cell(100,10,$dados['chamado']->ticket_chamado,1);
         $pdf->SetFont('Arial','B',13);
         $pdf->Cell(12,10,'Data ',1);
         $pdf->SetFont('Arial','',13);
@@ -162,7 +162,7 @@ class Interacao extends CI_Controller {
         $pdf->SetFont('Arial','B',13);
         $pdf->Cell(25,10,'Solicitante ',1);
         $pdf->SetFont('Arial','',13);
-        $pdf->Cell(0,10,$dados['chamado']->nome_solicitante_chamado,1);
+        $pdf->Cell(0,10,utf8_decode($dados['chamado']->nome_solicitante_chamado),1);
         $pdf->Ln();
         $pdf->Ln(10);
         $pdf->SetFont('Arial','B',14);
@@ -182,7 +182,7 @@ class Interacao extends CI_Controller {
 
                 $pdf->Cell(36,10,$equip->num_patrimonio,1,0,'');
                 $json = file_get_contents('https://sistemas.sorocaba.sp.gov.br/acesso_patrimonio/api/patrimonio/' . $equip->num_patrimonio);
-                $pdf->Cell(0,10,json_decode($json)->descrBem,1,0,'');
+                $pdf->Cell(0,10,utf8_decode(json_decode($json)->descrBem),1,0,'');
                 $pdf->Ln();
 
             }
@@ -221,7 +221,7 @@ class Interacao extends CI_Controller {
         $pdf->Cell(30,10,'Data: ',0,0,'R');
         $pdf->Cell(30,10,date('d/m/Y'));
 
-        $pdf->Output('D','termo_entrega_' . $id_chamado . '.pdf', TRUE);
+        $pdf->Output('I','termo_entrega_' . $id_chamado . '.pdf', TRUE);
 
         // ------------ LOG -------------------
 
@@ -252,7 +252,7 @@ class Interacao extends CI_Controller {
         $pdf->Cell(0,10,'Termo de Responsabilidade',0,0,'C');
         $pdf->Ln(10);
         $pdf->SetFont('Arial','',11);
-        $pdf->Cell(0,10,date('d/m/Y'),0,0,'R');
+        $pdf->Cell(0,10,date('d/m/Y H:i:s'),0,0,'R');
         $pdf->Ln(15);
         $pdf->SetFont('Arial','B',13);
         $pdf->Cell(42,10,'Num. do chamado ',1);
@@ -271,7 +271,7 @@ class Interacao extends CI_Controller {
         $pdf->SetFont('Arial','B',13);
         $pdf->Cell(25,10,'Solicitante ',1);
         $pdf->SetFont('Arial','',13);
-        $pdf->Cell(0,10,$dados['chamado']->nome_solicitante_chamado,1);
+        $pdf->Cell(0,10,utf8_decode($dados['chamado']->nome_solicitante_chamado),1);
         $pdf->Ln();
         $pdf->Ln(10);
         $pdf->SetFont('Arial','B',14);
@@ -291,7 +291,7 @@ class Interacao extends CI_Controller {
 
                 $pdf->Cell(36,10,$equip->num_patrimonio,1,0,'');
                 $json = file_get_contents('https://sistemas.sorocaba.sp.gov.br/acesso_patrimonio/api/patrimonio/' . $equip->num_patrimonio);
-                $pdf->Cell(0,10,json_decode($json)->descrBem,1,0,'');
+                $pdf->Cell(0,10,utf8_decode(json_decode($json)->descrBem),1,0,'');
                 $pdf->Ln();
 
             }
@@ -342,7 +342,7 @@ class Interacao extends CI_Controller {
         $pdf->Cell(30,10,'Data: ',0,0,'R');
         $pdf->Cell(30,10,date('d/m/Y'));
 
-        $pdf->Output('D','termo_resp_' . $id_chamado . '.pdf', TRUE);
+        $pdf->Output('I','termo_resp_' . $id_chamado . '.pdf', TRUE);
 
         // ------------ LOG -------------------
 
@@ -376,7 +376,7 @@ class Interacao extends CI_Controller {
         $pdf->Cell(0,10,'Laudo Tecnico',0,0,'C');
         $pdf->Ln(10);
         $pdf->SetFont('Arial','',11);
-        $pdf->Cell(0,10,'Emissao: ' . date('d/m/Y'),0,0,'R');
+        $pdf->Cell(0,10,'Emissao: ' . date('d/m/Y H:i:s'),0,0,'R');
         $pdf->Ln(15);
         $pdf->SetFont('Arial','B',13);
         $pdf->Cell(42,10,'Num. do chamado ',1);
@@ -395,7 +395,7 @@ class Interacao extends CI_Controller {
         $pdf->SetFont('Arial','B',13);
         $pdf->Cell(25,10,'Solicitante ',1);
         $pdf->SetFont('Arial','',13);
-        $pdf->Cell(0,10,$dados['chamado']->nome_solicitante_chamado,1);
+        $pdf->Cell(0,10,utf8_decode($dados['chamado']->nome_solicitante_chamado),1);
         $pdf->Ln();
         $pdf->Ln(10);
         $pdf->SetFont('Arial','B',14);
@@ -446,7 +446,7 @@ class Interacao extends CI_Controller {
         //header('Content-Type: charset=utf-8');
   
   
-        $pdf->Output('D','laudo_tecnico_' . $id_chamado . '.pdf');
+        $pdf->Output('I','laudo_tecnico_' . $id_chamado . '.pdf');
 
         // ------------ LOG -------------------
 
