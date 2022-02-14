@@ -283,7 +283,7 @@ function triagem() {
 
             {
                 "width": "10%",
-                "targets": 3,
+                "targets": 2,
                 "render": $.fn.dataTable.render.moment('YYYY-MM-DD HH:mm:ss', 'DD/MM/YYYY H:mm:ss')
             },
         ],

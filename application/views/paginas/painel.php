@@ -15,11 +15,10 @@
 					<thead >
 					<tr>
 						<th>Número</th>
+						<th>Ticket OTRS</th>
+						<th>Data de abertura</th>
 						<th>Solicitante</th>
 						<th>E-mail</th>
-						<th>Data de abertura</th>
-						<th>Ticket OTRS</th>		
-						<th>Status</th>
 						<th>&nbsp;</th>
 					</tr>
 					</thead>
