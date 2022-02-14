@@ -63,17 +63,17 @@
         <script type="text/javascript">
             $('#frmAcesso').on('submit',function(e) {
 
+            e.preventDefault();
+
             if ($('#frmAcesso input[name=login_usuario]').val() != '' && $('#frmAcesso input[name=senha_usuario]').val() != '') {
                 
-                $('#frmAcesso button').attr('disabled');
+                $('#frmAcesso button').prop('disabled','true');
                 
                 return;
                 
-            } else {
-                
-            }
+            } 
 
-            e.preventDefault();
+            
 
             });
         </script>

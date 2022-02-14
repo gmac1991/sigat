@@ -357,21 +357,20 @@ class Backend extends CI_Controller {
 			
 			$result = array();
             
-            $id_chamado = $this->input->get('id_chamado');
+            $id_triagem = $this->input->get('id_triagem');
 
    
-            $q_buscaChamado = "select *, (select nome_usuario from usuario where id_usuario = id_usuario_responsavel_chamado) as nome_responsavel from chamado
-                where id_chamado = " . $id_chamado;
+            $q_buscaTriagem = "select from triagem where id_triagem = " . $id_triagem;
 				
 			$q_buscaAnexosOTRS = "select id_anexo_otrs, nome_arquivo_otrs from anexos_otrs
 			where id_chamado_sigat = " . $id_chamado;
 
             
 
-            $result['chamado'] = $this->db->query($q_buscaChamado)->row_array();
+            $result['triagem'] = $this->db->query($q_buscaTriagem)->row_array();
 
-            $result['chamado']['descricao_chamado'] = 
-            strip_tags($result['chamado']['descricao_chamado'],$this->tags_permitidas);
+            $result['triagem']['descricao_triagem'] = 
+            strip_tags($result['triagem']['descricao_triagem'],$this->tags_permitidas);
             
             
             $result['anexos_otrs'] = $this->db->query($q_buscaAnexosOTRS)->result_array();

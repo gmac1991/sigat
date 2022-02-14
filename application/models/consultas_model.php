@@ -53,19 +53,19 @@ class Consultas_model extends CI_Model {
         
 
 
-        $q = "select id_chamado, nome_solicitante_chamado, email_chamado, status_chamado, 
-		data_chamado, ticket_chamado from chamado where id_fila_chamado is NULL order by data_chamado asc";
+        $q = "select id_triagem, nome_solicitante_triagem, email_triagem,
+        		data_triagem, ticket_triagem from triagem order by data_triagem asc";
    
 
         return $this->db->query($q)->result();
     }
 	
-	public function buscaTriagem($id_chamado) { // lista de chamados insertados pelo OTRS
+	public function buscaTriagem($id_triagem) { 
 
         
 
 
-        $q = "select * from chamado where id_chamado = ". $id_chamado;
+        $q = "select * from triagem where id_triagem = ". $id_triagem;
    
 
         return $this->db->query($q)->row();

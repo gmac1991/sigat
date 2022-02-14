@@ -3008,14 +3008,14 @@ UTF8 = {
 
 
 
-function carregaTriagem(p_id_chamado) {
+function carregaTriagem(p_id_triagem) {
 
 
     $('div[name=descricao_triagem]').html('<p>Carregando...</p>');
 
     //traz os dados do chamado MIGRADO (OTRS)
 
-    document.title = "Triagem #" + p_id_chamado + " - Sigat";
+    document.title = "Triagem #" + p_id_triagem + " - Sigat";
 
     var p_id_responsavel = null;
 
@@ -3024,7 +3024,7 @@ function carregaTriagem(p_id_chamado) {
         dataType: 'json',
         async: true,
         data: {
-            id_chamado: p_id_chamado
+            id_triagem: p_id_triagem
         },
         success: function(data) {
 
