@@ -22,29 +22,22 @@ class Triagem extends CI_Controller {
 		$dados['triagem'] = $this->consultas_model->buscaTriagem($id_triagem); //traz chamado migrado
 		
 		if (isset($dados['triagem'])) { // se o chamado existir
-			
-			if ($dados['triagem']->id_fila_chamado == NULL) { //se nao tiver fila setada..
 				
-				$usuario = $this->usuario_model->buscaUsuario($_SESSION['id_usuario']);
+      $usuario = $this->usuario_model->buscaUsuario($_SESSION['id_usuario']);
 
-				$this->load->view('templates/cabecalho', $usuario);
+      $this->load->view('templates/cabecalho', $usuario);
 
-				$lista_filas = $this->consultas_model->listaFilas(); 
-				$lista_solicitantes = $this->consultas_model->listaSolicitantes();
-				$lista_locais = $this->consultas_model->listaLocais();
-				$dados = array_merge($dados,array("filas" => $lista_filas, "solicitantes" => $lista_solicitantes, "locais" => $lista_locais));
+      $lista_filas = $this->consultas_model->listaFilas(); 
+      $lista_solicitantes = $this->consultas_model->listaSolicitantes();
+      $lista_locais = $this->consultas_model->listaLocais();
+      $dados = array_merge($dados,array("filas" => $lista_filas, "solicitantes" => $lista_solicitantes, "locais" => $lista_locais));
 
-				
-				$dados['usuarios'] = $this->usuario_model->buscaUsuarios(); //traz a lista de todos os usuarios
+      
+      $dados['usuarios'] = $this->usuario_model->buscaUsuarios(); //traz a lista de todos os usuarios
 
-				$this->load->view('paginas/triagem', $dados);
+      $this->load->view('paginas/triagem', $dados);
 
-				$this->load->view('templates/rodape');
-			}
-			else {
-				show_404();
-			}
-			
+      $this->load->view('templates/rodape');
 			
 		}
 		

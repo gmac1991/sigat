@@ -67,7 +67,7 @@ if (isset($chamado)) {
 
 if (isset($triagem)) { 
  
-  echo "<script type=\"text/javascript\">var g_id_chamado = " . $triagem->id_chamado . "</script>";
+  echo "<script type=\"text/javascript\">var g_id_chamado = " . $triagem->id_triagem . "</script>";
   echo "<script type=\"text/javascript\">carregaTriagem(g_id_chamado)</script>";
 }
 
