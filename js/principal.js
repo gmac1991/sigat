@@ -3030,9 +3030,9 @@ function carregaTriagem(p_id_triagem) {
 
             //preencher os campos conforme o json
 
-            $('input[name=nome_solicitante]').val(data.chamado.nome_solicitante_triagem);
+            $('input[name=nome_solicitante]').val(data.triagem.nome_solicitante_triagem);
             $('input[name=id_triagem]').val(p_id_triagem);
-            $('div[name=descricao_triagem]').html(UTF8.decode(data.chamado.descricao_triagem));
+            $('div[name=descricao_triagem]').html(UTF8.decode(data.triagem.descricao_triagem));
 
             if (data.anexos_otrs.length > 0) {
 
