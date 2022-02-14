@@ -56,7 +56,7 @@
                         </div> <!-- form-group// -->                                                           
                     </form>
                 </article>
-                <p style="font-size: 12px" class="p-0 m-1 text-right">Seção de Suporte Técnico - v<?= $this->config->item('versao');?></p>
+                <p style="font-size: 12px" class="p-0 m-1 text-right">DGTI - v<?= $this->config->item('versao');?></p>
             </div> <!-- card.// -->
         </div> 
         <script src="<?= base_url("js/jquery-3.4.1.min.js") ?>"></script>
