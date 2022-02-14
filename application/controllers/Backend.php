@@ -6,6 +6,8 @@ class Backend extends CI_Controller {
 
     /*Classe para Respostas às requisições AJAX e outras do Frontend */
 
+    private $tags_permitidas = "<p><br><div><span><style>";
+
     function __construct() {
         parent::__construct();
         $this->load->library('consulta_ldap');
@@ -299,6 +301,8 @@ class Backend extends CI_Controller {
         }
     }
 
+    
+
     public function chamado() {
 
         if (isset($_SESSION['id_usuario'])) {
@@ -325,7 +329,7 @@ class Backend extends CI_Controller {
 
             $result['nome_solicitante_chamado'] = str_replace(array('"', "'"), '', $result['nome_solicitante_chamado']);
             
-            $result['descricao_chamado'] = strip_tags($result['descricao_chamado'],"<p><br>");
+            $result['descricao_chamado'] = strip_tags($result['descricao_chamado'],$this->tags_permitidas);
 
             if ($result['id_fila'] == 3 && $result['entrega_chamado'] == 1) {
                 $result['nome_fila_chamado'] = 'Entrega';
@@ -367,7 +371,7 @@ class Backend extends CI_Controller {
             $result['chamado'] = $this->db->query($q_buscaChamado)->row_array();
 
             $result['chamado']['descricao_chamado'] = 
-            strip_tags($result['chamado']['descricao_chamado'],"<p><br>");
+            strip_tags($result['chamado']['descricao_chamado'],$this->tags_permitidas);
             
             
             $result['anexos_otrs'] = $this->db->query($q_buscaAnexosOTRS)->result_array();
