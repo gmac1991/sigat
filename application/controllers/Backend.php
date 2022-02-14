@@ -363,7 +363,7 @@ class Backend extends CI_Controller {
             $q_buscaTriagem = "select * from triagem where id_triagem = " . $id_triagem;
 				
 			$q_buscaAnexosOTRS = "select id_anexo_otrs, nome_arquivo_otrs from anexos_otrs
-			where id_chamado_sigat = " . $id_chamado;
+			where id_chamado_sigat = " . $id_triagem;
 
             
 
