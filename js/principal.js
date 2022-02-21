@@ -3007,6 +3007,19 @@ UTF8 = {
 };
 
 
+$("#btnInsManualPatrimoniosTriagem").on('click', function() {
+
+    $("#divInsercaoManual").show();
+})
+
+$("#btnAddNovoEquip").on('click', function(e) {
+
+    e.preventDefault();
+
+    $("#divInsercaoManual").show();
+})
+
+
 
 function carregaTriagem(p_id_triagem) {
 
@@ -3037,13 +3050,16 @@ function carregaTriagem(p_id_triagem) {
             if (data.anexos_otrs.length > 0) {
 
 
-                $("#listaAnexosOTRS").html("<thead><th>Nome do arquivo</th><th>Download</th></thead><tbody></tbody>");
+                $("#listaAnexosOTRS").html("<thead><th>Nome do arquivo</th><th>&nbsp;</th></thead><tbody></tbody>");
 
                 data.anexos_otrs.forEach(function(item) {
 
 
-                    $("#listaAnexosOTRS tbody").append("<tr><td>" + item.nome_arquivo_otrs + "</td><td><a class=\"btn btn-primary btn-sm active\" role=\"button\" href=\"" + base_url + "anexo_otrs/" +
-                        item.id_anexo_otrs + "\" download><i class=\"fas fa-download\"></i></a></tr>")
+                    $("#listaAnexosOTRS tbody").append("<tr><td>" + item.nome_arquivo_otrs + 
+                    "</td><td><a href=\"" + base_url + "anexo_otrs/" + item.id_anexo_otrs + 
+                    "\" class=\"badge badge-primary\"><i class=\"fas fa-download\"></i></a>" +
+                    " <a href=\"" + base_url + "anexo_otrs/" + item.id_anexo_otrs + 
+                    "\" class=\"badge badge-danger\"><i class=\"fas fa-trash\"></i></a></td></tr>")
                 });
             } else {
 
@@ -3107,8 +3123,9 @@ async function criaTabelaPatrimoniosTriagem(vetor, url) {
                 }
 
             } else {
-                vetorPatrInv.push(item); //se não houver descricao, o patrimonio é invalido e será enfileirado no vetorPatriInv
-
+                //vetorPatrInv.push(item); //se não houver descricao, o patrimonio é invalido e será enfileirado no vetorPatriInv
+                vetorPatrOK.push(item); //forçando inserção de numero inválido!
+                vetorPatrOKDesc.push('Número inválido!');
             }
 
         });
@@ -3196,9 +3213,6 @@ async function criaTabelaPatrimoniosTriagem(vetor, url) {
 
 }
 
-
-
-
 $("#btnVerificaPatrimoniosTriagem").click(function() {
 
     var listaTriagem;
@@ -3210,17 +3224,12 @@ $("#btnVerificaPatrimoniosTriagem").click(function() {
 
         var listaTriagem = $('[name=descricao_triagem]').html();
     }
-
-
-
+     
     const vetor = listaTriagem.match(/[1-9]\d{5}/g);
 
     if (vetor != null) {
 
         $('#msgPatr div[role=alert]').remove();
-
-
-
         $('#tblPatrimonios tbody tr').remove();
         $('#tblInserviveis tbody tr').remove();
 
@@ -3229,46 +3238,27 @@ $("#btnVerificaPatrimoniosTriagem").click(function() {
 
         // verificando duplicatas...
 
-        // duplicado = false;
+        function uniq_fast(a) {
+            var seen = {};
+            var out = [];
+            var len = a.length;
+            var j = 0;
+            for(var i = 0; i < len; i++) {
+                 var item = a[i];
+                 if(seen[item] !== 1) {
+                       seen[item] = 1;
+                       out[j++] = item;
+                 }
+            }
+            return out;
+        }
 
-        // for (i = 0; i < vetor.length - 1; i++) {
+        const new_vetor = uniq_fast(vetor);
 
-        //     x = vetor[i];
+        console.log(new_vetor);
 
-        //     for (j = i + 1; j < vetor.length; j++) {
-
-        //         if (x == vetor[j]) {
-
-        //             duplicado = true;
-        //             break;
-        //         }
-        //     }
-
-        // }
-
-        // if (duplicado == true) {
-
-        //     $('[for="descricao_triagem"] .spinner-border').remove();
-
-
-        //     $("#msgPatr").append("<div class=\"alert alert-warning alert-dismissible fade show\" role=\"alert\">Existem patrimônios duplicados na lista!<button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\"><span aria-hidden=\"true\">&times;</span></button></div>");
-
-        //     $("#btnAlteraPatrimoniosTriagem").hide();
-        //     $('#btnVerificaPatrimoniosTriagem').show();
-        //     $('#divTabelaPatrimonios').hide();
-        //     $('#btnVerificaPatrimoniosTriagem').removeAttr('disabled');
-        // } else {
-
-        //     criaTabelaPatrimoniosTriagem(vetor, url);
-
-        // }
-
-		criaTabelaPatrimoniosTriagem(vetor, url);
-
-    } else {
-
-		
-	}
+        criaTabelaPatrimoniosTriagem(new_vetor, url);
+    } 
 
 });
 
@@ -3306,6 +3296,10 @@ $("#btnAlteraPatrimoniosTriagem").click(function() {
 
 $("#btnDevolveChamado").click(function() {
 
+    $('#modalDe')
+
+
+
     if (confirm('Deseja realmente devolver esse ticket? Isso não poderá ser desfeito!')) {
 
         $.ajax({
@@ -3328,6 +3322,7 @@ $("#btnDevolveChamado").click(function() {
         });
     }
 });
+
 //------------------ SUBMIT DA TRIGEM --------------
 
 
