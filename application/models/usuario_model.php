@@ -7,20 +7,20 @@ class Usuario_model extends CI_Model {
     public function validaUsuario($dados) {
 
 
-        $busca = $this->db->query('select id_usuario, nome_usuario from usuario where login_usuario = \'' 
-        . $dados['login_usuario'] . '\' and status_usuario = \'ATIVO\'');
+        $busca = $this->db->query("SELECT id_usuario, nome_usuario FROM usuario WHERE login_usuario = '" . $dados['login_usuario'] . "' and status_usuario = 'ATIVO'");
 
         if ($busca->num_rows() == 1) {
 
-                $usuario = array();
-                $usuario['id_usuario'] = $busca->row()->id_usuario;
-                $usuario['nome_usuario'] = $busca->row()->nome_usuario;
+            $usuario = array();
+            $usuario['id_usuario'] = $busca->row()->id_usuario;
+            $usuario['nome_usuario'] = $busca->row()->nome_usuario;
 
-                return $usuario;
+            return $usuario;
         }
             
-        else
+        else {
             return NULL;
+        }
     }
 
     public function buscaUsuario($id_usuario)  {
@@ -39,12 +39,12 @@ class Usuario_model extends CI_Model {
     public function atualizaUsuario($dados) {
 
         $valores = array(
-            'nome_usuario' => $dados['nome_usuario'],
-            'login_usuario' => $dados['login_usuario'],
-            'status_usuario' => $dados['status_usuario'],
-            'autorizacao_usuario' => $dados['autorizacao_usuario'],
-            'fila_usuario' => $dados['fila_usuario'],
-            'alteracao_usuario' => date('Y-m-d G:i:s'),
+            'nome_usuario' =>           $dados['nome_usuario'],
+            'login_usuario' =>          $dados['login_usuario'],
+            'status_usuario' =>         $dados['status_usuario'],
+            'autorizacao_usuario' =>    $dados['autorizacao_usuario'],
+            'fila_usuario' =>           $dados['fila_usuario'],
+            'alteracao_usuario' =>      date('Y-m-d G:i:s'),
         );
         
         $this->db->where('id_usuario', $dados['id_usuario']);
@@ -66,12 +66,12 @@ class Usuario_model extends CI_Model {
     public function insereUsuario($dados) {
 
         $valores = array(
-            'nome_usuario' => $dados['nome_usuario'],
-            'login_usuario' => $dados['login_usuario'],
-            'status_usuario' => $dados['status_usuario'],
-            'autorizacao_usuario' => $dados['autorizacao_usuario'],
-            'fila_usuario' => $dados['fila_usuario'],
-            'data_usuario' => date('Y-m-d G:i:s'),
+            'nome_usuario' =>           $dados['nome_usuario'],
+            'login_usuario' =>          $dados['login_usuario'],
+            'status_usuario' =>         $dados['status_usuario'],
+            'autorizacao_usuario' =>    $dados['autorizacao_usuario'],
+            'fila_usuario' =>           $dados['fila_usuario'],
+            'data_usuario' =>           date('Y-m-d G:i:s'),
         );
         
         $this->db->insert('usuario', $valores);

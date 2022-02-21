@@ -16,6 +16,30 @@
 
 -- fim modal -->
 
+<div class="modal fade" id="modalDevolucao" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Nova Interação</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="frmInteracao" method="post">
+                        <div id="conteudo_form"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-success" id="btnRegistrarInteracao">
+                        <i class="fas fa-check"></i> Registrar</button>
+                    </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
 <nav aria-label="breadcrumb">
       <ol class="breadcrumb">
         <li class="breadcrumb-item active"><a href="<?= base_url('painel?v=triagem'); ?>">Painel</a></li>
@@ -36,7 +60,7 @@
       <h3><?= $triagem->ticket_triagem; ?></h3> 
     </div>
     <div class="col-4 text-right">
-      <button type="button" class="btn btn-warning" id="btnDevolveChamado"><i class="fas fa-file-export"></i> Devolver ao OTRS</button>
+      <button type="button" class="btn btn-warning" id="btnDevolveChamado" data-toggle="modal" data-target="#modalDevolucao"><i class="fas fa-file-export"></i> Devolver ao OTRS</button>
     </div>
   </div>
   
@@ -47,7 +71,8 @@
 	  
 	  <div class="row">
         <div class="form-group col">
-            <div name="descricao_triagem" class="border rounded p-2 overflow-auto" style="max-height: 450px;"></div>
+            <div name="descricao_triagem" class="border rounded p-2 overflow-auto" 
+            style="max-height: 450px;"></div>
         
 			
 		</div>
@@ -62,17 +87,25 @@
           <hr>
           <div id="msgPatr"></div>
           <div class="text-right">
-            <input type="checkbox" class="form-check-input align-middle" id="chkSoSelecaoTriagem" checked>
+            <input type="checkbox" class="form-check-input align-middle" id="chkSoSelecaoTriagem">
             <label class="form-check-label" for="chkSoSelecaoTriagem">Somente seleção</label>
             
             <button type="button" class="btn btn-primary" id="btnVerificaPatrimoniosTriagem"><i class="fas fa-search"></i> Busca automática</button>
-            <button type="button" class="btn btn-info" id="btnInsManualPatrimoniosTriagem"><i class="fas fa-search"></i> Inserção manual</button>
+            <button type="button" class="btn btn-info" id="btnInsManualPatrimoniosTriagem"><i class="fas fa-pencil-alt"></i> Inserção manual</button>
             <!-- <button type="button" class="btn btn-secondary" id="btnInsertManualTriagem"><i class="fas fa-pencil-alt"></i> Inserção manual</button> -->
         </div>
         
         </div>
 	  </div>
-	  
+
+    <div id="divInsercaoManual" style="display: none">
+      <h6>Inserção manual</h6>
+      <div class="form-inline">
+        <input class="form-control" type="text" placeholder="número">&nbsp;
+        <input class="form-control" type="text" placeholder="descrição">&nbsp;
+        <button id="btnAddNovoEquip" class="btn btn-primary"><i class="fas fa-plus"></i></button>
+      </div>
+    </div>
 	  <div class="row" id="divTabelaInserviveis" style="display: none">
         <div class="col">
           <div class="alert alert-danger">Atenção! Existem equipamentos inservíveis na lista!</div>
@@ -122,13 +155,13 @@
         </div>
       </div>
 	  
-	    
+	    <hr />
 	<div class="row">
 	  
 		<div class="col-4">
 		
 			<p class="h5">Anexos</p>
-			<table id="listaAnexosOTRS" class="table">
+			<table id="listaAnexosOTRS" class="table table-sm">
 				
 			</table>
 

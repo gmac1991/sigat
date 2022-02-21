@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
     <head>
     	<meta charset="utf-8">
@@ -37,7 +38,7 @@
             <div class="card" style="margin-top:75%">
                 <article class="card-body">
                     <div class="text-center">
-                        <img id="img-logo" src="<?= base_url("img/logo_pms.png") ?>" width="80" height="80">
+                        <img id="img-logo" src="<?= base_url("img/logo_sigat.svg") ?>" width="100" height="100">
                         <h1>SIGAT</h1>
                     </div>
                     
@@ -63,15 +64,20 @@
         <script type="text/javascript">
             $('#frmAcesso').on('submit',function(e) {
 
-            e.preventDefault();
-
             if ($('#frmAcesso input[name=login_usuario]').val() != '' && $('#frmAcesso input[name=senha_usuario]').val() != '') {
                 
                 $('#frmAcesso button').prop('disabled','true');
+
+                $('#frmAcesso input').prop('readonly','true');
                 
                 return;
                 
-            } 
+            }
+            
+            else {
+
+                e.preventDefault();
+            }
 
             
 

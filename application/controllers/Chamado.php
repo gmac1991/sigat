@@ -267,7 +267,7 @@ class Chamado extends CI_Controller {
                               " data-chamado=\"" . $linha->id_chamado . "\">" .
                               "<i class=\"far fa-clock\"></i></button>", // ultima interacao
                               7 => "<a href=\"" . base_url('chamado/' . $linha->id_chamado) . 
-                              "\" rel=\"noopener\" target=\"_blank\" role=\"button\"" .
+                              "\" role=\"button\"" .
                               " class=\"d-block btn btn-sm btn-info\"><i class=\"fas fa-search\"></i></a> "); //detalhes
 
     }
