@@ -13,7 +13,8 @@
         <link rel="stylesheet" href="<?= base_url("css/custom.css") ?>">
         <link rel="stylesheet" href="<?= base_url("css/jsgrid.min.css") ?>">
         <link rel="stylesheet" href="<?= base_url("css/jsgrid-theme.min.css") ?>">
-
+        <link rel="stylesheet" href="<?= base_url("css/darktheme.css") ?>">
+        
         <link href="<?= base_url("fa/css/all.min.css") ?>" rel="stylesheet">
 
         <!-- FAVICON -->
@@ -39,7 +40,8 @@
         <!-- /FAVICON -->
         
     </head>
-    <body>
+    <body data-theme="light">
+    <script src="<?= base_url('js/theme.js') ?>"></script>
         <nav class="navbar navbar-dark bg-dark">
         <a class="navbar-brand" href="<?= base_url() ?>">
         <img id="img-logo" src="<?= base_url("img/logo_pms.png") ?>" width="40" height="40" class="d-inline-block align-top" alt="">
@@ -48,6 +50,7 @@
         <?php if(isset($nome_usuario)): ?>
         <div class="float-right d-inline text-white">
             Olá, <strong><?= $nome_usuario ?></strong>!
+            <!-- <script src="<?= base_url("js/darkswitch.js")?>"></script> -->
 			<a href="<?= base_url("painel") ?>" class="btn btn-primary btn-sm" role="button" aria-pressed="true"><i class="fas fa-bullhorn"></i> Painel</a>
             <?php if ($autorizacao_usuario >= 4): ?>
             <a class="btn btn-sm btn-secondary" href="<?= base_url('admin'); ?>" role="button"><i class="fas fa-wrench"></i> Administração</a> 

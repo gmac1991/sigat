@@ -48,6 +48,7 @@ if (isset($_SESSION['id_usuario'])) {
   <script src="<?= base_url("fa/js/all.min.js")?>"></script>
   <script src="<?= base_url("js/moment.min.js")?>"></script>
   <script src="<?= base_url("js/principal.js")?>"></script>
+ 
   
   
   
