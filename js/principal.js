@@ -3294,32 +3294,38 @@ $("#btnAlteraPatrimoniosTriagem").click(function() {
 });
 
 
-$("#btnDevolveChamado").click(function() {
+$("#frmDevolveChamado").on('submit',function(e) {
 
-    $('#modalDe')
+   e.preventDefault();
+
+   var txtDescDevo = $(this).find('#txtDescDevo').val();
+  
+    if (txtDescDevo !== "") {
+
+        if (confirm('Deseja realmente devolver esse ticket? Isso não poderá ser desfeito!')) {
+
+            $.ajax({
+                url: base_url + 'chamado/devolver_chamado',
+                async: true,
+                method: 'post',
+                data: {
+                    id_triagem: g_id_chamado,
+                    desc_devo: txtDescDevo
+                },
+                beforeSend: function() {
+    
+                    $(this).find('submit').prop('disabled','true');
+    
+                },
+                success: function(data) {
+    
+                    document.location.href = base_url + 'painel?v=triagem'
+                }
+    
+            });
+        }
 
 
-
-    if (confirm('Deseja realmente devolver esse ticket? Isso não poderá ser desfeito!')) {
-
-        $.ajax({
-            url: base_url + 'chamado/devolver_chamado',
-            async: true,
-            method: 'post',
-            data: {
-                id_chamado: g_id_chamado
-            },
-            beforeSend: function() {
-
-                $("#frmImportarChamado").html('');
-
-            },
-            success: function(data) {
-
-                document.location.href = base_url + 'painel?v=triagem'
-            }
-
-        });
     }
 });
 

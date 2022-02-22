@@ -535,18 +535,18 @@ class Chamado_model extends CI_Model {
 
     public function devolveChamado($p_id_chamado) {
 
-        $this->db->query("delete from chamado where id_chamado = " . $p_id_chamado);
+        $this->db->query("delete from triagem where id_triagem = " . $p_id_chamado);
         $this->db->query("delete from anexos_otrs where id_chamado_sigat = " . $p_id_chamado);
 
         $this->db->query("insert into alteracao_chamado ".
                          "values(NULL," . $p_id_chamado . 
                          "," . $_SESSION['id_usuario'] .
-                         ",'<b>invalidou o chamado</b>',NOW())");
+                         ",'<b>devolveu o ticket para o OTRS</b>',NOW())");
 
          // ------------ LOG -------------------
 
          $log = array(
-            'acao_evento' => 'INVALIDAR_CHAMADO',
+            'acao_evento' => 'DEVOLVER_TICKET',
             'desc_evento' => 'ID CHAMADO: ' . $p_id_chamado,
             'id_usuario_evento' => $_SESSION['id_usuario']
         );
@@ -558,11 +558,11 @@ class Chamado_model extends CI_Model {
 
     }
 
-    public function buscaTicket($id_chamado) {
+    public function buscaTicketTriagem($id_triagem) {
 
-        $result = $this->db->query("select ticket_chamado from chamado where id_chamado = " . $id_chamado);
+        $result = $this->db->query("select ticket_triagem from triagem where id_triagem = " . $id_triagem);
 
-        return $result->row()->ticket_chamado;
+        return $result->row()->ticket_triagem;
     }
 
     public function buscaChamado($id_chamado, $status = '') {

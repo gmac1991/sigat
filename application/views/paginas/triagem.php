@@ -17,28 +17,27 @@
 -- fim modal -->
 
 <div class="modal fade" id="modalDevolucao" tabindex="-1" role="dialog">
-            <div class="modal-dialog modal-lg" role="document">
-
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Nova Interação</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <form id="frmInteracao" method="post">
-                        <div id="conteudo_form"></div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-success" id="btnRegistrarInteracao">
-                        <i class="fas fa-check"></i> Registrar</button>
-                    </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fas fa-file-upload"></i> Devolução ao OTRS</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="frmDevolveChamado">
+          <div class="form-group mb-2">
+            <textarea class="form-control" id="txtDescDevo" placeholder="Descreva o motivo da devolução"></textarea>
+          </div>
+          <div class="text-right">
+            <button type="submit" class="btn btn-warning mb-2">Devolver</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 
 <nav aria-label="breadcrumb">
       <ol class="breadcrumb">
@@ -60,7 +59,7 @@
       <h3><?= $triagem->ticket_triagem; ?></h3> 
     </div>
     <div class="col-4 text-right">
-      <button type="button" class="btn btn-warning" id="btnDevolveChamado" data-toggle="modal" data-target="#modalDevolucao"><i class="fas fa-file-export"></i> Devolver ao OTRS</button>
+      <button type="button" class="btn btn-warning" id="btnDevolveChamado" data-toggle="modal" data-target="#modalDevolucao"><i class="fas fa-file-upload"></i> Devolver ao OTRS</button>
     </div>
   </div>
   

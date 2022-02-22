@@ -166,16 +166,19 @@ class Chamado extends CI_Controller {
 
   public function devolver_chamado() { 
 
-    $dados = array();
+    //$dados = array();
 
     // campos
 
-    $id_chamado =        $this->input->post("id_chamado");
+    $id_triagem =        $this->input->post("id_triagem");
+    $desc_devo =        $this->input->post("desc_devo");
    // $dados['id_usuario'] =        $_SESSION['id_usuario'];
 
-    $this->chamado_model->devolveChamado($id_chamado);
+   
 
-    $ticket = $this->chamado_model->buscaTicket($id_chamado);
+    $ticket = $this->chamado_model->buscaTicketTriagem($id_triagem);
+
+    $nome_usuario = $this->usuario_model->buscaUsuario($_SESSION["id_usuario"])->nome_usuario;
 
     $mail = new PHPMailer(true);
 
@@ -192,7 +195,7 @@ class Chamado extends CI_Controller {
 
         //Recipients
         $mail->setFrom('sigat@sorocaba.sp.gov.br', 'SIGAT');
-        $mail->addAddress('informatica@sorocaba.sp.gov.br');     //Add a recipient
+        $mail->addAddress('gmacedo@sorocaba.sp.gov.br');     //Add a recipient
         // $mail->addAddress('ellen@example.com');               //Name is optional
         // $mail->addReplyTo('info@example.com', 'Information');
         // $mail->addCC('cc@example.com');
@@ -204,12 +207,20 @@ class Chamado extends CI_Controller {
 
         //Content
         $mail->isHTML(true);                                  //Set email format to HTML
-        $mail->Subject = 'DEVOLUÇÃO ' . $ticket;
-        $mail->Body    = 'Este ticket foi recusado pelo SIGAT. <br>Esta mensagem e automatica. <br> DEVOLUCAO_SIGAT';
-        $mail->AltBody = 'Este ticket foi recusado pelo SIGAT. Esta mensagem e automatica. DEVOLUCAO_SIGAT';
+        $mail->Subject = utf8_decode('SIGAT - DEVOLUÇÃO ') . $ticket;
+        $mail->Body    = 
+        '<h1><strong><span style="font-size:18px"><span style="font-family:Arial,Helvetica,sans-serif">'.$ticket.'</span></span></strong></h1>
+        <p><span style="font-size:18px"><span style="font-family:Arial,Helvetica,sans-serif">Este ticket foi devolvido pelo SIGAT por <strong>'.$nome_usuario.'</strong>.<br />
+        <strong>Motivo:</strong> '.$desc_devo.'</span></span></p>
+        <p><span style="font-size:12px"><span style="font-family:Arial,Helvetica,sans-serif">ID SIGAT: #'.$id_triagem.'<br />
+        Esta mensagem &eacute; autom&aacute;tica, n&atilde;o responda.</span></span></p>';
+        //$mail->AltBody = 'Este ticket foi recusado pelo SIGAT. Esta mensagem e automatica. DEVOLUCAO_SIGAT';
 
         $mail->send();
         //header("Location: " . base_url('painel?v=triagem'));
+
+        $this->chamado_model->devolveChamado($id_triagem);
+
     } catch (Exception $e) {
         echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
     }
