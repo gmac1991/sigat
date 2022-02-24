@@ -101,6 +101,8 @@ class Consultas_model extends CI_Model {
         
         return $this->db->query($q)->result();
     }
+
+    
 	
 
     

@@ -32,7 +32,7 @@ class Admin_model extends CI_Model {
         $valores = array(
             'nome_fila' => $dados['nome_fila'],
             'status_fila' => $dados['status_fila'],
-            // 'requer_patrimonio_fila' => $dados['requer_patrimonio_fila'],
+            // 'requer_equipamento_fila' => $dados['requer_equipamento_fila'],
         );
         
         $this->db->where('id_fila', $dados['id_fila']);
@@ -56,7 +56,7 @@ class Admin_model extends CI_Model {
         $valores = array(
             'nome_fila' => $dados['nome_fila'],
             'status_fila' => $dados['status_fila'],
-            // 'requer_patrimonio_fila' => $dados['requer_patrimonio_fila'],
+            // 'requer_equipamento_fila' => $dados['requer_equipamento_fila'],
         );
         
         $this->db->insert('fila', $valores);

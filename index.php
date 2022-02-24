@@ -178,6 +178,7 @@ switch (ENVIRONMENT)
  */
 	$assign_to_config['versao'] = '0.9.9';
 	$assign_to_config['caminho_termos'] = './termos/';
+	$assign_to_config['api_sim'] = "https://sistemas.sorocaba.sp.gov.br/acesso_patrimonio/api/patrimonio/";
 
 
 

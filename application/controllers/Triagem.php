@@ -67,9 +67,10 @@ public function listar_triagem() {
                               2 => $linha->data_triagem,
                               3 => $linha->nome_solicitante_triagem,
 							                4 => $linha->email_triagem,
-                              5 => "<a href=\"" . base_url('triagem/' . $linha->id_triagem) . 
-                              "\" rel=\"noopener\" role=\"button\"" .
-                              " class=\"d-block btn btn-sm btn-info\"><i class=\"fas fa-search\"></i></a> "); //detalhes
+                              // 5 => "<a href=\"" . base_url('triagem/' . $linha->id_triagem) . 
+                              // "\" rel=\"noopener\" role=\"button\"" .
+                              // " class=\"d-block btn btn-sm btn-info\"><i class=\"fas fa-search\"></i></a> "
+                            ); //detalhes
 
     }
 

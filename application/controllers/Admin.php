@@ -60,7 +60,7 @@ class Admin extends CI_Controller {
             $dados['id_fila'] = $this->input->post('id_fila');
             $dados['nome_fila'] = $this->input->post('nome_fila');
             $dados['status_fila'] = $this->input->post('status_fila');
-            // $dados['requer_patrimonio_fila'] = $this->input->post('requer_patrimonio_fila');
+            // $dados['requer_equipamento_fila'] = $this->input->post('requer_equipamento_fila');
 
             $this->admin_model->atualizaFila($dados);
 
@@ -85,7 +85,7 @@ class Admin extends CI_Controller {
             $dados['id_fila'] = $this->input->post('id_fila');
             $dados['nome_fila'] = $this->input->post('nome_fila');
             $dados['status_fila'] = $this->input->post('status_fila');
-            // $dados['requer_patrimonio_fila'] = $this->input->post('requer_patrimonio_fila');
+            // $dados['requer_equipamento_fila'] = $this->input->post('requer_equipamento_fila');
 
             $this->admin_model->insereFila($dados);
 

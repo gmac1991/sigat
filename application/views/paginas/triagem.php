@@ -86,25 +86,28 @@
           <hr>
           <div id="msgPatr"></div>
           <div class="text-right">
-            <input type="checkbox" class="form-check-input align-middle" id="chkSoSelecaoTriagem">
-            <label class="form-check-label" for="chkSoSelecaoTriagem">Somente seleção</label>
+            <!-- <input type="checkbox" class="form-check-input align-middle" id="chkSoSelecaoTriagem"> -->
+            <!-- <label class="form-check-label" for="chkSoSelecaoTriagem">Somente seleção</label>
             
-            <button type="button" class="btn btn-primary" id="btnVerificaPatrimoniosTriagem"><i class="fas fa-search"></i> Busca automática</button>
-            <button type="button" class="btn btn-info" id="btnInsManualPatrimoniosTriagem"><i class="fas fa-pencil-alt"></i> Inserção manual</button>
+            <button type="button" class="btn btn-primary" id="btnVerificaPatrimoniosTriagem"><i class="fas fa-search"></i> Busca automática</button> -->
+            <!-- <button type="button" class="btn btn-info" id="btnInsManualPatrimoniosTriagem"><i class="fas fa-pencil-alt"></i> Inserção manual</button> -->
             <!-- <button type="button" class="btn btn-secondary" id="btnInsertManualTriagem"><i class="fas fa-pencil-alt"></i> Inserção manual</button> -->
         </div>
-        
+        <div class="progress mt-3">
+          <div id="pbEquips" class="progress-bar" role="progressbar"></div>
         </div>
-	  </div>
-
-    <div id="divInsercaoManual" style="display: none">
+      
+      </div>
+	</div>
+    <!--
+    <div id="divInsercaoManual">
       <h6>Inserção manual</h6>
       <div class="form-inline">
-        <input class="form-control" type="text" placeholder="número">&nbsp;
-        <input class="form-control" type="text" placeholder="descrição">&nbsp;
+        <input class="form-control" type="text" placeholder="número" id="txtNumEquip">&nbsp;
+        <input class="form-control" type="text" placeholder="descrição" id="txtDescEquip">&nbsp;
         <button id="btnAddNovoEquip" class="btn btn-primary"><i class="fas fa-plus"></i></button>
       </div>
-    </div>
+    </div> -->
 	  <div class="row" id="divTabelaInserviveis" style="display: none">
         <div class="col">
           <div class="alert alert-danger">Atenção! Existem equipamentos inservíveis na lista!</div>
@@ -138,20 +141,7 @@
         </div>
       </div>
 	  <button type="button" class="btn btn-primary btn-sm mb-3" id="btnRemovePatrimoniosTriagem" style="display: none">Fechar</button>
-      <div class="row" id="divTabelaPatrimonios" style="display: none">
-        <div class="col">
-        
-          <table class="table table-sm" id="tblPatrimonios">
-          <thead>
-              <tr>
-                <th>Patrimônio</th>
-                <th>Descrição</th>
-              </tr>
-            </thead>
-            <tbody>
-            </tbody>
-          </table>
-        </div>
+      <div id="tblEquips" class="jsgrid">
       </div>
 	  
 	    <hr />

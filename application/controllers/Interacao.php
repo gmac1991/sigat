@@ -180,8 +180,8 @@ class Interacao extends CI_Controller {
             
             foreach($dados['patrimonios'] as $equip) {
 
-                $pdf->Cell(36,10,$equip->num_patrimonio,1,0,'');
-                $json = file_get_contents('https://sistemas.sorocaba.sp.gov.br/acesso_patrimonio/api/patrimonio/' . $equip->num_patrimonio);
+                $pdf->Cell(36,10,$equip->num_equipamento,1,0,'');
+                $json = file_get_contents('https://sistemas.sorocaba.sp.gov.br/acesso_equipamento/api/patrimonio/' . $equip->num_equipamento);
                 $pdf->Cell(0,10,utf8_decode(json_decode($json)->descrBem),1,0,'');
                 $pdf->Ln();
 
@@ -289,8 +289,8 @@ class Interacao extends CI_Controller {
             
             foreach($dados['patrimonios'] as $equip) {
 
-                $pdf->Cell(36,10,$equip->num_patrimonio,1,0,'');
-                $json = file_get_contents('https://sistemas.sorocaba.sp.gov.br/acesso_patrimonio/api/patrimonio/' . $equip->num_patrimonio);
+                $pdf->Cell(36,10,$equip->num_equipamento,1,0,'');
+                $json = file_get_contents('https://sistemas.sorocaba.sp.gov.br/acesso_equipamento/api/patrimonio/' . $equip->num_equipamento);
                 $pdf->Cell(0,10,utf8_decode(json_decode($json)->descrBem),1,0,'');
                 $pdf->Ln();
 
@@ -410,8 +410,8 @@ class Interacao extends CI_Controller {
   
         foreach($dados['patrimonios'] as $equip) {
   
-          $pdf->Cell(36,10,$equip->num_patrimonio,1,0,'');
-          $json = file_get_contents('https://sistemas.sorocaba.sp.gov.br/acesso_patrimonio/api/patrimonio/' . $equip->num_patrimonio);
+          $pdf->Cell(36,10,$equip->num_equipamento,1,0,'');
+          $json = file_get_contents('https://sistemas.sorocaba.sp.gov.br/acesso_equipamento/api/patrimonio/' . $equip->num_equipamento);
           $pdf->Cell(0,10,utf8_decode(json_decode($json)->descrBem),1,0,'');
           $pdf->Ln();
   

@@ -196,7 +196,7 @@ class Chamado extends CI_Controller {
         //Recipients
         $mail->setFrom('sigat@sorocaba.sp.gov.br', 'SIGAT');
         $mail->addAddress('gmacedo@sorocaba.sp.gov.br');     //Add a recipient
-        // $mail->addAddress('ellen@example.com');               //Name is optional
+        $mail->addAddress('asjunior@sorocaba.sp.gov.br');    //Name is optional
         // $mail->addReplyTo('info@example.com', 'Information');
         // $mail->addCC('cc@example.com');
         // $mail->addBCC('bcc@example.com');
@@ -212,7 +212,7 @@ class Chamado extends CI_Controller {
         '<h1><strong><span style="font-size:18px"><span style="font-family:Arial,Helvetica,sans-serif">'.$ticket.'</span></span></strong></h1>
         <p><span style="font-size:18px"><span style="font-family:Arial,Helvetica,sans-serif">Este ticket foi devolvido pelo SIGAT por <strong>'.$nome_usuario.'</strong>.<br />
         <strong>Motivo:</strong> '.$desc_devo.'</span></span></p>
-        <p><span style="font-size:12px"><span style="font-family:Arial,Helvetica,sans-serif">ID SIGAT: #'.$id_triagem.'<br />
+        <p><span style="font-size:12px"><span style="font-family:Arial,Helvetica,sans-serif">ID SIGAT: #'.$id_triagem.' | DEVOLUCAO_SIGAT<br />
         Esta mensagem &eacute; autom&aacute;tica, n&atilde;o responda.</span></span></p>';
         //$mail->AltBody = 'Este ticket foi recusado pelo SIGAT. Esta mensagem e automatica. DEVOLUCAO_SIGAT';
 
@@ -268,18 +268,21 @@ class Chamado extends CI_Controller {
 			$nome_local .= " <span class=\"badge badge-success\" title=\"Entrega\"><i class=\"fas fa-truck\"></i></span>"; //inserindo badge de entrega
 	
 
-		$lista_painel['data'][] = array(0 => $linha->ticket_chamado,
-                              1 => $linha->nome_solicitante_chamado,
-                              2 => $nome_local,
-                              3 => $linha->data_chamado,
-                              4 => $linha->nome_responsavel,
-                              5 => $linha->status_chamado,
-                              6 => "<button class=\"btn btn-secondary btn-sm btn-block PopoverPainel\"" .
+		$lista_painel['data'][] = array(
+                              0 => $linha->id_chamado,
+                              1 => $linha->ticket_chamado,
+                              2 => $linha->nome_solicitante_chamado,
+                              3 => $nome_local,
+                              4 => $linha->data_chamado,
+                              5 => $linha->nome_responsavel,
+                              6 => $linha->status_chamado,
+                              7 => "<button class=\"btn btn-secondary btn-sm btn-block PopoverPainel\"" .
                               " data-chamado=\"" . $linha->id_chamado . "\">" .
                               "<i class=\"far fa-clock\"></i></button>", // ultima interacao
-                              7 => "<a href=\"" . base_url('chamado/' . $linha->id_chamado) . 
-                              "\" role=\"button\"" .
-                              " class=\"d-block btn btn-sm btn-info\"><i class=\"fas fa-search\"></i></a> "); //detalhes
+                              // 7 => "<a href=\"" . base_url('chamado/' . $linha->id_chamado) . 
+                              // "\" role=\"button\"" .
+                              // " class=\"d-block btn btn-sm btn-info\"><i class=\"fas fa-search\"></i></a> "
+                            ); //detalhes
 
     }
 

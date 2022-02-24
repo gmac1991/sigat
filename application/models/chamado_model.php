@@ -38,7 +38,7 @@ class Chamado_model extends CI_Model {
                 }
 
                 // $requerPatrimonio = $this->db->query("select * from fila where id_fila = " . $dados['id_fila'] 
-                // . " and requer_patrimonio_fila = 1");
+                // . " and requer_equipamento_fila = 1");
 
                 // ------------ FUNCAO PARA REGISTRAR ------------------ 
 
@@ -83,19 +83,19 @@ class Chamado_model extends CI_Model {
 
                         $id_chamado = registrar($this_model,$q_registraChamado,$nome_fila,$dados['id_usuario']);
 
-                        foreach($lista_abrir_chamado as $patrimonio) { //registrando na tabela patrimonio_chamado
+                        foreach($lista_abrir_chamado as $patrimonio) { //registrando na tabela equipamento_chamado
 
-                            $busca_tag = $this->db->query("select ultima_tag_patrimonio from patrimonio_chamado where ultima_tag_patrimonio <> NULL 
-                                                            and num_patrimonio = " . $patrimonio .
-                                                            " order by data_registro_patrimonio asc limit 1");
+                            $busca_tag = $this->db->query("select ultima_tag_equipamento from equipamento_chamado where ultima_tag_equipamento <> NULL 
+                                                            and num_equipamento = " . $patrimonio .
+                                                            " order by data_registro_equipamento asc limit 1");
 
                             if ($busca_tag->num_rows() == 1) {
-                                $this->db->query("insert into patrimonio_chamado values('" . $patrimonio . 
-                                                    "', " . $id_chamado . ", 'ABERTO', NULL," . $busca_tag->ultima_tag_patrimonio . ",NOW())");
+                                $this->db->query("insert into equipamento_chamado values('" . $patrimonio . 
+                                                    "', " . $id_chamado . ", 'ABERTO', NULL," . $busca_tag->ultima_tag_equipamento . ",NOW())");
                             }
 
                             else {
-                                $this->db->query("insert into patrimonio_chamado values('" . $patrimonio . "', " . $id_chamado . ", 'ABERTO',NULL,NULL,NOW())");
+                                $this->db->query("insert into equipamento_chamado values('" . $patrimonio . "', " . $id_chamado . ", 'ABERTO',NULL,NULL,NOW())");
 
                             }
 
@@ -212,7 +212,7 @@ class Chamado_model extends CI_Model {
                 // }
 
                 // $requerPatrimonio = $this->db->query("select * from fila where id_fila = " . $dados['id_fila'] 
-                // . " and requer_patrimonio_fila = 1");
+                // . " and requer_equipamento_fila = 1");
 
                 // ------------ FUNCAO PARA IMPORTAR------------------ 
 
@@ -261,19 +261,19 @@ class Chamado_model extends CI_Model {
 
                         if( $res === true ) {
 
-                            foreach($lista_abrir_chamado as $patrimonio) { //registrando na tabela patrimonio_chamado
+                            foreach($lista_abrir_chamado as $patrimonio) { //registrando na tabela equipamento_chamado
 
-                                $busca_tag = $this->db->query("select ultima_tag_patrimonio from patrimonio_chamado where ultima_tag_patrimonio <> NULL 
-                                                                and num_patrimonio = " . $patrimonio .
-                                                                " order by data_registro_patrimonio asc limit 1");
+                                $busca_tag = $this->db->query("select ultima_tag_equipamento from equipamento_chamado where ultima_tag_equipamento <> NULL 
+                                                                and num_equipamento = " . $patrimonio .
+                                                                " order by data_registro_equipamento asc limit 1");
     
                                 if ($busca_tag->num_rows() == 1) {
-                                    $this->db->query("insert into patrimonio_chamado values('" . $patrimonio . 
-                                                        "', " . $dados['id_chamado'] . ", 'ABERTO', NULL," . $busca_tag->ultima_tag_patrimonio . ",NOW())");
+                                    $this->db->query("insert into equipamento_chamado values('" . $patrimonio . 
+                                                        "', " . $dados['id_chamado'] . ", 'ABERTO', NULL," . $busca_tag->ultima_tag_equipamento . ",NOW())");
                                 }
     
                                 else {
-                                    $this->db->query("insert into patrimonio_chamado values('" . $patrimonio . "', " . $dados['id_chamado'] . ", 'ABERTO',NULL,NULL,NOW())");
+                                    $this->db->query("insert into equipamento_chamado values('" . $patrimonio . "', " . $dados['id_chamado'] . ", 'ABERTO',NULL,NULL,NOW())");
                                 }
     
             
@@ -582,16 +582,13 @@ class Chamado_model extends CI_Model {
         fila.id_fila = chamado.id_fila_chamado and
         chamado.id_chamado = " . $id_chamado;
 
-        $q_buscaPatrimonios = "select num_patrimonio from patrimonio_chamado where id_chamado_patrimonio = " . $id_chamado . 
-        " and status_patrimonio_chamado = '" . $status . "'";
 
         $q_buscaEquipamentos = "select * from equipamento_chamado where id_chamado_equipamento = " . $id_chamado . 
-        " and status_equipamento = '" . $status . "'";
+        " and status_equipamento_chamado = '" . $status . "'";
         
         $q_buscaAnexos = "select nome_anexo from anexo where id_chamado_anexo = " . $id_chamado;
         
 
-        $result['patrimonios'] = $this->db->query($q_buscaPatrimonios)->result();
         
         $result['equipamentos'] = $this->db->query($q_buscaEquipamentos)->result();
         

@@ -11,6 +11,7 @@ class Backend extends CI_Controller {
     function __construct() {
         parent::__construct();
         $this->load->library('consulta_ldap');
+        $this->load->model("equipamento_model");
         /* $this->load->library('encryption');
         $this->encryption->initialize(array('driver' => 'openssl')); */
     }
@@ -283,9 +284,9 @@ class Backend extends CI_Controller {
             $termo = $this->input->get('q');
 
             try {
-            $result = $this->db->query("select id_chamado, num_patrimonio from patrimonio_chamado, chamado 
-            where num_patrimonio = " . $termo . 
-            " and id_chamado_patrimonio = chamado.id_chamado
+            $result = $this->db->query("select id_chamado, num_equipamento from equipamento_chamado, chamado 
+            where num_equipamento = " . $termo . 
+            " and id_chamado_equipamento = chamado.id_chamado
             and chamado.status_chamado = 'ABERTO'")->result_array();
             
             header("Content-Type: application/json");
@@ -319,7 +320,7 @@ class Backend extends CI_Controller {
                 fila.id_fila = chamado.id_fila_chamado and
                 chamado.id_chamado = " . $id_chamado;
 
-            $q_buscaPatrimonios = "select * from patrimonio_chamado where id_chamado_patrimonio = " . $id_chamado;
+            $q_buscaPatrimonios = "select * from equipamento_chamado where id_chamado_equipamento = " . $id_chamado;
 
             $q_buscaEquipamentos = "select * from equipamento_chamado where id_chamado_equipamento = " . $id_chamado;
             
@@ -482,31 +483,48 @@ class Backend extends CI_Controller {
 
     }
 
-    public function patrimonio() {
+    public function equipamento() {
 
         if (isset($_SESSION['id_usuario'])) {
 
-            $url = $this->input->get('url');
-            $termo = $this->input->get('q');
-            
-            $json = file_get_contents($url);
+            $num_equip = $this->input->post('e');
 
-            $dados['patrimonio'] = $termo;
-            
             $dados['descricao'] = NULL;
 
-            if ($json != 'null') {
-                $dados['descricao'] = json_decode($json)->descrBem;
+            $descEquipSigat = $this->equipamento_model->buscaDescEquipamento($num_equip);
 
+          
+            if ($descEquipSigat === NULL) {
+
+                $res_sim = NULL;
+
+                $res_sim = file_get_contents($this->config->item('api_sim') . $num_equip);
+
+                if ($res_sim != 'null') {
+
+                    $descSim = json_decode($res_sim)->descrBem; //descricao do SIM
+
+                    $dados['descricao'] = $descSim;
+                }
+            }  
+            else {
+
+                $dados['descricao'] = $descEquipSigat; //se estiver cadastrado, pega a desc do SIGAT
             }
+            
+            
+            
+            
+
+            
 
             $dados['chamado'] = NULL;
 
-            $busca = $this->db->query("select id_chamado, num_patrimonio from patrimonio_chamado, chamado 
-            where num_patrimonio = " . $termo . 
-            " and id_chamado_patrimonio = chamado.id_chamado
-            and patrimonio_chamado.status_patrimonio_chamado <> 'ATENDIDO' 
-            and patrimonio_chamado.status_patrimonio_chamado <> 'ENTREGUE'
+           /* $busca = $this->db->query("select id_chamado, num_equipamento from equipamento_chamado, chamado 
+            where num_equipamento = " . $num_equip . 
+            " and id_chamado_equipamento = chamado.id_chamado
+            and equipamento_chamado.status_equipamento_chamado <> 'ATENDIDO' 
+            and equipamento_chamado.status_equipamento_chamado <> 'ENTREGUE'
             and chamado.status_chamado = 'ABERTO'");
 
             $result = $busca->row_array();
@@ -517,8 +535,8 @@ class Backend extends CI_Controller {
             }
 
 
-            $busca = $this->db->query("select id_chamado_patrimonio from patrimonio_chamado p, interacao i
-            where p.num_patrimonio = " . $termo . " and p.status_patrimonio_chamado = 'INSERVIVEL'" );
+            $busca = $this->db->query("select id_chamado_equipamento from equipamento_chamado p, interacao i
+            where p.num_equipamento = " . $num_equip . " and p.status_equipamento_chamado = 'INSERVIVEL'" );
 
             $result = $busca->row_array();
 
@@ -527,7 +545,7 @@ class Backend extends CI_Controller {
                 $dados['inservivel'] = $result;
             } else {
                 $dados['inservivel'] = FALSE;
-            }
+            }*/
 
             header("Content-Type: application/json");
 
@@ -563,11 +581,11 @@ class Backend extends CI_Controller {
 
             $dados['filas'] = $result;
 
-            // if ($result['requer_patrimonio_fila'] == 1) { // filas
+            // if ($result['requer_equipamento_fila'] == 1) { // filas
 
             //     $requer_patri = TRUE;
 
-            //     $busca = $this->db->query("select id_fila, nome_fila from fila where requer_patrimonio_fila = 1");
+            //     $busca = $this->db->query("select id_fila, nome_fila from fila where requer_equipamento_fila = 1");
 
             //     $result = $busca->result_array();
 
@@ -575,7 +593,7 @@ class Backend extends CI_Controller {
 
             // } else {
 
-            //     $busca = $this->db->query("select id_fila, nome_fila from fila where requer_patrimonio_fila = 0");
+            //     $busca = $this->db->query("select id_fila, nome_fila from fila where requer_equipamento_fila = 0");
 
             //     $result = $busca->result_array();
 
@@ -590,13 +608,13 @@ class Backend extends CI_Controller {
 
                 if ($espera == 'false') {
 
-                    $busca = $this->db->query("select num_patrimonio from patrimonio_chamado where id_chamado_patrimonio = " . $id_chamado . 
-                    " and (status_patrimonio_chamado = 'ABERTO' or status_patrimonio_chamado = 'FALHA')");
+                    $busca = $this->db->query("select num_equipamento from equipamento_chamado where id_chamado_equipamento = " . $id_chamado . 
+                    " and (status_equipamento_chamado = 'ABERTO' or status_equipamento_chamado = 'FALHA')");
                 
                 } else {
                     
-                    $busca = $this->db->query("select num_patrimonio from patrimonio_chamado where id_chamado_patrimonio = " . $id_chamado . 
-                    " and status_patrimonio_chamado = 'ESPERA'");
+                    $busca = $this->db->query("select num_equipamento from equipamento_chamado where id_chamado_equipamento = " . $id_chamado . 
+                    " and status_equipamento_chamado = 'ESPERA'");
 
                 }
 
@@ -634,14 +652,14 @@ class Backend extends CI_Controller {
         }
     }
 
-    // public function requer_patrimonio() {
+    // public function requer_equipamento() {
 
     //     $id_fila = $this->input->get('id_fila');
 
     //     if (isset($_SESSION['id_usuario'])) {
 
     //         try {
-    //             $busca = $this->db->query("SELECT * FROM fila WHERE id_fila = " . $id_fila . " and requer_patrimonio_fila = 1");
+    //             $busca = $this->db->query("SELECT * FROM fila WHERE id_fila = " . $id_fila . " and requer_equipamento_fila = 1");
                 
     //             $result = $busca->result_array();
                 
