@@ -27,10 +27,10 @@ class Triagem extends CI_Controller {
 
       $this->load->view('templates/cabecalho', $usuario);
 
-      $lista_filas = $this->consultas_model->listaFilas(); 
+      //$lista_filas = $this->consultas_model->listaFilas(); 
       $lista_solicitantes = $this->consultas_model->listaSolicitantes();
       $lista_locais = $this->consultas_model->listaLocais();
-      $dados = array_merge($dados,array("filas" => $lista_filas, "solicitantes" => $lista_solicitantes, "locais" => $lista_locais));
+      $dados = array_merge($dados,array(/*"filas" => $lista_filas,*/ "solicitantes" => $lista_solicitantes, "locais" => $lista_locais));
 
       
       $dados['usuarios'] = $this->usuario_model->buscaUsuarios(); //traz a lista de todos os usuarios

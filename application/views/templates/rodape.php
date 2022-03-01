@@ -47,7 +47,7 @@ if (isset($_SESSION['id_usuario'])) {
   <script type="text/javascript" src="<?= base_url("js/jsgrid.min.js"); ?>"></script>
   <script src="<?= base_url("fa/js/all.min.js")?>"></script>
   <script src="<?= base_url("js/moment.min.js")?>"></script>
-  <script src="<?= base_url("js/principal.min.js")?>"></script>
+  <script src="<?= base_url("js/principal.js")?>"></script>
  
   
   

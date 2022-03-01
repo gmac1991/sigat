@@ -19,6 +19,26 @@ class Equipamento_model extends CI_Model {
 
     }
 
+    public function buscaStatusEquipamento($num_equip) {
+
+        $busca = $this->db->query("SELECT id_chamado, ticket_chamado, status_equipamento_chamado
+        FROM chamado,equipamento_chamado
+        WHERE equipamento_chamado.num_equipamento_chamado = $num_equip 
+        AND (equipamento_chamado.status_equipamento_chamado = 'ABERTO' OR 
+        equipamento_chamado.status_equipamento_chamado = 'ENTREGA' OR
+        equipamento_chamado.status_equipamento_chamado = 'INSERVIVEL')
+        AND equipamento_chamado.id_chamado_equipamento = chamado.id_chamado");
+
+        if($busca->num_rows() == 1) {
+
+            return $busca->row_array();
+        }
+
+        else
+            return NULL;
+
+    }
+
     public function insereEquipamento($num_equip,$desc_equip) {
 
         $insercao = $this->db->query("insert into equipamento values(".$num_equip.",'".$desc_equip."')");

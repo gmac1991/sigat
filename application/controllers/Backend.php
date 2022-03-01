@@ -483,7 +483,7 @@ class Backend extends CI_Controller {
 
     }
 
-    public function equipamento() {
+    public function desc_equipamento() {
 
         if (isset($_SESSION['id_usuario'])) {
 
@@ -511,45 +511,34 @@ class Backend extends CI_Controller {
 
                 $dados['descricao'] = $descEquipSigat; //se estiver cadastrado, pega a desc do SIGAT
             }
-            
-            
-            
-            
-
-            
-
-            $dados['chamado'] = NULL;
-
-           /* $busca = $this->db->query("select id_chamado, num_equipamento from equipamento_chamado, chamado 
-            where num_equipamento = " . $num_equip . 
-            " and id_chamado_equipamento = chamado.id_chamado
-            and equipamento_chamado.status_equipamento_chamado <> 'ATENDIDO' 
-            and equipamento_chamado.status_equipamento_chamado <> 'ENTREGUE'
-            and chamado.status_chamado = 'ABERTO'");
-
-            $result = $busca->row_array();
-
-            if ($result != FALSE) {
-
-                $dados['chamado'] = $result['id_chamado'];
-            }
-
-
-            $busca = $this->db->query("select id_chamado_equipamento from equipamento_chamado p, interacao i
-            where p.num_equipamento = " . $num_equip . " and p.status_equipamento_chamado = 'INSERVIVEL'" );
-
-            $result = $busca->row_array();
-
-            if ($result != FALSE) {
-
-                $dados['inservivel'] = $result;
-            } else {
-                $dados['inservivel'] = FALSE;
-            }*/
 
             header("Content-Type: application/json");
 
             echo json_encode($dados);
+
+        } else {
+            die("Não autorizado!");
+        }
+    }
+
+    public function status_equipamento() {
+
+        if (isset($_SESSION['id_usuario'])) {
+
+
+            $statusEquip = $this->equipamento_model->buscaStatusEquipamento($this->input->post('e'));
+
+            if($statusEquip == NULL)
+                echo FALSE;
+
+            else {
+
+                header("Content-Type: application/json");
+
+                echo json_encode($statusEquip);
+            }
+           
+            
         } else {
             die("Não autorizado!");
         }
