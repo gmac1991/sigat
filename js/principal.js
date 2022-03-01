@@ -3096,120 +3096,188 @@ async function criaTabelaPatrimoniosTriagem(url) {
 
 }
 
+function uniq_fast(a) {
+    var seen = {};
+    var out = [];
+    var len = a.length;
+    var j = 0;
+    for(var i = 0; i < len; i++) {
+         var item = a[i];
+         if(seen[item] !== 1) {
+               seen[item] = 1;
+               out[j++] = item;
+         }
+    }
+    return out;
+}
+
+var g_equips = [];
+
+async function verificaStatusEquip(p_e) {
+
+    out = null;
+
+    await $.ajax({
+        method: "post",
+        url: base_url + "backend/status_equipamento",
+        data: { e: p_e}
+      })
+        .done(function( res ) {
+
+            if (res !== false) {
+
+                console.log(res);
+
+                out = res;
+            }
+
+
+        });
+
+    return out;
+
+
+}
+
+async function verificaDescEquip(p_e) {
+    out = null;
+    await $.ajax({
+        method: "post",
+        url: base_url + "backend/desc_equipamento",
+        data: { e: p_e}
+      })
+        .done(function( res ) {
+            if (res !== false) {
+                out = res;
+            }
+        });
+    return out;
+}
+
 async function verificaAutoEquip() {
-
+    var nums_equip = [];
+    var out = [];
     var textoTriagem = null;
-
+    $("#btnValidaEquip").prop("disabled","true");
     $("#pbEquips").css("width","0%");
-
     $("#btnVerificaPatrimoniosTriagem").prop("disabled","true");
-
     if (($("#chkSoSelecaoTriagem").is(':checked'))) {
-
         textoTriagem = window.getSelection().toString();
     } else {
-
         textoTriagem = $('[name=descricao_triagem]').html();
     }
-     
-    const vetor = textoTriagem.match(/[1-9]\d{5}\b/g);
-
-    if (vetor != null) {
-
-        // verificando duplicatas...
-
-        function uniq_fast(a) {
-            var seen = {};
-            var out = [];
-            var len = a.length;
-            var j = 0;
-            for(var i = 0; i < len; i++) {
-                 var item = a[i];
-                 if(seen[item] !== 1) {
-                       seen[item] = 1;
-                       out[j++] = item;
-                 }
-            }
-            return out;
-        }
-
-        const new_vetor = uniq_fast(vetor);
-
-        console.log(new_vetor);
-
-        out = [];
-
-        percentage = (100*1)/new_vetor.length;
+    nums_equip = textoTriagem.match(/[1-9]\d{5}\b/g);
+    if (nums_equip.length > 0) {
+        nums_equip = uniq_fast(nums_equip);
+        
+        percentage = (100*1)/nums_equip.length;
         total_percentage = 0;
+        for (i=0;i<nums_equip.length;i++) {
 
-        for (i=0;i<new_vetor.length;i++) {
-
-            await $.ajax({
-                method: "post",
-                url: base_url + "backend/equipamento",
-                data: { e: new_vetor[i]}
-              })
-                .done(function( res ) {
-                    if (res.descricao == null) {
-
-                        out.push({"Número":new_vetor[i],"Descrição":"(sem descrição)"});
-                    }
-
-                    else {
-
-                        out.push({"Número":new_vetor[i],"Descrição":res.descricao});
-                    }
-                  
-                });
-
-                total_percentage = total_percentage + percentage;
             
+            var res = await verificaDescEquip(nums_equip[i]);
+
+            //console.log(desc);
+
+            out.push({"Número":nums_equip[i],"Descrição":res.descricao});
+
+            total_percentage = total_percentage + percentage;
             $("#pbEquips").css("width",total_percentage+"%");   
         }
         $("#tblEquips").jsGrid("option","data",out);
-
         $("#btnVerificaPatrimoniosTriagem").removeAttr("disabled");
-
-       // criaTabelaPatrimoniosTriagem(new_vetor, url);
+        g_equips = out;
+        $("#btnValidaEquip").removeAttr("disabled");
     } 
 }
 
-$("#btnVerificaPatrimoniosTriagem").click(async function() {
 
-    
-
+$("#tblEquips").jsGrid({
+    width: '100%',
+    autoload: false,
+    editing: true,
+    inserting: true,
+    confirmDeleting: false,
+    fields: [
+        { 
+            name: "Número", 
+            type: "text", 
+            width: 50,
+            validate: "required",     
+        },
+        { 
+            name: "Descrição", 
+            type: "text", 
+            width: 50,
+            validate: "required",
+        },
+        {
+            type: "control",
+            deleteButton: true
+        }
+    ],
+    onItemEditing: function(args) {
+        // cancel editing of the row of item with field 'ID' = 0
+        if(args.item.ID === 0) {
+            args.cancel = true;
+        }
+    }
 });
 
-$("#btnRemovePatrimoniosTriagem").click(function() {
 
-    $('#tblPatrimoniosAbertos tbody tr').remove();
-    $('#divTabelaChamadosAbertos').hide();
-    $('#tblInserviveis tbody tr').remove();
-    $('#divTabelaInserviveis').hide();
-    $("#btnRemovePatrimoniosTriagem").hide();
+$("#btnValidaEquip").click(function() {
+    grid_equips = $("#tblEquips").jsGrid("option","data");
+    g_equips = [];
+    erros = [];
+    if (grid_equips.length > 0) {
+        for (i=0;i<grid_equips.length;i++) {
+            if (grid_equips[i].Número == "" && grid_equips[i].Descrição == "") {
+                erros.push("Existem itens vazios na lista!");
+            }
+            else {
+                if (grid_equips[i].Número == "") {
+                    erros.push("O item "+grid_equips[i].Descrição+" está sem número!");
+                }
 
+                if (grid_equips[i].Descrição == "") {
+                    erros.push("O item "+grid_equips[i].Número+" está sem descrição!");
 
-
-    $('#btnVerificaPatrimoniosTriagem').removeAttr('disabled');
-
-
-    vetorListaOK = [];
-
+                }
+            }
+        }
+        if (erros.length == 0 && g_equips.length == 0 ) { 
+            g_equips = grid_equips;
+            $(this).html('<i class="fa fa-check"></i> Confirmado!');
+            $("#tblEquips").jsGrid("fieldOption", 2, "visible", false);
+            $("#tblEquips").jsGrid("option","editing", false);
+            $(this).prop("disabled","true");
+            $("#btnAlteraEquip").removeAttr("disabled");
+        }
+        else {
+            alert(erros);
+        }
+    }
+    else {
+        alert("A lista está vazia!");
+    }
 });
 
-$("#btnAlteraPatrimoniosTriagem").click(function() {
+$("#btnAlteraEquip").click(function() {
 
+    g_equips = [];
 
-    $('#tblPatrimoniosAbertos tbody tr').remove();
-    $('#btnVerificaPatrimoniosTriagem').removeAttr('disabled');
-    $("#btnAlteraPatrimoniosEquip").hide();
+    $("#btnValidaEquip").html('<i class="fa fa-check"></i> Confirmar!');
 
-    $('#divTabelaPatrimonios').hide();
-    $('#divTabelaChamadosAbertos').hide();
+    $("#tblEquips").jsGrid("fieldOption", 2, "visible", true);
 
-    listaVerificada = false;
+    $("#tblEquips").jsGrid("option","editing", true);
 
-});
+    $(this).prop("disabled","true");
+
+    $("#btnValidaEquip").removeAttr("disabled");
+
+})
+
 
 
 $("#frmDevolveChamado").on('submit',function(e) {
@@ -3249,27 +3317,6 @@ $("#frmDevolveChamado").on('submit',function(e) {
 
 
 
-$("#tblEquips").jsGrid({
-
-    width: '100%',
-
-    autoload: false,
-
-    editing: true,
-    inserting: true,
-
-    
-    confirmDeleting: false,
-
-    fields: [
-        { name: "Número", type: "text", width: 50},
-        { name: "Descrição", type: "text", width: 50},
-        {
-            type: "control",
-            deleteButton: true
-        }
-    ]
-});
 
 
 //------------------ SUBMIT DA TRIGEM --------------
