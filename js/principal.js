@@ -3232,7 +3232,7 @@ $("#tblEquips").jsGrid({
 $("#btnValidaEquip").on('click', function() {
    
     grid_equips = $("#tblEquips").jsGrid("option","data");
-    console.log(grid_equips)
+    console.log(grid_equips);
     g_equips = [];
     var erros = [];
     var ocorrencias = [];
