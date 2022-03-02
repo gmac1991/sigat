@@ -487,12 +487,11 @@ class Backend extends CI_Controller {
 
         if (isset($_SESSION['id_usuario'])) {
 
-            $num_equip = $this->input->post('e');
+            $num_equip = $this->input->post('e_desc');
 
             $dados['descricao'] = NULL;
 
             $descEquipSigat = $this->equipamento_model->buscaDescEquipamento($num_equip);
-
           
             if ($descEquipSigat === NULL) {
 
@@ -523,10 +522,12 @@ class Backend extends CI_Controller {
 
     public function status_equipamento() {
 
-        //if (isset($_SESSION['id_usuario'])) {
+        if (isset($_SESSION['id_usuario'])) {
+
+            //var_dump($this->input->post('e'));
 
 
-            $statusEquip = $this->equipamento_model->buscaStatusEquipamento($this->input->post('e'));
+            $statusEquip = $this->equipamento_model->buscaStatusEquipamento($_POST['e_status']);
 
             if($statusEquip == NULL)
                 echo FALSE;
@@ -539,9 +540,9 @@ class Backend extends CI_Controller {
             }
            
             
-        // } else {
-        //     die("Não autorizado!");
-        // }
+        } else {
+            die("Não autorizado!");
+        }
     }
 
     public function patrimonios() {

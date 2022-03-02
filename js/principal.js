@@ -3120,13 +3120,13 @@ async function verificaStatusEquip(p_e) {
     await $.ajax({
         method: "post",
         url: base_url + "backend/status_equipamento",
-        data: { e: p_e}
+        data: { e_status: p_e}
       })
         .done(function( res ) {
 
             if (res !== false) {
 
-                console.log(res);
+                //console.log(res);
 
                 out = res;
             }
@@ -3144,10 +3144,10 @@ async function verificaDescEquip(p_e) {
     await $.ajax({
         method: "post",
         url: base_url + "backend/desc_equipamento",
-        data: { e: p_e}
+        data: { e_desc: p_e}
       })
         .done(function( res ) {
-            if (res !== false) {
+            if (res !== null) {
                 out = res;
             }
         });
@@ -3213,7 +3213,6 @@ $("#tblEquips").jsGrid({
             name: "Descrição", 
             type: "text", 
             width: 50,
-            validate: "required",
         },
         {
             type: "control",
@@ -3229,16 +3228,21 @@ $("#tblEquips").jsGrid({
 });
 
 
-$("#btnValidaEquip").on('click', function() {
+var ocorrencias = [];
+
+
+$("#btnValidaEquip").on('click', async function() {
+
+    $(this).prop("disabled","true");
    
     var grid_equips = $("#tblEquips").jsGrid("option","data");
     g_equips = [];
     var erros = [];
-    var ocorrencias = [];
+    
+    ocorrencias = [];
 
     if (grid_equips.length > 0) {
         for (i=0;i<grid_equips.length;i++) {
-            console.log(i);
             if (grid_equips[i].Número == "" && grid_equips[i].Descrição == "") {
                 erros.push("Existem itens vazios na lista!");
             }
@@ -3247,20 +3251,27 @@ $("#btnValidaEquip").on('click', function() {
                     erros.push("O item "+grid_equips[i].Descrição+" está sem número!");
                 }
                 else {
-                    var status = await verificaStatusEquip(grid_equips[i]);
-                    if (status.status_equipamento_chamado !== 'ATENDIDO') {
-                        ocorrencias.push({"Número":grid_equips[i],"Status":status.status_equipamento_chamado,"ID":status.id_chamado,"Ticket":status.ticket_chamado})
+                    var status = await verificaStatusEquip(grid_equips[i].Número);
+                    if (status !== "" && status.status_equipamento_chamado !== 'ATENDIDO') {
+                        ocorrencias.push({"Número":grid_equips[i].Número,"Status":status.status_equipamento_chamado,"ID":status.id_chamado,"Ticket":status.ticket_chamado})
                     }
                 }
+
+                var res = await verificaDescEquip(grid_equips[i].Número);
+                if (res.descricao !== null)
+                    grid_equips[i].Descrição = res.descricao;
+
                 if (grid_equips[i].Descrição === null) {
                     erros.push("O item "+grid_equips[i].Número+" está sem descrição!");
                 }
-            }
+            }     
         }
 
-        if (erros.length == 0 && g_equips.length == 0 ) { 
+        if (erros.length == 0 && g_equips.length == 0 ) {
+            $("#tblEquips").jsGrid("option","data",grid_equips); 
             if (ocorrencias.length > 0) {
-                alert(ocorrencias);
+                $('#modalOcorrencias').modal('show');
+                $(this).removeAttr("disabled");
             }
             else {
                 g_equips = grid_equips;
@@ -3274,12 +3285,60 @@ $("#btnValidaEquip").on('click', function() {
         }
         else {
             alert(erros);
+            $(this).removeAttr("disabled");
         }
     }
     else {
         alert("A lista está vazia!");
+        $(this).removeAttr("disabled");
     }
 });
+
+$('#modalOcorrencias').on('hidden.bs.modal', function (e) {
+
+    $("#tblOcorrencias").jsGrid("option","data",[]); //resetando a tabela de ocorrencias
+
+});
+
+$('#modalOcorrencias').on('shown.bs.modal', function (e) {
+    
+    $("#tblOcorrencias").jsGrid({
+    width: '100%',
+    autoload: false,
+    editing: false,
+    inserting: false,
+    data: ocorrencias,
+    fields: [
+        { 
+            name: "Número", 
+            type: "text", 
+            width: 50,
+            validate: "required",     
+        },
+        { 
+            name: "Status", 
+            type: "text", 
+            width: 20,
+            validate: "required",
+        },
+        { 
+            name: "ID", 
+            type: "text", 
+            width: 30,
+            validate: "required",
+        },
+        { 
+            name: "Ticket", 
+            type: "text", 
+            width: 50,
+            validate: "required",
+        },
+    ],
+    rowClick: function(args) {
+        window.open(base_url + '/chamado/' + args.item.ID,'_blank ');
+      }
+});
+  })
 
 $("#btnAlteraEquip").on('click', function() {
 

@@ -1,20 +1,26 @@
-<!-- modal
-   <div class="modal fade show" id="modalDescChamado" tabindex="-1" role="dialog" aria-hidden="true">
-     <div class="modal-dialog" role="document">
+<!-- modal Ocorrencias -->
+   <div class="modal fade show" id="modalOcorrencias" tabindex="-1" role="dialog" aria-hidden="true">
+     <div class="modal-dialog modal-lg" role="document">
        <div class="modal-content">
          <div class="modal-header">
-           <h5 class="modal-title"><br><span id="data_chamado"></span></h5>
+           <h5 class="modal-title"><i class="fas fa-exclamation-circle"></i> Ocorrências</h5>
            
            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
              <span aria-hidden="true">&times;</span>
            </button>
          </div>
-         <div class="modal-body"></div>
+         <div class="modal-body">
+         <p><strong>Atenção!</strong> Existem na lista equipamentos em atendimento ou inservíveis!</p>
+         <div id="tblOcorrencias"></div>
+
+         </div>
        </div>
      </div>
    </div>
-   
-   -- fim modal -->
+<!-- fim modal -->  
+  
+
+<!-- modal Devolucao -->
    <div class="modal fade" id="modalDevolucao" tabindex="-1" role="dialog">
    <div class="modal-dialog modal-dialog-centered" role="document">
       <div class="modal-content">
@@ -37,6 +43,10 @@
       </div>
    </div>
 </div>
+
+<!-- fim modal -->
+
+
 <nav aria-label="breadcrumb">
    <ol class="breadcrumb">
       <li class="breadcrumb-item active"><a href="<?= base_url('painel?v=triagem'); ?>">Painel</a></li>
