@@ -3231,7 +3231,7 @@ $("#tblEquips").jsGrid({
 
 $("#btnValidaEquip").on('click', function() {
    
-    var grid_equips = $("#tblEquips").jsGrid("option","data");
+    var grid_equips = await $("#tblEquips").jsGrid("option","data");
     console.log(grid_equips);
     g_equips = [];
     var erros = [];
