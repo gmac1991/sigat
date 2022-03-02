@@ -523,7 +523,7 @@ class Backend extends CI_Controller {
 
     public function status_equipamento() {
 
-        if (isset($_SESSION['id_usuario'])) {
+        //if (isset($_SESSION['id_usuario'])) {
 
 
             $statusEquip = $this->equipamento_model->buscaStatusEquipamento($this->input->post('e'));
@@ -539,9 +539,9 @@ class Backend extends CI_Controller {
             }
            
             
-        } else {
-            die("Não autorizado!");
-        }
+        // } else {
+        //     die("Não autorizado!");
+        // }
     }
 
     public function patrimonios() {

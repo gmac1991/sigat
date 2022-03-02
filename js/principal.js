@@ -3237,7 +3237,7 @@ $("#btnValidaEquip").on('click', function() {
     var ocorrencias = [];
 
     if (grid_equips.length > 0) {
-        for (i=0;i<grid_equips.length-1;i++) {
+        for (i=0;i<grid_equips.length;i++) {
             console.log(i);
             if (grid_equips[i].Número == "" && grid_equips[i].Descrição == "") {
                 erros.push("Existem itens vazios na lista!");
