@@ -3220,12 +3220,12 @@ $("#tblEquips").jsGrid({
             deleteButton: true
         }
     ],
-    onItemEditing: function(args) {
-        // cancel editing of the row of item with field 'ID' = 0
-        if(args.item.ID === 0) {
-            args.cancel = true;
-        }
-    }
+    // onItemEditing: function(args) {
+    //     // cancel editing of the row of item with field 'ID' = 0
+    //     if(args.item.ID === 0) {
+    //         args.cancel = true;
+    //     }
+    // }
 });
 
 
