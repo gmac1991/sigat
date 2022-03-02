@@ -3252,7 +3252,9 @@ $("#btnValidaEquip").on('click', function() {
                 }
             if (grid_equips[i].Descrição == "") {
                     grid_equips[i].Descrição = await verificaDescEquip(grid_equips[i]);
-                    //erros.push("O item "+grid_equips[i].Número+" está sem descrição!");
+
+                    if (grid_equips[i].Descrição === null)
+                        erros.push("O item "+grid_equips[i].Número+" está sem descrição!");
                 }
             }
         }
