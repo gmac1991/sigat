@@ -3250,11 +3250,8 @@ $("#btnValidaEquip").on('click', function() {
                         ocorrencias.push({"Número":grid_equips[i],"Status":status.status_equipamento_chamado,"ID":status.id_chamado,"Ticket":status.ticket_chamado})
                     }
                 }
-            if (grid_equips[i].Descrição == "") {
-                    grid_equips[i].Descrição = await verificaDescEquip(grid_equips[i]);
-
-                    if (grid_equips[i].Descrição === null)
-                        erros.push("O item "+grid_equips[i].Número+" está sem descrição!");
+            if (grid_equips[i].Descrição === null) {
+                    erros.push("O item "+grid_equips[i].Número+" está sem descrição!");
                 }
             }
         }
