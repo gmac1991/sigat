@@ -3084,18 +3084,6 @@ function carregaTriagem(p_id_triagem) {
 
 }
 
-
-
-async function criaTabelaPatrimoniosTriagem(url) {
-
-    vetorListaOK = [];
-
-    //var vetorPatrInv = [];
-
-    
-
-}
-
 function uniq_fast(a) {
     var seen = {};
     var out = [];
@@ -3219,12 +3207,6 @@ $("#tblEquips").jsGrid({
             deleteButton: true
         }
     ],
-    // onItemEditing: function(args) {
-    //     // cancel editing of the row of item with field 'ID' = 0
-    //     if(args.item.ID === 0) {
-    //         args.cancel = true;
-    //     }
-    // }
 });
 
 
@@ -3234,12 +3216,17 @@ var ocorrencias = [];
 $("#btnValidaEquip").on('click', async function() {
 
     $(this).prop("disabled","true");
+    
+    $("#pbEquips").css("width","0%");  
    
     var grid_equips = $("#tblEquips").jsGrid("option","data");
     g_equips = [];
     var erros = [];
     
     ocorrencias = [];
+
+    percentage = (100*1)/grid_equips.length;
+    total_percentage = 0;
 
     if (grid_equips.length > 0) {
         for (i=0;i<grid_equips.length;i++) {
@@ -3264,7 +3251,10 @@ $("#btnValidaEquip").on('click', async function() {
                 if (grid_equips[i].Descrição === null) {
                     erros.push("O item "+grid_equips[i].Número+" está sem descrição!");
                 }
-            }     
+            }
+            
+            total_percentage = total_percentage + percentage;
+            $("#pbEquips").css("width",total_percentage+"%"); 
         }
 
         if (erros.length == 0 && g_equips.length == 0 ) {
@@ -3415,18 +3405,6 @@ $('#frmImportarChamado').on('submit',
             digits: true,
             minlength: 3,
         },
-        listaPatrimonios: {
-            // required: function() {
-            // 	if ($('#flagPrecisaPatrimonio').val() == 1 && $('#id_fila').val() != 6) { //bypass da fila Solicitacao de Equipamentos
-            // 		return true;
-            // 	} else {
-            // 		return false;
-            // 	}
-            // },
-            required: true,
-            minlength: 6,
-            // maxlength: 2000
-        },
         descricao: {
             required: true,
             // maxlength: 2000,
@@ -3452,12 +3430,6 @@ $('#frmImportarChamado').on('submit',
             minlength: "Descrição insuficiente!",
             maxlength: "Tamanha máximo excedido!"
         },
-
-        // listaPatrimonios: {
-        // 	required: "Campo obrigatório!",
-        // 	minlength: "Informe pelo menos 1 patrimônio!",
-        // 	maxlength: "Tamanha máximo excedido!"
-        // },
 
         id_fila: {
             required: "Selecione uma fila válida!",
