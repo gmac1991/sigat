@@ -3230,9 +3230,12 @@ $("#tblEquips").jsGrid({
 
 
 $("#btnValidaEquip").on('click', function() {
+   
     grid_equips = $("#tblEquips").jsGrid("option","data");
+    console.log(grid_equips)
     g_equips = [];
-    erros = [];
+    var erros = [];
+    var ocorrencias = [];
     if (grid_equips.length > 0) {
         for (i=0;i<grid_equips.length;i++) {
             if (grid_equips[i].Número == "" && grid_equips[i].Descrição == "") {
@@ -3242,26 +3245,19 @@ $("#btnValidaEquip").on('click', function() {
                 if (grid_equips[i].Número == "") {
                     erros.push("O item "+grid_equips[i].Descrição+" está sem número!");
                 }
-
-                if (grid_equips[i].Descrição == "") {
+                else {
+                    var status = await verificaStatusEquip(grid_equips[i]);
+                    if (status.status_equipamento_chamado !== 'ATENDIDO') {
+                        ocorrencias.push({"Número":grid_equips[i],"Status":status.status_equipamento_chamado,"ID":status.id_chamado,"Ticket":status.ticket_chamado})
+                    }
+                }
+            if (grid_equips[i].Descrição == "") {
                     erros.push("O item "+grid_equips[i].Número+" está sem descrição!");
-
                 }
             }
         }
+
         if (erros.length == 0 && g_equips.length == 0 ) { 
-
-            var ocorrencias = [];
-
-            for (i=0;i<grid_equips.length;i++) {
-
-                var status = await verificaStatusEquip(grid_equips[i]);
-    
-                if (status.status_equipamento_chamado !== 'ATENDIDO') {
-                    ocorrencias.push({"Número":grid_equips[i],"Status":status.status_equipamento_chamado,"ID":status.id_chamado,"Ticket":status.ticket_chamado})
-                }
-            }
-
             if (ocorrencias.length > 0) {
                 alert(ocorrencias);
             }
