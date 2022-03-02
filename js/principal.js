@@ -3157,6 +3157,7 @@ async function verificaDescEquip(p_e) {
 async function verificaAutoEquip() {
     var nums_equip = [];
     var out = [];
+    var ocorrencias = [];
     var textoTriagem = null;
     $("#btnValidaEquip").prop("disabled","true");
     $("#pbEquips").css("width","0%");
@@ -3174,10 +3175,13 @@ async function verificaAutoEquip() {
         total_percentage = 0;
         for (i=0;i<nums_equip.length;i++) {
 
-            
-            var res = await verificaDescEquip(nums_equip[i]);
+            var status = await verificaStatusEquip(nums_equip[i]);
 
-            //console.log(desc);
+            if (status.status_equipamento_chamado !== 'ATENDIDO') {
+                ocorrencias.push({"Número":nums_equip[i],"Status":status.status_equipamento_chamado,"ID":status.id_chamado,"Ticket":status.ticket_chamado})
+            }
+
+            var res = await verificaDescEquip(nums_equip[i]);
 
             out.push({"Número":nums_equip[i],"Descrição":res.descricao});
 
@@ -3225,7 +3229,7 @@ $("#tblEquips").jsGrid({
 });
 
 
-$("#btnValidaEquip").click(function() {
+$("#btnValidaEquip").on('click', function() {
     grid_equips = $("#tblEquips").jsGrid("option","data");
     g_equips = [];
     erros = [];
@@ -3262,7 +3266,7 @@ $("#btnValidaEquip").click(function() {
     }
 });
 
-$("#btnAlteraEquip").click(function() {
+$("#btnAlteraEquip").on('click', function() {
 
     g_equips = [];
 
