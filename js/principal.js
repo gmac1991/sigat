@@ -3250,12 +3250,30 @@ $("#btnValidaEquip").on('click', function() {
             }
         }
         if (erros.length == 0 && g_equips.length == 0 ) { 
-            g_equips = grid_equips;
-            $(this).html('<i class="fa fa-check"></i> Confirmado!');
-            $("#tblEquips").jsGrid("fieldOption", 2, "visible", false);
-            $("#tblEquips").jsGrid("option","editing", false);
-            $(this).prop("disabled","true");
-            $("#btnAlteraEquip").removeAttr("disabled");
+
+            var ocorrencias = [];
+
+            for (i=0;i<grid_equips.length;i++) {
+
+                var status = await verificaStatusEquip(grid_equips[i]);
+    
+                if (status.status_equipamento_chamado !== 'ATENDIDO') {
+                    ocorrencias.push({"Número":grid_equips[i],"Status":status.status_equipamento_chamado,"ID":status.id_chamado,"Ticket":status.ticket_chamado})
+                }
+            }
+
+            if (ocorrencias.length > 0) {
+                alert(ocorrencias);
+            }
+            else {
+                g_equips = grid_equips;
+                $(this).html('<i class="fa fa-check"></i> Confirmado!');
+                $("#tblEquips").jsGrid("fieldOption", 2, "visible", false);
+                $("#tblEquips").jsGrid("option","editing", false);
+                $(this).prop("disabled","true");
+                $("#btnAlteraEquip").removeAttr("disabled");
+            }
+            
         }
         else {
             alert(erros);
