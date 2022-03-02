@@ -3231,8 +3231,7 @@ $("#tblEquips").jsGrid({
 
 $("#btnValidaEquip").on('click', function() {
    
-    var grid_equips = await $("#tblEquips").jsGrid("option","data");
-    console.log(grid_equips);
+    var grid_equips = $("#tblEquips").jsGrid("option","data");
     g_equips = [];
     var erros = [];
     var ocorrencias = [];
@@ -3252,7 +3251,8 @@ $("#btnValidaEquip").on('click', function() {
                     }
                 }
             if (grid_equips[i].Descrição == "") {
-                    erros.push("O item "+grid_equips[i].Número+" está sem descrição!");
+                    grid_equips[i].Descrição = await verificaDescEquip(nums_equip[i]);
+                    //erros.push("O item "+grid_equips[i].Número+" está sem descrição!");
                 }
             }
         }
