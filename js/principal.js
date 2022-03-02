@@ -3235,8 +3235,10 @@ $("#btnValidaEquip").on('click', function() {
     g_equips = [];
     var erros = [];
     var ocorrencias = [];
+
     if (grid_equips.length > 0) {
         for (i=0;i<grid_equips.length;i++) {
+            console.log(i);
             if (grid_equips[i].Número == "" && grid_equips[i].Descrição == "") {
                 erros.push("Existem itens vazios na lista!");
             }
@@ -3250,7 +3252,7 @@ $("#btnValidaEquip").on('click', function() {
                         ocorrencias.push({"Número":grid_equips[i],"Status":status.status_equipamento_chamado,"ID":status.id_chamado,"Ticket":status.ticket_chamado})
                     }
                 }
-            if (grid_equips[i].Descrição === null) {
+                if (grid_equips[i].Descrição === null) {
                     erros.push("O item "+grid_equips[i].Número+" está sem descrição!");
                 }
             }
