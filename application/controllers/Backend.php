@@ -522,7 +522,7 @@ class Backend extends CI_Controller {
 
     public function status_equipamento() {
 
-        if (isset($_SESSION['id_usuario'])) {
+        
 
             //var_dump($this->input->post('e'));
 
@@ -540,9 +540,7 @@ class Backend extends CI_Controller {
             }
            
             
-        } else {
-            die("Não autorizado!");
-        }
+        
     }
 
     public function patrimonios() {

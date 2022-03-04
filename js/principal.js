@@ -1,6 +1,7 @@
 var listaVerificada = false;
 var timeout;
 const url = 'https://sistemas.sorocaba.sp.gov.br/acesso_equipamento/api/patrimonio/'; //API web do SIM (patrimônio)
+const patrimonio_regex = /[1-9]\d{5}\b/g
 var toggle = 0;
 // var g_requer_patri = null;
 var fila_atual = null;
@@ -3031,20 +3032,44 @@ UTF8 = {
     }
 };
 
+$("#tblAnexos").jsGrid({
+    width: '100%',
+    autoload: false,
+    editing: false,
+    inserting: false,
+    noDataContent: "Sem anexos.",
+    deleteConfirm: "Tem certeza?",
+    fields: [
+        { 
+            name: "id_anexo_otrs",
+            title: "ID",
+            type: "text", 
+                
+        },
+        { 
+            name: "nome_arquivo_otrs",
+            title: "Nome do arquivo",
+            type: "text", 
+            
+        },
+    ],
+    rowClick: function(args) {
+        window.open(base_url + 'anexo_otrs/' + args.item.id_anexo_otrs,'_blank ');
+    }
+});
+
+async function carregaTriagem(p_id_triagem) {
 
 
-function carregaTriagem(p_id_triagem) {
-
-
-    $('div[name=descricao_triagem]').html('<p>Carregando...</p>');
+    $('div[name=descricao_triagem]').html('<div class="d-flex align-items-center"><strong>Carregando..</strong><div class="spinner-border ml-auto" role="status" aria-hidden="true"></div></div>');
 
     //traz os dados do chamado MIGRADO (OTRS)
 
     document.title = "Triagem #" + p_id_triagem + " - Sigat";
 
     var p_id_responsavel = null;
-
-    $.ajax({
+    var anexos = [];
+    await $.ajax({
         url: base_url + 'backend/triagem',
         dataType: 'json',
         async: true,
@@ -3057,30 +3082,26 @@ function carregaTriagem(p_id_triagem) {
 
             $('input[name=nome_solicitante]').val(data.triagem.nome_solicitante_triagem);
             $('input[name=id_triagem]').val(p_id_triagem);
-            $('div[name=descricao_triagem]').html(UTF8.decode(data.triagem.descricao_triagem));
+            $('#descricao_triagem').html(UTF8.decode(data.triagem.descricao_triagem));
 
             if (data.anexos_otrs.length > 0) {
 
+                data.anexos_otrs.forEach(function(item){
+                    anexos.push({id_anexo_otrs:item.id_anexo_otrs,nome_arquivo_otrs:item.nome_arquivo_otrs})
 
-                $("#listaAnexosOTRS").html("<thead><th>Nome do arquivo</th><th>&nbsp;</th></thead><tbody></tbody>");
+                })
 
-                data.anexos_otrs.forEach(function(item) {
-
-
-                    $("#listaAnexosOTRS tbody").append("<tr><td>" + item.nome_arquivo_otrs + 
-                    "</td><td><a href=\"" + base_url + "anexo_otrs/" + item.id_anexo_otrs + 
-                    "\" class=\"badge badge-primary\"><i class=\"fas fa-download\"></i></a>" +
-                    " <a href=\"" + base_url + "anexo_otrs/" + item.id_anexo_otrs + 
-                    "\" class=\"badge badge-danger\"><i class=\"fas fa-trash\"></i></a></td></tr>")
-                });
-            } else {
-
-                $("#listaAnexosOTRS").html("<tr><td>Sem anexos</td></tr>");
+                
+               
+                
             }
 
-            verificaAutoEquip();
+            
         }
     });
+
+    verificaAutoEquip();
+    $("#tblAnexos").jsGrid("option","data",anexos);
 
 }
 
@@ -3149,13 +3170,12 @@ async function verificaAutoEquip() {
     var textoTriagem = null;
     $("#btnValidaEquip").prop("disabled","true");
     $("#pbEquips").css("width","0%");
-    $("#btnVerificaPatrimoniosTriagem").prop("disabled","true");
     if (($("#chkSoSelecaoTriagem").is(':checked'))) {
         textoTriagem = window.getSelection().toString();
     } else {
-        textoTriagem = $('[name=descricao_triagem]').html();
+        textoTriagem = $('#descricao_triagem').html();
     }
-    nums_equip = textoTriagem.match(/[1-9]\d{5}\b/g);
+    nums_equip = textoTriagem.match(patrimonio_regex);
     if (nums_equip.length > 0) {
         nums_equip = uniq_fast(nums_equip);
         
@@ -3177,9 +3197,9 @@ async function verificaAutoEquip() {
             $("#pbEquips").css("width",total_percentage+"%");   
         }
         $("#tblEquips").jsGrid("option","data",out);
-        $("#btnVerificaPatrimoniosTriagem").removeAttr("disabled");
         g_equips = out;
         $("#btnValidaEquip").removeAttr("disabled");
+        $("#btnLoteEquip").removeAttr("disabled");
     } 
 }
 
@@ -3190,6 +3210,7 @@ $("#tblEquips").jsGrid({
     editing: true,
     inserting: true,
     confirmDeleting: false,
+    noDataContent: "Sem equipamentos.",
     fields: [
         { 
             name: "Número", 
@@ -3212,8 +3233,12 @@ $("#tblEquips").jsGrid({
 
 var ocorrencias = [];
 
+var confirmado = false;
+
 
 $("#btnValidaEquip").on('click', async function() {
+
+    confirmado = false;
 
     $(this).prop("disabled","true");
     
@@ -3231,11 +3256,11 @@ $("#btnValidaEquip").on('click', async function() {
     if (grid_equips.length > 0) {
         for (i=0;i<grid_equips.length;i++) {
             if (grid_equips[i].Número == "" && grid_equips[i].Descrição == "") {
-                erros.push("Existem itens vazios na lista!");
+                erros.push("Existem itens vazios na lista!\n");
             }
             else {
                 if (grid_equips[i].Número == "") {
-                    erros.push("O item "+grid_equips[i].Descrição+" está sem número!");
+                    erros.push("O item "+grid_equips[i].Descrição+" está sem número!\n");
                 }
                 else {
                     var status = await verificaStatusEquip(grid_equips[i].Número);
@@ -3249,7 +3274,7 @@ $("#btnValidaEquip").on('click', async function() {
                     grid_equips[i].Descrição = res.descricao;
 
                 if (grid_equips[i].Descrição === null) {
-                    erros.push("O item "+grid_equips[i].Número+" está sem descrição!");
+                    erros.push("O item "+grid_equips[i].Número+" está sem descrição!\n");
                 }
             }
             
@@ -3264,12 +3289,14 @@ $("#btnValidaEquip").on('click', async function() {
                 $(this).removeAttr("disabled");
             }
             else {
+                confirmado = true;
                 g_equips = grid_equips;
                 $(this).html('<i class="fa fa-check"></i> Confirmado!');
                 $("#tblEquips").jsGrid("fieldOption", 2, "visible", false);
                 $("#tblEquips").jsGrid("option","editing", false);
                 $(this).prop("disabled","true");
                 $("#btnAlteraEquip").removeAttr("disabled");
+                $("#btnLoteEquip").prop("disabled","true");
             }
             
         }
@@ -3293,44 +3320,46 @@ $('#modalOcorrencias').on('hidden.bs.modal', function (e) {
 $('#modalOcorrencias').on('shown.bs.modal', function (e) {
     
     $("#tblOcorrencias").jsGrid({
-    width: '100%',
-    autoload: false,
-    editing: false,
-    inserting: false,
-    data: ocorrencias,
-    fields: [
-        { 
-            name: "Número", 
-            type: "text", 
-            width: 50,
-            validate: "required",     
-        },
-        { 
-            name: "Status", 
-            type: "text", 
-            width: 20,
-            validate: "required",
-        },
-        { 
-            name: "ID", 
-            type: "text", 
-            width: 30,
-            validate: "required",
-        },
-        { 
-            name: "Ticket", 
-            type: "text", 
-            width: 50,
-            validate: "required",
-        },
-    ],
-    rowClick: function(args) {
-        window.open(base_url + '/chamado/' + args.item.ID,'_blank ');
-      }
-});
-  })
+        width: '100%',
+        autoload: false,
+        editing: false,
+        inserting: false,
+        data: ocorrencias,
+        fields: [
+            { 
+                name: "Número", 
+                type: "text", 
+                width: 50,
+                validate: "required",     
+            },
+            { 
+                name: "Status", 
+                type: "text", 
+                width: 20,
+                validate: "required",
+            },
+            { 
+                name: "ID", 
+                type: "text", 
+                width: 30,
+                validate: "required",
+            },
+            { 
+                name: "Ticket", 
+                type: "text", 
+                width: 50,
+                validate: "required",
+            },
+        ],
+        rowClick: function(args) {
+            window.open(base_url + '/chamado/' + args.item.ID,'_blank ');
+        }
+    });
+})
 
 $("#btnAlteraEquip").on('click', function() {
+
+    confirmado = false;
 
     g_equips = [];
 
@@ -3343,9 +3372,100 @@ $("#btnAlteraEquip").on('click', function() {
     $(this).prop("disabled","true");
 
     $("#btnValidaEquip").removeAttr("disabled");
+    $("#btnLoteEquip").removeAttr("disabled");
+    
 
 })
 
+$("#btnLoteEquip").on('click', function() {
+
+    confirmado = false;
+
+    $('#modalLote').modal('show');
+
+})
+
+$("#radLoteFaixa").on('click', function() {
+
+    $("#divListaLote").hide();
+    $("#divFaixaLote").show();
+
+})
+
+$("#radLoteLista").on('click', function() {
+
+    $("#divFaixaLote").hide();
+    $("#divListaLote").show();
+    
+})
+
+$("#btnInsereLote").on('click', async function() {
+
+    $(this).prop("disabled","true");
+    if ($("#radLoteFaixa").is(':checked')) {
+
+        var inicio = Number($("#txtInicioFaixaLote").val());
+        var fim = Number($("#txtFimFaixaLote").val());
+
+        if((fim - inicio) < 1 || isNaN(fim - inicio))  {
+
+            alert("Faixa inválida");
+            $(this).removeAttr("disabled");
+        }
+        else {
+
+            percentage = (100*1)/(fim - inicio);
+            total_percentage = 0;
+
+            var grid_atual = $("#tblEquips").jsGrid("option","data");
+
+            var grid_faixa = [];
+
+            var i = inicio;
+
+            while (i <= fim) {
+
+                
+
+                var desc = null;
+
+                var res = await verificaDescEquip(i);
+                if (res.descricao !== null)
+                    desc = res.descricao;
+
+                grid_faixa.push({Número:i,Descrição:desc});
+
+                i++;
+
+                total_percentage = total_percentage + percentage;
+                $("#pbLote").css("width",total_percentage+"%"); 
+                
+
+            }
+
+            novo_grid = grid_atual.concat(grid_faixa);
+
+            $("#tblEquips").jsGrid("option","data",novo_grid);
+
+            $("#modalLote").removeClass('fade').modal('hide');
+            $("#modalLote").modal('dispose');
+            
+        }
+        
+    
+    }
+
+    
+});
+
+
+$('#modalLote').on('hidden.bs.modal', function () {
+    $("#txtInicioFaixaLote").val(null);
+    $("#txtFimFaixaLote").val(null);
+    $("#btnInsereLote").removeAttr("disabled");
+    $("#pbLote").css("width","0%");
+
+});
 
 
 $("#frmDevolveChamado").on('submit',function(e) {
@@ -3383,10 +3503,6 @@ $("#frmDevolveChamado").on('submit',function(e) {
     }
 });
 
-
-
-
-
 //------------------ SUBMIT DA TRIGEM --------------
 
 
@@ -3416,6 +3532,9 @@ $('#frmImportarChamado').on('submit',
         id_fila: {
             required: true,
         },
+        resumo_solicitacao: {
+            required: true,
+        }
     },
     messages: {
         nome_solicitante: "Campo obrigatório!",
@@ -3431,17 +3550,18 @@ $('#frmImportarChamado').on('submit',
             maxlength: "Tamanha máximo excedido!"
         },
 
-        id_fila: {
-            required: "Selecione uma fila válida!",
-        },
+        resumo_solicitacao: {
+            required: "Campo obrigatório!",
+        }
     },
     submitHandler: function(form) {
         var script_url = base_url + "chamado/importar_chamado";
-
         var dados = new FormData(form);
-
-        dados.append('listaPatrimonios', vetorListaOK)
-
+        dados.append('listaEquipamentos', JSON.stringify(g_equips));
+        dados.append('ticket_triagem',g_ticket_triagem);
+        dados.append('email_triagem',g_email_triagem);
+        var replaced = $("#descricao_triagem").html().replace(/'/g, "\\'" );
+        dados.append('textoTriagem', replaced)
         $.ajax({
 
             url: script_url,
@@ -3451,126 +3571,43 @@ $('#frmImportarChamado').on('submit',
             cache: false,
             processData: false,
             beforeSend: function() {
-
-                if (listaVerificada == false /* && $( "#flagPrecisaPatrimonio" ).val() == 1 */ ) {
-
-                    $("#msg div[id=alerta]").remove();
-
-                    $("#msg").append("<div id=\"alerta\" class=\"alert alert-warning alert-dismissible\">");
-                    $("#alerta").append("<a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a>É necessário verificar a lista de patrimônios!");
-                    $("#btnVerificaPatrimoniosTriagem").focus();
-
-                    targetOffset = $('#msg').offset().top;
-
-                    $('html, body').animate({
-                        scrollTop: targetOffset - 100
-                    }, 200);
-
+                if (confirmado == false) {
+                    alert("Verifique a lista de equipamentos!")
                     return false;
                 }
-
-
-
                 $('#btnImportarChamado').prop("disabled", "true");
-
             },
             success: function(msg) {
-
-
-
-                listaVerificada = false;
-
-                if ( /*msg.includes('anexo') == false && */ msg.includes('Local') == false) {
-
+                confirmado = false;
+                if (msg.includes('Local') == false) {
                     $('#divTriagem').html('');
-
                     $("#msg div[id=alerta]").remove();
-
                     $("#msg").append(msg);
-
-                    //$(form).trigger('reset'); //só resetar o form se não houver erros no upload ou no anexo
                 } else {
-
-                    if (msg.includes('Local')) {
-
-                        $('input[name=nome_local').focus();
-                        $('#listaLocais').popover({
-                            content: 'Local inválido!',
-                            trigger: 'focus',
-                        });
-                        $('#listaLocais').popover('toggle');
-                    }
-
-                    // if (msg.includes('anexo')) {
-
-                    // 	$('input[name=anexo').focus();
-                    // }
-
-                    listaVerificada = true;
+                    $('input[name=nome_local').focus();
+                    $('#listaLocais').popover({
+                        content: 'Local inválido!',
+                        trigger: 'focus',
+                    });
+                    $('#listaLocais').popover('toggle');
+                    confirmado = true;
                     $('#btnImportarChamado').removeAttr("disabled");
                 }
-
-
-                // if ($( "#flagPrecisaPatrimonio" ).val() == 0) {
-
-                // 	timeout = setTimeout(function() {
-                // 		$('#btnAbrirChamado').removeAttr("disabled");
-
-                // 	},10000);
-                // }
-
-                // else {
-
                 $('#btnImportarChamado').removeAttr("disabled");
-
-                if (listaVerificada == false) {
-
-                    $('#tblPatrimonios tr').remove();
-                    $('#btnVerificaPatrimoniosTriagem').show();
-                    $("#btnAlteraPatrimonios").hide();
-                    $('#txtPatrimonios').removeAttr('readonly');
-                    $("#txtPatrimonios").focus();
-                    $("#divTabelaPatrimonios").hide();
-                }
-
-                // }
-
-                // targetOffset = $('#msg').offset().top;
-
-                // $('html, body').animate({ 
-                // 	scrollTop: targetOffset - 100
-                // }, 200);
-
                 msg = null;
-
-
-
-
             },
             error: function(xhr, ajaxOptions, thrownError) {
-
                 $("#msg").prepend("<div id=\"alerta\" class=\"alert alert-danger alert-dismissible\">");
                 $("#alerta").append("<a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a>" + thrownError);
-
-
                 targetOffset = $('#msg').offset().top;
-
                 $('html, body').animate({
                     scrollTop: targetOffset - 100
                 }, 200);
-
                 $('#btnImportarChamado').removeAttr("disabled");
             }
-
         });
-
         return false;
-
     }
 });
-
-
-
-
 
 //--------  /TRIAGEM ---------

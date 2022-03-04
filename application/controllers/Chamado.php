@@ -116,14 +116,17 @@ class Chamado extends CI_Controller {
       $dados = array();
   
       // campos
-  
-      $dados['id_fila'] =           $this->input->post("id_fila");
-      $dados['id_chamado'] =        $this->input->post("id_chamado");
-      $dados['nome_solicitante'] =  str_replace(array("'","\""),"",$this->input->post("nome_solicitante"));
-      $dados['nome_local'] =        $this->input->post("nome_local");
-      $dados['telefone'] =          $this->input->post("telefone");
-      $dados['listaPatrimonios'] =  $this->input->post("listaPatrimonios");
-      $dados['id_usuario'] =        $this->input->post("id_usuario");
+      $dados['id_chamado'] =          $this->input->post("id_chamado");
+      $dados['nome_solicitante'] =    str_replace(array("'","\""),"",$this->input->post("nome_solicitante"));
+      $dados['resumo_solicitacao'] =  str_replace(array("'","\""),"",$this->input->post("resumo_solicitacao"));
+      $dados['telefone'] =            $this->input->post("telefone");
+      $dados['nome_local'] =          $this->input->post("nome_local");
+      $dados['comp_local'] =          str_replace(array("'","\""),"",$this->input->post("comp_local"));
+      $dados['listaEquipamentos'] =   json_decode($this->input->post("listaEquipamentos"));
+      $dados['textoTriagem'] =        $this->input->post("textoTriagem");
+      $dados['ticket_triagem'] =      $this->input->post("ticket_triagem");
+      $dados['email_triagem'] =       $this->input->post("email_triagem");
+      $dados['id_usuario'] =          $_SESSION["id_usuario"];
   
   
       $this->chamado_model->importaChamado($dados);

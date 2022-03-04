@@ -60,7 +60,7 @@ if (isset($_SESSION['id_usuario'])) {
 if (isset($chamado)) { 
  
   echo "<script type=\"text/javascript\">var fila_atual = " . $chamado->id_fila . "</script>";
-  echo "<script type=\"text/javascript\">var g_id_chamado = " . $chamado->id_chamado . "</script>";
+  echo "<script type=\"text/javascript\">const g_id_chamado = " . $chamado->id_chamado . "</script>";
   echo "<script type=\"text/javascript\">carregaChamado(g_id_chamado)</script>";
   // echo "<script type=\"text/javascript\">precisaPatrimonio(fila_atual,false)</script>"; 
   echo "<script type=\"text/javascript\">atualizaInteracoes(g_id_chamado)</script>"; 
@@ -68,7 +68,9 @@ if (isset($chamado)) {
 
 if (isset($triagem)) { 
  
-  echo "<script type=\"text/javascript\">var g_id_chamado = " . $triagem->id_triagem . "</script>";
+  echo "<script type=\"text/javascript\">const g_id_chamado = " . $triagem->id_triagem . "</script>";
+  echo "<script type=\"text/javascript\">const g_ticket_triagem = '" . $triagem->ticket_triagem . "'</script>";
+  echo "<script type=\"text/javascript\">const g_email_triagem = '" . $triagem->email_triagem . "'</script>";
   echo "<script type=\"text/javascript\">carregaTriagem(g_id_chamado)</script>";
 }
 
