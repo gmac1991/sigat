@@ -7,8 +7,12 @@ class Interacao_model extends CI_Model {
    public function registraInteracao($dados) {  
 
       $fila_ant_int = NULL;
+
       
-      if (isset($dados['id_fila']) || isset($dados['patri_atendidos'])) {
+
+      if (isset($dados['id_fila']) || isset($dados['equip_atendidos'])) {
+
+         
 
          if(($dados['id_fila'] != $dados['id_fila_ant']) && $dados['tipo'] == 'ALT_FILA' ) {
 
@@ -28,24 +32,24 @@ class Interacao_model extends CI_Model {
             //header("Location: " . base_url('painel'));
          }
 
-         if ($dados['patri_atendidos'] != NULL) { //verificando se foi antendido algum equipamento patrimoniado
+         if ($dados['equip_atendidos'] != NULL) {
 
             if($dados['tipo'] == 'ATENDIMENTO') {
                
                $dados['texto'] .= "<hr class=\"m-0\" /><p class=\"m-0\">Foram atendidos os seguintes equipamentos:<br /><ul>";
 
-               foreach ($dados['patri_atendidos'] as $patrimonio) {
+               foreach ($dados['equip_atendidos'] as $num_equip) {
                   
                  if ($dados['id_fila'] == 3) { //se estiver na fila Manutenção de Hardware / id = 3
                      
                      $this->db->query("update equipamento_chamado set status_equipamento_chamado = 'ENTREGA', status_equipamento_chamado_ant = 'ABERTO'
-                     where num_equipamento = " . $patrimonio);
+                     where num_equipamento_chamado_chamado = '" . $num_equip . "'");
                      
                      // ------------ LOG -------------------
 
                      $log = array(
-                        'acao_evento' => 'ALTERAR_STATUS_equipamento',
-                        'desc_evento' => 'ID CHAMADO: ' . $dados['id_chamado'] . " - PATRIMONIO: " . $patrimonio . " - NOVO STATUS: ENTREGA",
+                        'acao_evento' => 'ALTERAR_STATUS_EQUI',
+                        'desc_evento' => 'ID CHAMADO: ' . $dados['id_chamado'] . " - NUM: " . $num_equip . " - NOVO STATUS: ENTREGA",
                         'id_usuario_evento' => $_SESSION['id_usuario']
                         );
       
@@ -56,13 +60,13 @@ class Interacao_model extends CI_Model {
                   } else { // se nao, marcar o equipamento como atendido
 
                      $this->db->query("update equipamento_chamado set status_equipamento_chamado = 'ATENDIDO', status_equipamento_chamado_ant = 'ABERTO'
-                     where num_equipamento = " . $patrimonio);
+                     where num_equipamento_chamado = '" . $num_equip . "'");
 
                      // ------------ LOG -------------------
 
                      $log = array(
-                        'acao_evento' => 'ALTERAR_STATUS_equipamento',
-                        'desc_evento' => 'ID CHAMADO: ' . $dados['id_chamado'] . " - PATRIMONIO: " . $patrimonio . " - NOVO STATUS: ATENDIDO",
+                        'acao_evento' => 'ALTERAR_STATUS_EQUIP',
+                        'desc_evento' => 'ID CHAMADO: ' . $dados['id_chamado'] . " - NUM: " . $num_equip . " - NOVO STATUS: ATENDIDO",
                         'id_usuario_evento' => $_SESSION['id_usuario']
                         );
       
@@ -72,7 +76,7 @@ class Interacao_model extends CI_Model {
 
                   }
                   
-                  $dados['texto'] .= "<li>" . $patrimonio . "</li>"; 
+                  $dados['texto'] .= "<li>" . $num_equip . "</li>"; 
                }
             
                $dados['texto'] .= "</ul>";
@@ -97,12 +101,12 @@ class Interacao_model extends CI_Model {
                  
                }
 
-               $patri_restantes = $this->db->query("select num_equipamento from equipamento_chamado where id_chamado_equipamento = " . $dados['id_chamado'] .
+               $equip_restantes = $this->db->query("select num_equipamento_chamado from equipamento_chamado where id_chamado_equipamento = " . $dados['id_chamado'] .
                " and (status_equipamento_chamado = 'ABERTO' or status_equipamento_chamado = 'ESPERA' or status_equipamento_chamado = 'ENTREGA')")->num_rows();
             
-               if ($patri_restantes == 0) { //se todos os patrimonios tiverem sido atendidos/entregues
+               if ($equip_restantes == 0) { //se todos os patrimonios tiverem sido atendidos/entregues
                   
-                  $dados['tipo'] = 'FECHAMENTO_PATRI'; //marcar o chamado como fechado ***
+                  $dados['tipo'] = 'FECHAMENTO_EQUIP'; //marcar o chamado como fechado ***
 
                   $this->db->query("update chamado set status_chamado = 'FECHADO', entrega_chamado = 0 where id_chamado = " . $dados['id_chamado']);
                   
@@ -129,17 +133,17 @@ class Interacao_model extends CI_Model {
 
                $dados['texto'] .= "<hr class=\"m-0\" /><p class=\"m-0\">Foram deixados em espera os equipamentos:<br /><ul>";
 
-               foreach ($dados['patri_atendidos'] as $patrimonio) { //marcando os patrimonios escolhidos como ESPERA
+               foreach ($dados['equip_atendidos'] as $num_equip) { //marcando os patrimonios escolhidos como ESPERA
                   $this->db->query("update equipamento_chamado set status_equipamento_chamado = 'ESPERA'" .
-                  " where num_equipamento = " . $patrimonio . 
+                  " where num_equipamento_chamado = " . $num_equip . 
                   " and (status_equipamento_chamado = 'ABERTO' or status_equipamento_chamado = 'FALHA')" .
                   " and id_chamado_equipamento = " . $dados['id_chamado']);
 
                   // ------------ LOG -------------------
 
                   $log = array(
-                     'acao_evento' => 'ALTERAR_STATUS_equipamento',
-                     'desc_evento' => 'ID CHAMADO: ' . $dados['id_chamado'] . " - PATRIMONIO: " . $patrimonio . " - NOVO STATUS: ESPERA",
+                     'acao_evento' => 'ALTERAR_STATUS_EQUIP',
+                     'desc_evento' => 'ID CHAMADO: ' . $dados['id_chamado'] . " - NUM: " . $num_equip . " - NOVO STATUS: ESPERA",
                      'id_usuario_evento' => $_SESSION['id_usuario']
                      );
    
@@ -147,7 +151,7 @@ class Interacao_model extends CI_Model {
 
                   // -------------- /LOG ----------------
 
-                  $dados['texto'] .= "<li>" . $patrimonio . "</li>";
+                  $dados['texto'] .= "<li>" . $num_equip . "</li>";
                }
 
                $dados['texto'] .= "</ul></p>";
@@ -158,17 +162,17 @@ class Interacao_model extends CI_Model {
 
                $dados['texto'] .= "<hr class=\"m-0\" /><p class=\"m-0\">Foram removidos da espera os equipamentos:<br /><ul>";
 
-               foreach ($dados['patri_atendidos'] as $patrimonio) { //marcando os patrimonios escolhidos como ABERTO
+               foreach ($dados['equip_atendidos'] as $num_equip) { //marcando os patrimonios escolhidos como ABERTO
                   $this->db->query("update equipamento_chamado set status_equipamento_chamado = 'ABERTO'" .
-                  " where num_equipamento = " . $patrimonio . 
+                  " where num_equipamento_chamado = " . $num_equip . 
                   " and status_equipamento_chamado = 'ESPERA'" .
                   " and id_chamado_equipamento = " . $dados['id_chamado']);
 
                   // ------------ LOG -------------------
 
                   $log = array(
-                     'acao_evento' => 'ALTERAR_STATUS_equipamento',
-                     'desc_evento' => 'ID CHAMADO: ' . $dados['id_chamado'] . " - PATRIMONIO: " . $patrimonio . " - NOVO STATUS: ABERTO",
+                     'acao_evento' => 'ALTERAR_STATUS_EQUIP',
+                     'desc_evento' => 'ID CHAMADO: ' . $dados['id_chamado'] . " - NUM: " . $num_equip . " - NOVO STATUS: ABERTO",
                      'id_usuario_evento' => $_SESSION['id_usuario']
                      );
    
@@ -176,7 +180,7 @@ class Interacao_model extends CI_Model {
 
                   // -------------- /LOG ----------------
 
-                  $dados['texto'] .= "<li>" . $patrimonio . "</li>";
+                  $dados['texto'] .= "<li>" . $num_equip . "</li>";
                }
 
                $dados['texto'] .= "</ul></p>";
@@ -189,15 +193,15 @@ class Interacao_model extends CI_Model {
                
                $dados['texto'] .= "<hr class=\"m-0\" /><p class=\"m-0\">Foram classificados como <span class=\"text-danger font-weight-bold\">INSERVÍVEL</span> os equipamentos:<br /><ul>";
 
-               foreach ($dados['patri_atendidos'] as $patrimonio) {
+               foreach ($dados['equip_atendidos'] as $num_equip) {
                   $this->db->query("update equipamento_chamado set status_equipamento_chamado = 'INSERVIVEL', status_equipamento_chamado_ant = 'ABERTO'
-                  where num_equipamento = " . $patrimonio . " and id_chamado_equipamento = " . $dados['id_chamado']);
+                  where num_equipamento_chamado = " . $num_equip . " and id_chamado_equipamento = " . $dados['id_chamado']);
 
                   // ------------ LOG -------------------
 
                   $log = array(
-                     'acao_evento' => 'ALTERAR_STATUS_equipamento',
-                     'desc_evento' => 'ID CHAMADO: ' . $dados['id_chamado'] . " - PATRIMONIO: " . $patrimonio . " - NOVO STATUS: INSERVIVEL",
+                     'acao_evento' => 'ALTERAR_STATUS_EQUIP',
+                     'desc_evento' => 'ID CHAMADO: ' . $dados['id_chamado'] . " - NUM: " . $num_equip . " - NOVO STATUS: INSERVIVEL",
                      'id_usuario_evento' => $_SESSION['id_usuario']
                      );
    
@@ -205,18 +209,18 @@ class Interacao_model extends CI_Model {
 
                   // -------------- /LOG ----------------
 
-                  $dados['texto'] .= "<li>" . $patrimonio . "</li>";
+                  $dados['texto'] .= "<li>" . $num_equip . "</li>";
                }
             
                $dados['texto'] .= "</ul></p>";
 
-               $patri_restantes = $this->db->query("select num_equipamento from equipamento_chamado where id_chamado_equipamento = " . $dados['id_chamado'] .
+               $patri_restantes = $this->db->query("select num_equipamento_chamado from equipamento_chamado where id_chamado_equipamento = " . $dados['id_chamado'] .
                " and status_equipamento_chamado = 'ABERTO'")->num_rows();
 
-               $patri_entrega = $this->db->query("select num_equipamento from equipamento_chamado where id_chamado_equipamento = " . $dados['id_chamado'] .
+               $equip_entrega = $this->db->query("select num_equipamento_chamado from equipamento_chamado where id_chamado_equipamento = " . $dados['id_chamado'] .
                " and status_equipamento_chamado = 'ENTREGA'")->num_rows();
                
-               if ($patri_restantes == 0 && $patri_entrega == 0) { //se nao houver patrimonios marcados como ENTREGA ou ABERTO...
+               if ($patri_restantes == 0 && $equip_entrega == 0) { //se nao houver patrimonios marcados como ENTREGA ou ABERTO...
 
                   $dados['tipo'] = 'FECHAMENTO_INS';
 
@@ -235,7 +239,7 @@ class Interacao_model extends CI_Model {
                   // -------------- /LOG ----------------
                
                }
-               elseif($patri_entrega > 0) { //se houver patrimonios marcados como ENTREGA...
+               elseif($equip_entrega > 0) { //se houver patrimonios marcados como ENTREGA...
 
                   $dados['tipo'] = 'ATENDIMENTO_INS';
 
@@ -268,93 +272,21 @@ class Interacao_model extends CI_Model {
             
          }
 
-         if ($dados['equip_atendidos'] != NULL) { //verificando se foi antendido algum equipamento sem patrimonio
-               
-            $dados['texto'] .= "<hr class=\"m-0\" /><p>Equipamentos sem patrimônio:</p><ul>";
-
-            var_dump($dados['equip_atendidos']);
-            
-            for ($i = 1; $i < count($dados['equip_atendidos']); $i++) {
-               
-               if ($dados['id_fila'] == 3) { //se estiver na fila Manutenção de Hardware / id = 3
-                  
-                  $this->db->query("update equipamento_chamado set status_equipamento = 'ENTREGA'
-                  where num_equipamento = '" . $dados['equip_atendidos'][$i][0] . "'");
-
-                  // ------------ LOG -------------------
-
-                  $log = array(
-                     'acao_evento' => 'ALTERAR_STATUS_EQUIPAMENTO',
-                     'desc_evento' => 'ID CHAMADO: ' . $dados['id_chamado'] . 
-                     " - EQUIPAMENTO: " . $dados['equip_atendidos'][$i][0] . " - " . $dados['equip_atendidos'][$i][1] . " - NOVO STATUS: ENTREGA",
-                     'id_usuario_evento' => $_SESSION['id_usuario']
-                     );
-   
-                  $this->db->insert('evento', $log);
-
-                  // -------------- /LOG ----------------
-
-                  
-                  $this->db->query("update chamado set entrega_chamado = 1 where id_chamado = " . $dados['id_chamado']);
-
-                  // ------------ LOG -------------------
-
-                  $log = array(
-                     'acao_evento' => 'SINALIZAR_ENTREGA_CHAMADO',
-                     'desc_evento' => 'ID CHAMADO: ' . $dados['id_chamado'],
-                     'id_usuario_evento' => $_SESSION['id_usuario']
-                     );
-                     
-                     $this->db->insert('evento', $log);
-   
-                  // -------------- /LOG ----------------
-               
-               }                   
-               $dados['texto'] .= "<li>" . $dados['equip_atendidos'][$i][0] . " - " . $dados['equip_atendidos'][$i][1] .  "</li>"; 
-            }
-         
-            $dados['texto'] .= "</ul>";
-
-            if ($dados['id_fila'] == 3) { //se estiver na fila Manutenção de Hardware / id = 3 ***
-
-               //sinalizar para entrega / chamado_entrega = 1
-
-               $dados['texto'] .= '<hr class="m-0 p-0">O chamado foi sinalizado para <b>Entrega</b>';
-
-               $this->db->query("update chamado set entrega_chamado = 1 where id_chamado = " . $dados['id_chamado']); 
-
-               // ------------ LOG -------------------
-
-               $log = array(
-                  'acao_evento' => 'SINALIZAR_ENTREGA_CHAMADO',
-                  'desc_evento' => 'ID CHAMADO: ' . $dados['id_chamado'],
-                  'id_usuario_evento' => $_SESSION['id_usuario']
-                  );
-                  
-                  $this->db->insert('evento', $log);
-
-               // -------------- /LOG ----------------
-            
-               
-            }
-         
-         }
-
       }
 
 
       if($dados['tipo'] == 'ENTREGA') {
 
-         $patri_entregues = $this->db->query("select num_equipamento from equipamento_chamado where id_chamado_equipamento = " . $dados['id_chamado'] .
+         $patri_entregues = $this->db->query("select num_equipamento_chamado from equipamento_chamado where id_chamado_equipamento = " . $dados['id_chamado'] .
          " and status_equipamento_chamado = 'ENTREGA'")->result();
 
-         $patri_restantes = $this->db->query("select num_equipamento from equipamento_chamado where id_chamado_equipamento = " . $dados['id_chamado'] .
+         $patri_restantes = $this->db->query("select num_equipamento_chamado from equipamento_chamado where id_chamado_equipamento = " . $dados['id_chamado'] .
                " and (status_equipamento_chamado = 'ABERTO' or status_equipamento_chamado = 'ESPERA')")->num_rows();
 
          $equip_entregues = $this->db->query("select * from equipamento_chamado where id_chamado_equipamento = " . $dados['id_chamado'] .
          " and status_equipamento = 'ENTREGA'")->result();
 
-         $equip_restantes = $this->db->query("select num_equipamento from equipamento_chamado where id_chamado_equipamento = " . $dados['id_chamado'] .
+         $equip_restantes = $this->db->query("select num_equipamento_chamado from equipamento_chamado where id_chamado_equipamento = " . $dados['id_chamado'] .
                " and status_equipamento = 'ABERTO'")->num_rows();
 
          
@@ -403,17 +335,17 @@ class Interacao_model extends CI_Model {
 
             $dados['texto'] .= "<ul>";
             
-            foreach ($patri_entregues as $patrimonio) {
+            foreach ($patri_entregues as $num_equip) {
                $this->db->query("update equipamento_chamado set status_equipamento_chamado = 'ENTREGUE', status_equipamento_chamado_ant = 'ENTREGA'
-                  where num_equipamento = " . $patrimonio->num_equipamento . " and id_chamado_equipamento = " . $dados['id_chamado']);
-               $dados['texto'] .= "<li>" . $patrimonio->num_equipamento . "</li>";
+                  where num_equipamento_chamado = " . $num_equip->num_equipamento_chamado . " and id_chamado_equipamento = " . $dados['id_chamado']);
+               $dados['texto'] .= "<li>" . $num_equip->num_equipamento_chamado . "</li>";
 
                // ------------ LOG -------------------
 
                $log = array(
-                  'acao_evento' => 'ALTERAR_STATUS_equipamento',
+                  'acao_evento' => 'ALTERAR_STATUS_EQUIP',
                   'desc_evento' => 'ID CHAMADO: ' . $dados['id_chamado'] . 
-                  " - PATRIMONIO: " . $patrimonio->num_equipamento . " - NOVO STATUS: ENTREGUE",
+                  " - NUM: " . $num_equip->num_equipamento_chamado . " - NOVO STATUS: ENTREGUE",
                   'id_usuario_evento' => $_SESSION['id_usuario']
                   );
 
@@ -431,14 +363,14 @@ class Interacao_model extends CI_Model {
 
             foreach ($equip_entregues as $equip) {
                $this->db->query("update equipamento_chamado set status_equipamento = 'ENTREGUE', ult_alt_equipamento = NOW()
-                  where num_equipamento = '" . $equip->num_equipamento . "' and id_chamado_equipamento = " . $dados['id_chamado']);
+                  where num_equipamento_chamado = '" . $equip->num_equipamento_chamado . "' and id_chamado_equipamento = " . $dados['id_chamado']);
 
                   // ------------ LOG -------------------
 
                   $log = array(
-                     'acao_evento' => 'ALTERAR_STATUS_EQUIPAMENTO',
+                     'acao_evento' => 'ALTERAR_STATUS_EQUIP',
                      'desc_evento' => 'ID CHAMADO: ' . $dados['id_chamado'] . 
-                     " - EQUIPAMENTO: " . $equip->num_equipamento . " - " . $equip->desc_equipamento . " - NOVO STATUS: ENTREGUE",
+                     " - EQUIPAMENTO: " . $equip->num_equipamento_chamado . " - " . $equip->desc_equipamento . " - NOVO STATUS: ENTREGUE",
                      'id_usuario_evento' => $_SESSION['id_usuario']
                      );
    
@@ -446,7 +378,7 @@ class Interacao_model extends CI_Model {
 
                   // -------------- /LOG ----------------
 
-               $dados['texto'] .= "<li>" . $equip->num_equipamento . " - " . $equip->desc_equipamento . "</li>";
+               $dados['texto'] .= "<li>" . $equip->num_equipamento_chamado . " - " . $equip->desc_equipamento . "</li>";
             }
 
             $dados['texto'] .= "</ul>";
@@ -494,22 +426,20 @@ class Interacao_model extends CI_Model {
 
          $this->db->query('update chamado set entrega_chamado = 0 where id_chamado = ' . $dados['id_chamado']); //tirando o sinal de entrega.. entrega_chamado = 0
          
-         $patri_entrega = $this->db->query("select num_equipamento from equipamento_chamado where id_chamado_equipamento = " . $dados['id_chamado'] .
+         $equip_entrega = $this->db->query("select num_equipamento_chamado from equipamento_chamado where id_chamado_equipamento = " . $dados['id_chamado'] .
          " and status_equipamento_chamado = 'ENTREGA'")->result();
 
-         $equip_entrega = $this->db->query("select * from equipamento_chamado where id_chamado_equipamento = " . $dados['id_chamado'] .
-         " and status_equipamento = 'ENTREGA'")->result();
                            
-         if(!empty($patri_entrega)) {
-            foreach ($patri_entrega as $patrimonio) {
+         if(!empty($equip_entrega)) {
+            foreach ($equip_entrega as $num_equip) {
                $this->db->query("update equipamento_chamado set status_equipamento_chamado = 'FALHA', status_equipamento_chamado_ant = 'ENTREGA'
-                  where num_equipamento = " . $patrimonio->num_equipamento . " and id_chamado_equipamento = " . $dados['id_chamado']);
+                  where num_equipamento_chamado = " . $num_equip->num_equipamento_chamado . " and id_chamado_equipamento = " . $dados['id_chamado']);
                
                 // ------------ LOG -------------------
 
                 $log = array(
-                  'acao_evento' => 'ALTERAR_STATUS_equipamento',
-                  'desc_evento' => 'ID CHAMADO: ' . $dados['id_chamado'] . " - PATRIMONIO: " . $patrimonio->num_equipamento . " - NOVO STATUS: FALHA",
+                  'acao_evento' => 'ALTERAR_STATUS_EQUIP',
+                  'desc_evento' => 'ID CHAMADO: ' . $dados['id_chamado'] . " - NUM: " . $num_equip->num_equipamento_chamado . " - NOVO STATUS: FALHA",
                   'id_usuario_evento' => $_SESSION['id_usuario']
                   );
 
@@ -519,15 +449,15 @@ class Interacao_model extends CI_Model {
                   
                }
 
-            $patri_falha = $this->db->query("select num_equipamento from equipamento_chamado where id_chamado_equipamento = " . $dados['id_chamado'] .
+            $equip_falha = $this->db->query("select num_equipamento_chamado from equipamento_chamado where id_chamado_equipamento = " . $dados['id_chamado'] .
                " and status_equipamento_chamado = 'FALHA'")->result();
 
             $dados['texto'] .= "<hr class=\"m-0\" /><p class=\"m-0\">Os seguintes equipamentos retornaram:</p>";
             $dados['texto'] .= '<ul>';
                
-            foreach ($patri_falha as $patrimonio) {
+            foreach ($equip_falha as $num_equip) {
 
-               $dados['texto'] .= '<li>' . $patrimonio->num_equipamento . '</li>';
+               $dados['texto'] .= '<li>' . $num_equip->num_equipamento_chamado . '</li>';
    
 
             }
@@ -535,36 +465,7 @@ class Interacao_model extends CI_Model {
             $dados['texto'] .= '</ul>';
 
          }
-         
-
-         if(!empty($equip_entrega)) { // verificando se existem equipamentos sem patrimonio que foram entregues
-
-            $dados['texto'] .= "<p>Equipamentos sem patrimônio:</p><ul>";
-
-            foreach ($equip_entrega as $equip) {
-               $this->db->query("update equipamento_chamado set status_equipamento = 'ABERTO', ult_alt_equipamento = NOW()
-                  where num_equipamento = '" . $equip->num_equipamento . "' and id_chamado_equipamento = " . $dados['id_chamado']);
-
-                   // ------------ LOG -------------------
-
-                   $log = array(
-                     'acao_evento' => 'ALTERAR_STATUS_EQUIPAMENTO',
-                     'desc_evento' => 'ID CHAMADO: ' . $dados['id_chamado'] . 
-                     " - EQUIPAMENTO: " . $equip->num_equipamento . " - " . $equip->desc_equipamento . " - NOVO STATUS: ABERTO",
-                     'id_usuario_evento' => $_SESSION['id_usuario']
-                     );
    
-                  $this->db->insert('evento', $log);
-
-                  // -------------- /LOG ----------------
-               
-               $dados['texto'] .= "<li>" .  $equip->num_equipamento . " - " .  $equip->desc_equipamento . "</li>";
-            }
-
-            $dados['texto'] .= "</ul>";
-
-
-         }
 
       }
 
@@ -587,81 +488,15 @@ class Interacao_model extends CI_Model {
 
       }
 
-      if ($dados['tipo'] == 'ADC_EQUIP') {
-
-         $dados['texto'] = "<ul>";
-
-         if(!empty($dados['patrimonios'])) {
-
-            $patrimonios = array();
-
-            preg_match_all("/[1-9]\d{5}/",$dados['patrimonios'], $patrimonios);
-            
-            if (!empty($patrimonios)) {
-
-               foreach($patrimonios[0] as $patrimonio) {
-
-                  $this->db->query("insert into equipamento_chamado values(" . //inserindo na tabela equipamento_chamado
-                  $patrimonio . "," . $dados['id_chamado'] . ",'ABERTO',NULL)");
-
-                  // ------------ LOG -------------------
-
-               $log = array(
-                  'acao_evento' => 'ADC_equipamento_SOLICITACAO',
-                  'desc_evento' => 'ID CHAMADO: ' . $dados['id_chamado'] . " - NUM: " . $patrimonio,
-                  'id_usuario_evento' => $_SESSION['id_usuario']
-                  );
-
-               $this->db->insert('evento', $log);
-
-            // -------------- /LOG ----------------
-
-                  $dados['texto'] .= '<li>' . $patrimonio . '</li>';
-               }
-            }
-         }
-
-         if(!empty($dados['json_equip'])) {
-
-            $equip = json_decode($dados['json_equip']);
-
-            //$equip[x][0] -> num de serie
-            //$equip[x][1] -> descricao
-
-            
-            for ($i = 1; $i < count($equip); $i++) {
-
-               $this->db->query("insert into equipamento_chamado values('" . //inserindo na tabela equipamento_chamado
-               $equip[$i][0] . "','" .  $equip[$i][1] . "'," . $dados['id_chamado'] . ",'ABERTO',NOW())");
-
-               $log = array(
-                  'acao_evento' => 'ADC_EQUIP_SOLICITACAO',
-                  'desc_evento' => 'ID CHAMADO: ' . $dados['id_chamado'] . " - S/N: " .  $equip[$i][0] . " - DESC: " . $equip[$i][1],
-                  'id_usuario_evento' => $_SESSION['id_usuario']
-                  );
-
-               $this->db->insert('evento', $log);
-
-               $dados['texto'] .= '<li>' . $equip[$i][0] . " - " .  $equip[$i][1] . '</li>';
-            }
-
-         }
-
-         $dados['texto'] .= '</ul>';
-
-         
-
-
-      }
 
       $nova_interacao = array (
          'id_interacao' => NULL,
          'tipo_interacao' => $dados['tipo'],
-         //'data_interacao' => date('Y-m-d H:i:s'),
          'texto_interacao' => $dados['texto'],
          'id_chamado_interacao' => $dados['id_chamado'],
          'id_usuario_interacao' => $dados['id_usuario'],
-         'id_fila_ant_interacao' => $fila_ant_int
+         'id_fila_ant_interacao' => $fila_ant_int,
+         'pool_equipamentos' => implode("::",$dados['equip_atendidos']),
 
       ); 
       
@@ -695,41 +530,44 @@ class Interacao_model extends CI_Model {
    }
 
    public function removeInteracao($p_id_interacao) {
-      $buscaInteracao = $this->db->get_where('interacao', array('id_interacao' => $p_id_interacao));
-      
-      $interacao = $buscaInteracao->row();
+      $interacao = $this->db->get_where('interacao', array('id_interacao' => $p_id_interacao))->row();
 
-      $buscaChamado = $this->db->get_where('chamado', array('id_chamado' => $interacao->id_chamado_interacao));
-
-      $chamado = $buscaChamado->row();
+      $chamado = $this->db->get_where('chamado', array('id_chamado' => $interacao->id_chamado_interacao))->row();
 	  
-	   preg_match_all("/[1-9]\d{5}/",$interacao->texto_interacao, $patrimonios); 
+	   $pool_equips = explode("::",$interacao->pool_equipamentos);
+
+      //var_dump($pool_equips);
 
       switch ($interacao->tipo_interacao) {
 
          case 'ATENDIMENTO':
 		 
 		 
-            foreach ($patrimonios[0] as $patrimonio) { //patrimonios[0] é o vetor com a lista de patrimonios da interacao
-               $this->db->query("update equipamento_chamado set status_equipamento_chamado_ant = status_equipamento_chamado, 
-               status_equipamento_chamado = 'ABERTO'
-               where id_chamado_equipamento = " . $interacao->id_chamado_interacao . " and
-               num_equipamento = " . $patrimonio);
+            if (count($pool_equips) > 1) {
 
-               // ------------ LOG -------------------
+               foreach ($pool_equips as $num_equip) { 
+                  $this->db->query("update equipamento_chamado set status_equipamento_chamado_ant = status_equipamento_chamado, 
+                  status_equipamento_chamado = 'ABERTO'
+                  where id_chamado_equipamento = " . $interacao->id_chamado_interacao . " and
+                  num_equipamento_chamado = '" . $num_equip . "'");
 
-               $log = array(
-                  'acao_evento' => 'ALTERAR_STATUS_equipamento',
-                  'desc_evento' => 'ID CHAMADO: ' . $interacao->id_chamado_interacao . " - PATRIMONIO: " . $patrimonio . " - NOVO STATUS: ABERTO",
-                  'id_usuario_evento' => $_SESSION['id_usuario']
-                  );
+                  // ------------ LOG -------------------
 
-               $this->db->insert('evento', $log);
+                  $log = array(
+                     'acao_evento' => 'ALTERAR_STATUS_EQUIP',
+                     'desc_evento' => 'ID CHAMADO: ' . $interacao->id_chamado_interacao . " - NUM: " . $num_equip . " - NOVO STATUS: ABERTO",
+                     'id_usuario_evento' => $_SESSION['id_usuario']
+                     );
 
-               // -------------- /LOG ----------------
+                  $this->db->insert('evento', $log);
+
+                  // -------------- /LOG ----------------
+               }
             }
+            
 
-            if ($chamado->entrega_chamado == '1') {
+            
+               if ($chamado->entrega_chamado == '1') {
 
                $this->db->set('entrega_chamado', '0');
                $this->db->where('id_chamado', $interacao->id_chamado_interacao);
@@ -810,19 +648,19 @@ class Interacao_model extends CI_Model {
 		 
 		   break;
 
-         case 'FECHAMENTO_PATRI':
+         case 'FECHAMENTO_EQUIP':
 
-            foreach ($patrimonios[0] as $patrimonio) { //patrimonios[0] é o vetor com a lista de patrimonios da interacao
+            foreach ($pool_equips as $num_equip) { 
                $this->db->query("update equipamento_chamado set status_equipamento_chamado_ant = status_equipamento_chamado, 
                status_equipamento_chamado = 'ABERTO'
                where id_chamado_equipamento = " . $interacao->id_chamado_interacao . " and
-               num_equipamento = " . $patrimonio);
+               num_equipamento_chamado = '" . $num_equip . "'");
 
                // ------------ LOG -------------------
 
                $log = array(
-                  'acao_evento' => 'ALTERAR_STATUS_equipamento',
-                  'desc_evento' => 'ID CHAMADO: ' . $interacao->id_chamado_interacao . " - PATRIMONIO: " . $patrimonio . " - NOVO STATUS: ABERTO",
+                  'acao_evento' => 'ALTERAR_STATUS_EQUIP',
+                  'desc_evento' => 'ID CHAMADO: ' . $interacao->id_chamado_interacao . " - NUM: " . $num_equip . " - NOVO STATUS: ABERTO",
                   'id_usuario_evento' => $_SESSION['id_usuario']
                   );
 
@@ -909,10 +747,10 @@ class Interacao_model extends CI_Model {
 
          case 'ENTREGA':
 
-            if (!empty($patrimonios[0])) {
-               foreach ($patrimonios[0] as $patrimonio) { //patrimonios[0] é o vetor com a lista de patrimonios da interacao
+            if (!empty($pool_equips)) {
+               foreach ($pool_equips as $num_equip) { //patrimonios[0] é o vetor com a lista de patrimonios da interacao
                   $this->db->query("update equipamento_chamado set status_equipamento_chamado = 'ENTREGA'" .
-                  " where num_equipamento = " . $patrimonio . 
+                  " where num_equipamento_chamado = " . $num_equip . 
                   " and status_equipamento_chamado = 'ENTREGUE'" .
                   " and id_chamado_equipamento = " . $interacao->id_chamado_interacao);
 
@@ -920,7 +758,7 @@ class Interacao_model extends CI_Model {
 
                   $log = array(
                      'acao_evento' => 'DESFAZER_ENTREGA_equipamento',
-                     'desc_evento' => 'ID CHAMADO: ' . $interacao->id_chamado_interacao . " - NUM: " . $patrimonio,
+                     'desc_evento' => 'ID CHAMADO: ' . $interacao->id_chamado_interacao . " - NUM: " . $num_equip,
                      'id_usuario_evento' => $_SESSION['id_usuario']
                      );
 
@@ -1042,11 +880,11 @@ class Interacao_model extends CI_Model {
 
          case 'FALHA_ENTREGA':
 
-            if (!empty($patrimonios[0])) {
-               foreach ($patrimonios[0] as $patrimonio) { //patrimonios[0] é o vetor com a lista de patrimonios da interacao
+            if (!empty($pool_equips)) {
+               foreach ($pool_equips as $num_equip) { //patrimonios[0] é o vetor com a lista de patrimonios da interacao
                   $this->db->query("update equipamento_chamado set status_equipamento_chamado = 'ENTREGA', " .
                   "status_equipamento_chamado_ant = 'FALHA'" .
-                  " where num_equipamento = " . $patrimonio . 
+                  " where num_equipamento_chamado = " . $num_equip . 
                   " and status_equipamento_chamado = 'FALHA'" .
                   " and id_chamado_equipamento = " . $interacao->id_chamado_interacao);
 
@@ -1054,7 +892,7 @@ class Interacao_model extends CI_Model {
 
                   $log = array(
                      'acao_evento' => 'DESFAZER_FALHA_ENTREGA_PATRI',
-                     'desc_evento' => 'ID CHAMADO: ' . $interacao->id_chamado_interacao . " - NUM: " . $patrimonio,
+                     'desc_evento' => 'ID CHAMADO: ' . $interacao->id_chamado_interacao . " - NUM: " . $num_equip,
                      'id_usuario_evento' => $_SESSION['id_usuario']
                      );
 
@@ -1106,9 +944,9 @@ class Interacao_model extends CI_Model {
 
          case 'ESPERA':
 
-            foreach ($patrimonios[0] as $patrimonio) { //patrimonios[0] é o vetor com a lista de patrimonios da interacao
+            foreach ($pool_equips as $num_equip) { //patrimonios[0] é o vetor com a lista de patrimonios da interacao
                $this->db->query("update equipamento_chamado set status_equipamento_chamado = 'ABERTO'" .
-               " where num_equipamento = " . $patrimonio . 
+               " where num_equipamento_chamado = " . $num_equip . 
                " and status_equipamento_chamado = 'ESPERA'" .
                " and id_chamado_equipamento = " . $interacao->id_chamado_interacao);
 
@@ -1116,7 +954,7 @@ class Interacao_model extends CI_Model {
 
                 $log = array(
                   'acao_evento' => 'DESFAZER_ESPERA_equipamento',
-                  'desc_evento' => 'ID CHAMADO: ' . $interacao->id_chamado_interacao . " - PATRIMONIO: " . $patrimonio . " - NOVO STATUS: ABERTO",
+                  'desc_evento' => 'ID CHAMADO: ' . $interacao->id_chamado_interacao . " - NUM: " . $num_equip . " - NOVO STATUS: ABERTO",
                   'id_usuario_evento' => $_SESSION['id_usuario']
                   );
 
@@ -1129,9 +967,9 @@ class Interacao_model extends CI_Model {
 
             case 'REM_ESPERA':
 
-            foreach ($patrimonios[0] as $patrimonio) { //patrimonios[0] é o vetor com a lista de patrimonios da interacao
+            foreach ($pool_equips as $num_equip) { //patrimonios[0] é o vetor com a lista de patrimonios da interacao
                $this->db->query("update equipamento_chamado set status_equipamento_chamado = 'ESPERA'" .
-               " where num_equipamento = " . $patrimonio . 
+               " where num_equipamento_chamado = " . $num_equip . 
                " and status_equipamento_chamado = 'ABERTO'" .
                " and id_chamado_equipamento = " . $interacao->id_chamado_interacao);
 
@@ -1139,7 +977,7 @@ class Interacao_model extends CI_Model {
 
                $log = array(
                   'acao_evento' => 'DESFAZER_REM_ESPERA_PATRI',
-                  'desc_evento' => 'ID CHAMADO: ' . $interacao->id_chamado_interacao . " - PATRIMONIO: " . $patrimonio . " - NOVO STATUS: ESPERA",
+                  'desc_evento' => 'ID CHAMADO: ' . $interacao->id_chamado_interacao . " - NUM: " . $num_equip . " - NOVO STATUS: ESPERA",
                   'id_usuario_evento' => $_SESSION['id_usuario']
                   );
 

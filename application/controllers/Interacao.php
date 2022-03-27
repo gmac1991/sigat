@@ -31,7 +31,6 @@ class Interacao extends CI_Controller {
         $dados['situacao'] = $this->input->post('situacao');
         $dados['id_fila'] = $this->input->post('id_fila');
         $dados['id_fila_ant'] = $this->input->post('id_fila_ant');
-        $dados['patri_atendidos'] = $this->input->post('patrimonios_atendidos');
         $dados['equip_atendidos'] = $this->input->post('equipamentos_atendidos');
         $dados['id_usuario'] = $this->input->post('id_usuario');
         
@@ -463,25 +462,6 @@ class Interacao extends CI_Controller {
         
         
     }
-
-    public function adicionar_equipamentos() {
-
-        $dados = array();
-
-
-        $dados['patrimonios'] =       $this->input->post("listaPatrimoniosEquip");
-        $dados['json_equip'] =        $this->input->post("json_equip");
-        $dados['id_usuario'] =        $_SESSION['id_usuario'];
-        $dados['id_chamado'] =        $this->input->post("id_chamado");
-        $dados['tipo'] =              'ADC_EQUIP';
-
-
-        $this->interacao_model->registraInteracao($dados);
-
-
-
-    }
-
 }
 
 ?>

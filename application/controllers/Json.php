@@ -2,7 +2,7 @@
 
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Backend extends CI_Controller {
+class Json extends CI_Controller {
 
     /*Classe para Respostas às requisições AJAX e outras do Frontend */
 
@@ -180,7 +180,7 @@ class Backend extends CI_Controller {
                     echo "</div>";
                 break;
 
-                case 'FECHAMENTO_PATRI': //fechamento com patrimonios
+                case 'FECHAMENTO_EQUIP': //fechamento com patrimonios
                     echo "<div class=\"mb-3 p-1 table-success rounded\">";
                     echo "<span class=\"float-right\">" . $interacao['data_interacao'] . "</span>";
                     echo "<strong>" . $interacao['nome_usuario'] . "</strong> finalizou o chamado<hr class=\"m-0\" />";
@@ -272,7 +272,7 @@ class Backend extends CI_Controller {
             echo "</div>";
         }
         else {
-            die("Não autorizado!");
+            header('HTTP/1.0 403 Forbidden');
         }
 
     }
@@ -298,7 +298,7 @@ class Backend extends CI_Controller {
             }
         }
         else {
-            die("Não autorizado!");
+            header('HTTP/1.0 403 Forbidden');
         }
     }
 
@@ -311,7 +311,7 @@ class Backend extends CI_Controller {
             $id_chamado = $this->input->get('id_chamado');
 
    
-            $q_buscaChamado = "select ticket_chamado, id_chamado, id_fila, status_chamado, nome_solicitante_chamado, nome_local, DATE_FORMAT(data_chamado, '%d/%m/%Y - %H:%i:%s') as data_chamado, descricao_chamado, telefone_chamado,
+            $q_buscaChamado = "select complemento_chamado, resumo_chamado, ticket_chamado, id_chamado, id_fila, status_chamado, nome_solicitante_chamado, nome_local, DATE_FORMAT(data_chamado, '%d/%m/%Y - %H:%i:%s') as data_chamado, descricao_chamado, telefone_chamado,
                 (select usuario.nome_usuario from usuario where usuario.id_usuario = chamado.id_usuario_responsavel_chamado) as nome_responsavel,
                 (select usuario.id_usuario from usuario where usuario.id_usuario = chamado.id_usuario_responsavel_chamado) as id_responsavel,  
                 (select fila.nome_fila from fila where fila.id_fila = chamado.id_fila_chamado) as nome_fila_chamado, entrega_chamado
@@ -320,11 +320,8 @@ class Backend extends CI_Controller {
                 fila.id_fila = chamado.id_fila_chamado and
                 chamado.id_chamado = " . $id_chamado;
 
-            $q_buscaPatrimonios = "select * from equipamento_chamado where id_chamado_equipamento = " . $id_chamado;
+           $q_buscaStatusEquipamentos = "select status_equipamento_chamado from equipamento_chamado where equipamento_chamado.id_chamado_equipamento = " . $id_chamado;
 
-            $q_buscaEquipamentos = "select * from equipamento_chamado where id_chamado_equipamento = " . $id_chamado;
-            
-            //$q_buscaAnexos = "select nome_anexo from anexo where id_chamado_anexo = " . $id_chamado;
 
             $result = $this->db->query($q_buscaChamado)->row_array();
 
@@ -336,11 +333,9 @@ class Backend extends CI_Controller {
                 $result['nome_fila_chamado'] = 'Entrega';
             }
 
-            $result['patrimonios'] = $this->db->query($q_buscaPatrimonios)->result_array();
             
-            $result['equipamentos'] = $this->db->query($q_buscaEquipamentos)->result_array();
+            $result['status_equipamentos'] = $this->db->query($q_buscaStatusEquipamentos)->result_array();
             
-            //$result['anexo'] = $this->db->query($q_buscaAnexos)->result_array();
 
             header("Content-Type: application/json");
                 
@@ -348,7 +343,7 @@ class Backend extends CI_Controller {
         }
 
         else {
-            die("Não autorizado!");
+            header('HTTP/1.0 403 Forbidden');
         }
     }
 	
@@ -364,7 +359,7 @@ class Backend extends CI_Controller {
             $q_buscaTriagem = "select * from triagem where id_triagem = " . $id_triagem;
 				
 			$q_buscaAnexosOTRS = "select id_anexo_otrs, nome_arquivo_otrs from anexos_otrs
-			where id_chamado_sigat = " . $id_triagem;
+			where id_triagem_sigat = " . $id_triagem;
 
             
 
@@ -386,7 +381,7 @@ class Backend extends CI_Controller {
         }
 
         else {
-            die("Não autorizado!");
+            header('HTTP/1.0 403 Forbidden');
         }
     }
 	
@@ -409,7 +404,7 @@ class Backend extends CI_Controller {
         }
 
         else {
-            die("Não autorizado!");
+            header('HTTP/1.0 403 Forbidden');
         }
     }
 
@@ -433,7 +428,7 @@ class Backend extends CI_Controller {
             }
         }
         else {
-            die("Não autorizado!");
+            header('HTTP/1.0 403 Forbidden');
         }
     }
 
@@ -477,17 +472,17 @@ class Backend extends CI_Controller {
                 echo 'ERROR: ' . $e->getMessage();
             }
         } else {
-            die("Não autorizado!");
+            header('HTTP/1.0 403 Forbidden');
         }
 
 
     }
 
-    public function desc_equipamento() {
+    public function desc_equipamento($e_desc) {
 
         if (isset($_SESSION['id_usuario'])) {
 
-            $num_equip = $this->input->post('e_desc');
+            $num_equip = $e_desc;
 
             $dados['descricao'] = NULL;
 
@@ -497,9 +492,9 @@ class Backend extends CI_Controller {
 
                 $res_sim = NULL;
 
-                $res_sim = file_get_contents($this->config->item('api_sim') . $num_equip);
+                $res_sim = @file_get_contents($this->config->item('api_sim') . $num_equip);
 
-                if ($res_sim != 'null') {
+                if ($res_sim !== FALSE && $res_sim !== "null") {
 
                     $descSim = json_decode($res_sim)->descrBem; //descricao do SIM
 
@@ -513,49 +508,33 @@ class Backend extends CI_Controller {
 
             header("Content-Type: application/json");
 
-            echo json_encode($dados);
+            return json_encode($dados);
 
         } else {
-            die("Não autorizado!");
+            header('HTTP/1.0 403 Forbidden');
         }
     }
 
     public function status_equipamento() {
-
-        
-
-            //var_dump($this->input->post('e'));
-
-
-            $statusEquip = $this->equipamento_model->buscaStatusEquipamento($_POST['e_status']);
-
-            if($statusEquip == NULL)
-                echo FALSE;
-
-            else {
-
-                header("Content-Type: application/json");
-
-                echo json_encode($statusEquip);
-            }
-           
-            
-        
+        $statusEquip = $this->equipamento_model->buscaStatusEquipamento($_POST['e_status']);
+        if($statusEquip == NULL) {
+            header("HTTP/1.0 204 No Content");
+        } 
+        else {
+            header("Content-Type: application/json");
+            echo json_encode($statusEquip);
+        }    
     }
 
-    public function patrimonios() {
+    
+
+    public function equipamentos_pendentes() {
         if (isset($_SESSION['id_usuario'])) {
 
             $id_chamado = $this->input->post('id_chamado');
             $espera = $this->input->post('espera');
 
             $dados = array();
-            
-            // removido verificaçao da fila
-
-            // $requer_patri = FALSE;
-
-            //id da fila atual do chamado
             
             $busca = $this->db->query("select id_fila from fila, chamado where id_fila = id_fila_chamado and id_chamado = " . $id_chamado);
 
@@ -569,58 +548,142 @@ class Backend extends CI_Controller {
 
             $dados['filas'] = $result;
 
-            // if ($result['requer_equipamento_fila'] == 1) { // filas
 
-            //     $requer_patri = TRUE;
+            if ($espera == 'false') {
 
-            //     $busca = $this->db->query("select id_fila, nome_fila from fila where requer_equipamento_fila = 1");
-
-            //     $result = $busca->result_array();
-
-            //     $dados['filas'] = $result;
-
-            // } else {
-
-            //     $busca = $this->db->query("select id_fila, nome_fila from fila where requer_equipamento_fila = 0");
-
-            //     $result = $busca->result_array();
-
-            //     $dados['filas'] = $result;
-            // }
-
-            // patrimonios do chamado
-
-            // if ( $requer_patri ) { //se a fila requer patrimonio
-
-                //var_dump($espera);
-
-                if ($espera == 'false') {
-
-                    $busca = $this->db->query("select num_equipamento from equipamento_chamado where id_chamado_equipamento = " . $id_chamado . 
-                    " and (status_equipamento_chamado = 'ABERTO' or status_equipamento_chamado = 'FALHA')");
+                $busca = $this->db->query("select num_equipamento_chamado from equipamento_chamado where id_chamado_equipamento = " . $id_chamado . 
+                " and (status_equipamento_chamado = 'ABERTO' or status_equipamento_chamado = 'FALHA')");
+            
+            } else {
                 
-                } else {
-                    
-                    $busca = $this->db->query("select num_equipamento from equipamento_chamado where id_chamado_equipamento = " . $id_chamado . 
-                    " and status_equipamento_chamado = 'ESPERA'");
+                $busca = $this->db->query("select num_equipamento_chamado from equipamento_chamado where id_chamado_equipamento = " . $id_chamado . 
+                " and status_equipamento_chamado = 'ESPERA'");
 
-                }
+            }
 
-                $result = $busca->result_array();
+            $result = $busca->result_array();
 
-                $dados['patrimonios'] = $result;
-            // }
-            // else {
-
-            //     $dados['patrimonios'] = NULL;
-            // }
-
+            $dados['equipamentos'] = $result;
+          
             header("Content-Type: application/json");
 
             echo json_encode($dados);
         } else {
-            die("Não autorizado!");
+            header('HTTP/1.0 403 Forbidden');
         }
+    }
+
+    public function listar_equipamentos_chamado($id_chamado) {
+        if (isset($_SESSION['id_usuario'])) {
+            
+            $q_buscaEquipamentos = "select num_equipamento, descricao_equipamento, status_equipamento_chamado, tag_equipamento
+            from equipamento, equipamento_chamado where equipamento_chamado.id_chamado_equipamento = " . $id_chamado ." and equipamento_chamado.num_equipamento_chamado = equipamento.num_equipamento";
+          
+            $linhas = $this->db->query($q_buscaEquipamentos)->result();
+            
+            header("Content-Type: application/json");
+
+            echo json_encode($linhas);
+
+        } else {
+            header('HTTP/1.0 403 Forbidden');
+        }
+    }
+
+    public function inserir_equipamento_chamado() {
+        if (isset($_SESSION['id_usuario'])) {
+            $dados = $this->input->post();
+
+            $dados['item']['num_equipamento'] = preg_replace('/\s+/', '', $dados['item']['num_equipamento']); //removendo whitespaces
+            $dados['item']['num_equipamento'] = mb_strtoupper($dados['item']['num_equipamento']);
+            $dados['item']['descricao_equipamento'] = mb_strtoupper($dados['item']['descricao_equipamento']);
+            
+            $tag_equipamento = "(VAZIO)";
+
+            if (isset($dados['item']['tag_equipamento']))
+                $tag_equipamento = mb_strtoupper($dados['item']['tag_equipamento']);
+
+           
+            
+            $existe_equip = $this->db->query("select * from equipamento where num_equipamento = '" . $dados['item']['num_equipamento'] ."'");
+
+            if ($existe_equip->num_rows() == 1) {
+
+                $dados['item']['descricao_equipamento'] = $existe_equip->row()->descricao_equipamento;
+                $dados['item']['tag_equipamento'] = $existe_equip->row()->tag_equipamento;
+            } 
+
+            else {
+                $ext_desc = NULL;
+                $ext_desc = $this->desc_equipamento($dados['item']['num_equipamento']);
+                if (json_decode($ext_desc)->descricao !== NULL) {
+                    $dados['item']['descricao_equipamento'] = json_decode($ext_desc)->descricao;
+                }
+
+                $dados['item']['tag_equipamento'] = $tag_equipamento;
+
+                $this->db->query("insert into equipamento 
+                                values('" . $dados['item']['num_equipamento'] . "',
+                                        '" . $dados['item']['descricao_equipamento'] . "', NOW(),
+                                        '" . $tag_equipamento . "',NULL)");
+
+            }
+
+            $this->db->query("insert into equipamento_chamado 
+                                values('" . $dados['item']['num_equipamento'] . "',
+                                'ABERTO',NULL,NOW()," . $dados['g_id_chamado'] . ")");
+            
+            $dados['item']['status_equipamento_chamado'] = 'ABERTO';
+            
+            header("Content-Type: application/json");
+            echo json_encode($dados['item']);
+
+        } else {
+            header('HTTP/1.0 403 Forbidden');
+        }
+    }
+    public function atualizar_equipamento_chamado() {
+        if (isset($_SESSION['id_usuario'])) {
+            $item = $this->input->post();
+
+            $item['num_equipamento'] = preg_replace('/\s+/', '', $item['num_equipamento']); //removendo whitespaces
+            $item['descricao_equipamento'] = mb_strtoupper($item['descricao_equipamento']);
+            $item['tag_equipamento'] = mb_strtoupper($item['tag_equipamento']);
+
+
+            $this->db->query("update equipamento 
+                            set descricao_equipamento = '" . $item['descricao_equipamento'] .
+                            "', tag_equipamento = '"       . $item['tag_equipamento'] .
+                            "', data_alteracao_equipamento = NOW()" .
+                            " where num_equipamento = '"   . $item['num_equipamento'] . "'"
+            );
+            header("Content-Type: application/json");
+            echo json_encode($item);
+        } else {
+            header('HTTP/1.0 403 Forbidden');
+        }
+    }
+
+    public function remover_equipamento_chamado() {
+        if (isset($_SESSION['id_usuario'])) {
+            $item = $this->input->post();
+            $this->db->query("delete from equipamento_chamado where num_equipamento_chamado = '"   . $item['num_equipamento'] . "'");
+            header("Content-Type: application/json");
+            echo json_encode($item);
+        } else {
+            header('HTTP/1.0 403 Forbidden');
+        }
+    }
+
+    public function historico_chamado() {
+
+        if (isset($_SESSION['id_usuario'])) {
+            $historico = $this->chamado_model->buscaHistoricoChamado($_POST['id_chamado']);
+           
+        } else {
+            header('HTTP/1.0 403 Forbidden');
+        }
+        
     }
 
     public function usuarios() {
@@ -636,37 +699,9 @@ class Backend extends CI_Controller {
             
         
         } else {
-            die("Não autorizado!");
+            header('HTTP/1.0 403 Forbidden');
         }
     }
-
-    // public function requer_equipamento() {
-
-    //     $id_fila = $this->input->get('id_fila');
-
-    //     if (isset($_SESSION['id_usuario'])) {
-
-    //         try {
-    //             $busca = $this->db->query("SELECT * FROM fila WHERE id_fila = " . $id_fila . " and requer_equipamento_fila = 1");
-                
-    //             $result = $busca->result_array();
-                
-    //             if ( count($result) ) { 
-              
-    //               echo '1';
-                  
-    //             }
-    //           } catch(PDOException $e) {
-    //               echo 'ERROR: ' . $e->getMessage();
-    //           }
-        
-        
-    //     } else {
-    //         die("Não autorizado!");
-    //     }
-        
-
-    // }
 
     public function atualiza_responsavel() {
 
@@ -717,33 +752,9 @@ class Backend extends CI_Controller {
             }
 
         } else {
-            die("Não autorizado!");
+            header('HTTP/1.0 403 Forbidden');
         }
 
-
-    }
-
-    public function equipamentos() {
-
-        if (isset($_SESSION['id_usuario'])) {
-
-            $termo = $this->input->post('id_chamado');
-
-            try {
-            $result['equipamentos'] = $this->db->query("select * from equipamento_chamado where id_chamado_equipamento = " 
-            . $termo . " and status_equipamento = 'ABERTO'")->result_array();
-            
-            header("Content-Type: application/json");
-
-            echo json_encode($result);
-                
-            } catch(PDOException $e) {
-                echo 'ERROR: ' . $e->getMessage();
-            }
-        }
-        else {
-            die("Não autorizado!");
-        }
 
     }
 
@@ -770,7 +781,7 @@ class Backend extends CI_Controller {
 
             echo json_encode($result);
         } else {
-            die("Não autorizado!");
+            header('HTTP/1.0 403 Forbidden');
         }
 
 
@@ -791,7 +802,7 @@ class Backend extends CI_Controller {
 
             echo json_encode($result);
         } else {
-            die("Não autorizado!");
+            header('HTTP/1.0 403 Forbidden');
         }
 
 

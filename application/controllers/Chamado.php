@@ -42,6 +42,7 @@ class Chamado extends CI_Controller {
 
         $dados = $this->chamado_model->buscaChamado($id_chamado); //traz patrimonios, info do chamado e anexos...
         $dados['usuarios'] = $this->usuario_model->buscaUsuarios(); //traz a lista de todos os usuarios
+        $dados['historico'] = $this->chamado_model->buscaHistorico($id_chamado); //traz a lista de todos os usuarios
 
         if (isset($dados['chamado'])) {
 
@@ -116,13 +117,14 @@ class Chamado extends CI_Controller {
       $dados = array();
   
       // campos
-      $dados['id_chamado'] =          $this->input->post("id_chamado");
+      $dados['id_triagem'] =          $this->input->post("id_triagem");
       $dados['nome_solicitante'] =    str_replace(array("'","\""),"",$this->input->post("nome_solicitante"));
       $dados['resumo_solicitacao'] =  str_replace(array("'","\""),"",$this->input->post("resumo_solicitacao"));
       $dados['telefone'] =            $this->input->post("telefone");
       $dados['nome_local'] =          $this->input->post("nome_local");
       $dados['comp_local'] =          str_replace(array("'","\""),"",$this->input->post("comp_local"));
       $dados['listaEquipamentos'] =   json_decode($this->input->post("listaEquipamentos"));
+      $dados['anexos'] =              json_decode($this->input->post("g_anexos"));
       $dados['textoTriagem'] =        $this->input->post("textoTriagem");
       $dados['ticket_triagem'] =      $this->input->post("ticket_triagem");
       $dados['email_triagem'] =       $this->input->post("email_triagem");

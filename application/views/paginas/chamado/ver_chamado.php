@@ -55,8 +55,8 @@
         <div class="container py-2">
             <div>
                 <div class="float-right">
-                    <button id="btnBloquearChamado" class="btn btn-primary" style="display:none"><i class="fas fa-lock"></i> Bloquear</button>
-                    <button id="btnDesbloquearChamado" class="btn btn-primary" style="display:none"><i class="fas fa-unlock"></i> Desbloquear</button>
+                    <button id="btnBloquearChamado" class="btn btn-sm btn-primary" style="display:none"><i class="fas fa-lock"></i> Bloquear</button>
+                    <button id="btnDesbloquearChamado" class="btn btn-sm btn-primary" style="display:none"><i class="fas fa-unlock"></i> Desbloquear</button>
                 </div>
                  
                 <h3><?= $chamado->ticket_chamado ?> <small>(#<?= $chamado->id_chamado ?>)</small></h3>
@@ -78,6 +78,9 @@
                 </li>
 				<li class="nav-item">
                 <a class="nav-link" id="descricao-tab" data-toggle="tab" href="#descricao" role="tab" aria-controls="descricao" aria-selected="false"><i class="fas fa-scroll"></i> Descrição completa</a>
+                </li>
+                <li class="nav-item">
+                <a class="nav-link" id="historico-tab" data-toggle="tab" href="#historico" role="tab" aria-controls="historico" aria-selected="false"><i class="fas fa-history"></i> Histórico</a>
                 </li>
                 
                 
@@ -125,12 +128,13 @@
                         </div>
                         <div class="row">
                             <div class="form-group col-8">
-                            <label for="nome_solicitante">Solicitante</label>
-                            <input type="text" class="form-control" name="nome_solicitante" aria-describedby="" placeholder="" disabled>
+                                <label for="nome_solicitante">Solicitante</label>
+                                <input type="text" class="form-control" name="nome_solicitante" aria-describedby="" placeholder="" disabled>
                             </div>
                             <div class="form-group col">
-                            <label for="telefone">Telefone</label>
-                            <input type="text" class="form-control" name="telefone" aria-describedby="" placeholder=""  disabled>
+                                <label for="telefone">Telefone <a href="#" id="sipLink" class="badge badge-info"><i class="fas fa-phone"></i></a></label>
+                                <input type="text" class="form-control" name="telefone" aria-describedby="" placeholder=""  disabled>
+                                
                             </div>
                         </div> 
                         <div class="row">
@@ -146,7 +150,9 @@
                     </form>
                 </div>
                 <div class="tab-pane" id="equip" role="tabpanel" aria-labelledby="equip-tab">
-                    
+                    <div class="content mt-3">
+                        <div id="tblEquipamentosChamado" class="jsgrid"></div>   
+                    </div>
                 </div>
                 <div class="tab-pane" id="atendimento" role="tabpanel" aria-labelledby="atendimento-tab">
                     <div class="content mt-3">
@@ -157,6 +163,11 @@
                 <div class="tab-pane" id="descricao" role="tabpanel" aria-labelledby="descricao-tab">
                     <div class="col-0 my-3">
                         <div name="descricao" class="border rounded p-2 overflow-auto" style="max-height: 450px;"></div>
+                    </div>
+                </div>
+                <div class="tab-pane" id="historico" role="tabpanel" aria-labelledby="historico-tab">
+                    <div class="col-0 my-3">
+                        
                     </div>
                 </div>
             </div>

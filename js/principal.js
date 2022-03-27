@@ -89,22 +89,6 @@ $(function() {
         $('#triagem-tab').tab('show');
     }
 
-    /* ---- Pagina de abertura de chamado ---*/
-
-    $('#btnAlteraPatrimonios').hide();
-
-    $('#divTabelaPatrimonios').hide();
-
-    $('#divTabelaChamadosAbertos').hide();
-
-    $('#divTabelaInserviveis').hide();
-
-    if (listaVerificada == true) {
-
-        $('#btnAbrirChamado').removeAttr("disabled");
-    }
-
-    $('input[name=id_usuario]').val(g_id_usuario);
 
     // --------------- HABILITANDO FILTRAGEM NOS EVENTOS ---------------
 
@@ -148,19 +132,6 @@ function painel(id_fila) {
         
         "autoWidth": false,
 
-        "createdRow": function(row, data, dataIndex) {
-            if (data[5] === 'ABERTO') {
-                $(row).addClass('table-warning');
-            }
-            if (data[5] === 'FECHADO') {
-                $(row).addClass('table-success');
-            }
-            if (data[4] !== null) {
-                $(row).removeClass('table-warning');
-                // $(row).addClass('table-danger');
-            }
-
-        },
         "columnDefs": [{
             "orderable": false,
             "targets": [7]
@@ -213,7 +184,7 @@ function painel(id_fila) {
                 $.ajax({
 
                     type: 'post',
-                    url: base_url + 'backend/texto_ultima_interacao',
+                    url: base_url + 'json/texto_ultima_interacao',
                     data: {
                         id_chamado: p_id_chamado
                     },
@@ -347,17 +318,15 @@ $('#tblTriagem').on('click', 'tbody tr', function () {
 
 // =============== MODAIS ====================
 
-function buscaPatrimonios(p_id_chamado, p_id_fila_ant, p_atendimento, ins = false, p_espera = false, p_alt_fila = false) {
+async function buscaEquipamentos(p_id_chamado, p_id_fila_ant, p_atendimento, ins = false, p_espera = false, p_alt_fila = false) {
 
-    //console.log(p_atendimento);
 
-    var lista_equipamentos = [];
-    $('#divPatrimonios').empty();
+    var num_equipamentos = [];
     $('#btnRegistrarInteracao').removeAttr('disabled');
 
-    $.ajax({
+    await $.ajax({
 
-        url: base_url + 'backend/patrimonios',
+        url: base_url + 'json/equipamentos_pendentes',
         data: {
             id_chamado: p_id_chamado,
             espera: p_espera
@@ -367,24 +336,8 @@ function buscaPatrimonios(p_id_chamado, p_id_fila_ant, p_atendimento, ins = fals
         dataType: 'json',
         success: function(data) {
 
-            //console.log(data);
-
             data.filas.forEach(function(fila) { //exibindo as filas
 
-                // if (fila.id_fila == 6 && p_alt_fila == true) {
-                // 	return; // se for a fila de Sol. de Equipamentos (id 6) no modal de Interacao, pular e não exibir
-                // } 
-                // else if(p_id_fila_ant == 6 && fila.id_fila != 3)  { 
-                // 	return;
-                // }
-                // else if(p_id_fila_ant != 6 && data.id_fila == 6 ) {
-                // 	return;
-                // }
-                // else {
-
-                // 	if(p_id_fila_ant == 6) {
-                // 		$('select[name=id_fila]').append("<option value=\"6\" >Solicitação de Equipamento</option>");
-                // 	}
 
                 $('select[name=id_fila]').append("<option value=\"" + fila.id_fila + "\" >" + fila.nome_fila + "</option>");
 
@@ -399,118 +352,81 @@ function buscaPatrimonios(p_id_chamado, p_id_fila_ant, p_atendimento, ins = fals
                     $('#slctFila option[value=' + p_id_fila_ant + ']').remove(); //se não, remover a fila atual da lista
                 }
 
-                // }
 
             });
 
+            if (data.equipamentos != null) {
 
+                data.equipamentos.forEach(function(equip) {
 
-            if (data.patrimonios != null /*&& p_id_fila_ant != 6*/ ) { //se houver patrimonios no chamado para atender, exibi-los
-
-                data.patrimonios.forEach(function(patrimonio) {
-
-                    lista_equipamentos.push(patrimonio['num_equipamento']);
+                    num_equipamentos.push(equip['num_equipamento_chamado']);
 
                 });
 
             }
 
-            // ================= EQUIPAMENTOS SEM PATRIMONIO ==================
 
-            var tem_equipamentos = 0;
+            
+        }
+    });
 
-            $.ajax({
-                type: "POST",
-                async: true, //
-                url: base_url + 'backend/equipamentos',
-                data: {
-                    id_chamado: g_id_chamado,
-                },
-                dataType: 'JSON',
-                success: function(data) {
-                    if (data != null) {
-                        tem_equipamentos = 1;
+    
 
-                        p_equips = [, ];
+    if (num_equipamentos.length > 0) {
 
-                        //console.log(data.equipamentos);
-                        data.equipamentos.forEach(function(equip) {
-                            p_equips.push([equip.num_equipamento, equip.desc_equipamento]);
-                        });
-                    }
-                },
-                complete: function() {
+        $('#divEquipamentos').empty();
 
-                    if (p_equips.length > 1 && $('#slctTipo').val() == 'ATENDIMENTO') {
-                        $('#divPatrimonios').append("<p>Serão considerados os seguintes equipamentos para esse atendimento:</p>");
-                        $('#divPatrimonios').append("<ul></ul>");
+        if (p_atendimento == true) {
 
-                        p_equips.forEach(function(equip) {
-                            $('#divPatrimonios ul').append("<li>" + equip[0] + " - " + equip[1] + "</li>");
-                        });
+            $('#divEquipamentos').prepend("<p>Marque os equipamentos que foram finalizados:</p>");
 
-                    }
+            if (!ins) { // nao sendo a opçao Classificar como inservivel, o check de equipamento é opcional
+                $('#divEquipamentos p').append(" <small><strong>(opcional)</strong></small>");
+            }
 
+        } else {
 
-                }
-            });
+            if (p_espera == false) {
 
-            if (lista_equipamentos.length > 0) {
-
-                $('#divPatrimonios').empty();
-
-                if (p_atendimento == true) {
-
-                    $('#divPatrimonios').prepend("<p>Marque os equipamentos que foram finalizados:</p>");
-
-                    if (!ins) { // nao sendo a opçao Classificar como inservivel, o check de equipamento é opcional
-                        $('#divPatrimonios p').append(" <small><strong>(opcional)</strong></small>");
-                    }
-
-                } else {
-
-                    if (p_espera == false) {
-
-                        $('#divPatrimonios').prepend("<p>Marque os equipamentos que serão deixados em espera:</p>");
-
-                    } else {
-
-                        $('#divPatrimonios').prepend("<p>Marque os equipamentos que sairão da espera:</p>");
-                    }
-                }
-                lista_equipamentos.forEach(function(patrimonio) { //criando os checkbox com os patrimonios
-                    $('#divPatrimonios').append(
-                        "<input class=\"chkPatri\" type=\"checkbox\" id=\"" + patrimonio + "\" value=\"" + patrimonio + "\">" +
-                        "<label class=\"mr-2\" for=\"" + patrimonio + "\">&nbsp;" + patrimonio + "</label>");
-                });
+                $('#divEquipamentos').prepend("<p>Marque os equipamentos que serão deixados em espera:</p>");
 
             } else {
 
-                if (p_espera == true) {
-                    $('#divPatrimonios').prepend("<p>Não existem equipamentos em espera!</p>");
-                    if (!p_alt_fila) {
-                        $('#btnRegistrarInteracao').prop('disabled', 'true');
-                    }
+                $('#divEquipamentos').prepend("<p>Marque os equipamentos que sairão da espera:</p>");
+            }
+        }
+        num_equipamentos.forEach(function(num) { //criando os checkbox com os patrimonios
+         
+            $('#divEquipamentos').append(
+                "<input class=\"chkPatri\" type=\"checkbox\" id=\"" + num + "\" value=\"" + num + "\">" +
+                "<label class=\"mr-2\" for=\"" + num + "\">&nbsp;" + num + "</label>");
+        });
 
-                } else if (p_id_fila_ant == 6) { // no caso da fila estar como 'Solicitacao de Equipamento'
-                    $('#divPatrimonios').prepend("<p>Para este tipo de interação, altere a fila para <b>Manutenção de Hardware</b></p>");
-                    if (!p_alt_fila) {
-                        $('#btnRegistrarInteracao').prop('disabled', 'true');
-                    }
-                } else {
+    } else {
 
-                    if (tem_equipamentos == 0) {
+        if (p_espera == true) {
+            $('#divEquipamentos').prepend("<p>Não existem equipamentos em espera!</p>");
+            if (!p_alt_fila) {
+                $('#btnRegistrarInteracao').prop('disabled', 'true');
+            }
 
-                        $('#divPatrimonios').prepend("<p>Não existem equipamentos disponíveis para isso!</p>");
-                        if (!p_alt_fila) {
-                            $('#btnRegistrarInteracao').prop('disabled', 'true');
+        } else if (p_id_fila_ant == 6) { // no caso da fila estar como 'Solicitacao de Equipamento'
+            $('#divEquipamentos').prepend("<p>Para este tipo de interação, altere a fila para <b>Manutenção de Hardware</b></p>");
+            if (!p_alt_fila) {
+                $('#btnRegistrarInteracao').prop('disabled', 'true');
+            }
+        } else {
 
-                        }
-                    }
+            if (tem_equipamentos == 0) {
+
+                $('#divEquipamentos').prepend("<p>Não existem equipamentos disponíveis para isso!</p>");
+                if (!p_alt_fila) {
+                    $('#btnRegistrarInteracao').prop('disabled', 'true');
+
                 }
             }
         }
-    });
+    }
 }
 
 
@@ -522,43 +438,36 @@ function verificaTipo(fila_ant, id_chamado) { //verificar tipo da fila no modal 
     switch ($('#slctTipo').val()) {
 
         case 'ATENDIMENTO':
-            // if (g_requer_patri == true) {
-            buscaPatrimonios(id_chamado, fila_ant, true, false, false);
-            $('#divPatrimonios').show();
+            buscaEquipamentos(id_chamado, fila_ant, true, false, false);
+            $('#divEquipamentos').show();
             $('#divFila').show();
             $('#slctFila').attr('disabled', true);
-
-            // } else {
-
-            // 	$('#divPatrimonios').hide();
-            // 	$('#divFila').hide();
-            // 	$('#slctFila').attr('disabled',true);
-            // }
-
             break;
+
         case 'ALT_FILA':
-            buscaPatrimonios(id_chamado, fila_ant, false, false, false, true);
+            buscaEquipamentos(id_chamado, fila_ant, false, false, false, true);
             $('#divFila').show();
-            $('#divPatrimonios').hide();
+            $('#divEquipamentos').hide();
             $('#slctFila').attr('disabled', false);
-
             break;
+
         case 'OBSERVACAO':
-            $('#divPatrimonios').hide();
+            $('#divEquipamentos').hide();
             $('#divFila').hide();
             $('#slctFila').attr('disabled', true);
             $('#btnRegistrarInteracao').removeAttr('disabled');
             break;
+            
         case 'INSERVIVEL':
 
             if (fila_ant == 3) {
-                buscaPatrimonios(id_chamado, fila_ant, true, true);
-                $('#divPatrimonios').show();
+                buscaEquipamentos(id_chamado, fila_ant, true, true);
+                $('#divEquipamentos').show();
                 $('#divFila').show();
                 $('#slctFila').attr('disabled', true);
             } else {
-                $('#divPatrimonios').show();
-                $('#divPatrimonios').html('Opção disponível somente na fila <strong>Manutenção de Hardware</strong><br>');
+                $('#divEquipamentos').show();
+                $('#divEquipamentos').html('Opção disponível somente na fila <strong>Manutenção de Hardware</strong><br>');
                 $('#btnRegistrarInteracao').prop('disabled', 'true');
                 $('#divFila').hide();
             }
@@ -567,15 +476,15 @@ function verificaTipo(fila_ant, id_chamado) { //verificar tipo da fila no modal 
             break;
 
         case 'ESPERA':
-            buscaPatrimonios(id_chamado, fila_ant, false);
-            $('#divPatrimonios').show();
+            buscaEquipamentos(id_chamado, fila_ant, false);
+            $('#divEquipamentos').show();
             $('#divFila').hide();
             $('#slctFila').attr('disabled', true);
             break;
 
         case 'REM_ESPERA':
-            buscaPatrimonios(id_chamado, fila_ant, false, false, true);
-            $('#divPatrimonios').show();
+            buscaEquipamentos(id_chamado, fila_ant, false, false, true);
+            $('#divEquipamentos').show();
             $('#divFila').hide();
             $('#slctFila').attr('disabled', true);
             break;
@@ -604,7 +513,7 @@ function criaFormRegistro(p_id_chamado, p_id_fila_ant) { //carregar o form no mo
         "</div>" +
         "<div class=\"row mt-3\">" +
         "<div class=\"col\">" +
-        "<div id=\"divPatrimonios\"></div>" +
+        "<div id=\"divEquipamentos\"></div>" +
         "</div>" +
         "</div>" +
         "<div class=\"row mb-3\">" +
@@ -628,28 +537,9 @@ $('#modalRegistro').on('show.bs.modal', function(event) { //modal de registro de
 
     var modal = $(this);
 
-    /*
-    $.ajax({
-    	url: base_url + 'backend/requer_equipamento', 
-    	data: { id_fila: fila_atual },
-    	type: 'GET',
-    	async: false,
-    	success: function(data){ 
-
-    		if (data == '1' ) { //verificar a fila do chamado requer patrimonio
-    		
-    			g_requer_patri = true;
-    			modal.find('.modal-body #conteudo_form').empty();
-    			modal.find('.modal-body #conteudo_form').prepend(criaFormRegistro(p_id_chamado,fila_atual));
-    			
-    		} else {
-    */
     modal.find('.modal-body #conteudo_form').empty();
     modal.find('.modal-body #conteudo_form').prepend(criaFormRegistro(p_id_chamado, fila_atual));
-    /*		}
-    	}
-    });	
-    */
+  
 });
 
 $('#modalRegistro').on('shown.bs.modal', function(event) {
@@ -753,22 +643,6 @@ $('#modalRegistroEntrega').on('show.bs.modal', function(event) {
 
 // -- /FIM MODAL REGISTRO ENTREGA
 
-$('#modalEquipamentos').on('show.bs.modal', function() {
-
-    $('#btnAdicionarEquipamentos').removeAttr('disabled');
-
-});
-
-$('#modalEquipamentos').on('hidden.bs.modal', function(event) {
-    //$('#modalEquipamentos').modal('dispose');
-    $('tblEquipamentos tbody').empty();
-    listaVerificada = false;
-});
-
-$('#modalEquipamentos').on('show.bs.modal', function(event) {
-    listaVerificada = false;
-});
-
 
 // ========== FIM MODAIS ================
 
@@ -783,7 +657,7 @@ $('input[name=nome_solicitante]').autoComplete({ //na abertura do chamado
         try {
             xhr.abort();
         } catch (e) {}
-        xhr = $.getJSON(base_url + 'backend/solicitantes', {
+        xhr = $.getJSON(base_url + 'json/solicitantes', {
             q: term
         }, function(data) {
             response(data);
@@ -802,7 +676,7 @@ $('input[name=nome_local]').autoComplete({
         try {
             xhr.abort();
         } catch (e) {}
-        xhr = $.getJSON(base_url + 'backend/locais', {
+        xhr = $.getJSON(base_url + 'json/locais', {
             q: term
         }, function(data) {
             response(data);
@@ -812,523 +686,201 @@ $('input[name=nome_local]').autoComplete({
 
 });
 
-// ------------------------------------- ABERTURA DO CHAMADO --------------------------------
 
-
-function precisaPatrimonio(id_fila, triagem) { // verifica se a fila escolhida na abertura do chamado precisa de patrimonio
-
-    $("#listaPatrimonios").hide();
-    $("#msg div[id=alerta]").remove();
-
-    $("#btnVerificaPatrimoniosTriagem").hide(); //TRIAGEM
-
-    // $.get(base_url + 'backend/requer_equipamento', {id_fila: id_fila}, function(response) {
-    // if (response == '1') { //caso a fila requeira patrimonio
-
-    if (!triagem) {
-
-        $("#listaPatrimonios").show();
-        $("#txtPatrimonios").removeAttr('readonly');
-        $("#btnVerificaPatrimonios").show();
-        $("#flagPrecisaPatrimonio").val(1);
-        clearTimeout(timeout);
-        $('#btnAbrirChamado').removeAttr("disabled");
-
-        listaVerificada = false;
-
-        if (id_fila == 6) { // em caso de solicitacao de equipamentos, 
-            // fazer o bypass da lista de patrimonios 
-            // para que eles sejam adicionados posteriormente
-
-            $("#divTabelaPatrimonios").hide();
-            $("#listaPatrimonios").hide();
-
-            listaVerificada = true;
-        }
-
-    } else {
-        $("#btnVerificaPatrimoniosTriagem").show();
-    }
-
-    // } else { //senao
-
-    /*$( "#divTabelaPatrimonios" ).hide();
-    $( "#listaPatrimonios" ).hide();
-    $( "#flagPrecisaPatrimonio" ).val(0);
-    $( "#btnVerificaPatrimoniosTriagem" ).hide();*/
-    // }
-
-
-    // });	
-}
-
-//--------- Verificaçao da lista de patrimonios ---------------
-
-var vetorListaOK = [];
-
-async function criaTabelaPatrimonios(vetor, url) {
-
-    vetorListaOK = [];
-
-    var vetorPatrInv = [];
-
-    var vetorPatrIns = [];
-    var vetorPatrInsDesc = [];
-    var vetorPatrInsChamado = [];
-
-    var vetorPatrOK = [];
-    var vetorPatrOKDesc = [];
-
-    var vetorPatrAberto = [];
-    var vetorPatrAbertoDesc = [];
-    var vetorPatrAbertoChamado = [];
-
-    $('[for="listaPatrimonios"]').append("<div class=\"spinner-border spinner-border-sm\" role=\"status\">&nbsp;&nbsp;<span class=\"sr-only\">Carregando...</span\></div>");
-
-
-    for (var item of vetor) {
-
-        await fetch(base_url + 'backend/patrimonio?url=' + url + item + '&q=' + item)
-
-        .then(response => response.json())
-
-        .then(data => {
-
-            if (data.descricao != null) {
-
-                if (data.inservivel) { // verificando se não é inservivel
-                    vetorPatrIns.push(item);
-                    vetorPatrInsDesc.push(data.descricao);
-                    vetorPatrInsChamado.push(data.inservivel['id_chamado_equipamento']);
-                } else {
-                    vetorPatrOK.push(item); // se houver descricao, o patrimonio é valido
-                    vetorPatrOKDesc.push(data.descricao);
-                }
-
-                if (data.chamado != null) {
-
-                    vetorPatrAberto.push(item); // se houver chamado, enfileirar nos vetores PatrAberto (num_equipamento, descricao, id_chamado)
-                    vetorPatrAbertoDesc.push(data.descricao);
-                    vetorPatrAbertoChamado.push(data.chamado);
-
-                    vetorPatrOK.pop(); //remover dos vetores de patrimonios validos
-                    vetorPatrOKDesc.pop();
-
-                }
-
-            } else {
-                vetorPatrInv.push(item); //se não houver descricao, o patrimonio é invalido e será enfileirado no vetorPatriInv
-
-            }
-
-        });
-
-    }
-
-
-    if (vetorPatrInv.length > 0) { //se houverem patrimonios invalidos...
-
-        $('#listaVerificada div').remove();
-        $('[for="listaPatrimonios"] .spinner-border').remove();
-
-        vetorPatrInv.forEach(function(item) {
-            $("#msgPatr").append("<div class=\"alert alert-warning alert-dismissible fade show\" role=\"alert\">Patrimônio inválido: <strong>" + item + "</strong><button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\"><span aria-hidden=\"true\">&times;</span></button></div>");
-        });
-
-        $("#txtPatrimonios").removeAttr('readonly');
-        $("#txtPatrimonios").show();
-        $("#txtPatrimonios").focus();
-        $("#btnAlteraPatrimonios").hide();
-        $('#btnVerificaPatrimonios').show();
-        $('#divTabelaPatrimonios').hide();
-
-
-    } else { //se não houverem patrimonios inválidos ...
-
-        $('[for="listaPatrimonios"] .spinner-border').remove();
-
-        if (vetorPatrIns.length > 0) { // se houverem patrimonios inservie...
-
-            $('#divTabelaInserviveis').show();
-
-            for (var i = 0; i < vetorPatrIns.length; i++) {
-
-                $('#tblInserviveis tbody').append('<tr class=\"table-danger\"><td>' + vetorPatrIns[i] +
-                    '</td><td>' + vetorPatrInsDesc[i] + '</td><td>#' + vetorPatrInsChamado[i] +
-                    ' <a target=\"_blank\" href=\"' + base_url + 'chamado/' + vetorPatrInsChamado[i] + '\">Mais...</a></td></tr>');
-
-            }
-
-            listaVerificada = false;
-
-            $('#btnRemovePatrimonios').show();
-
-        }
-
-
-        if (vetorPatrAberto.length > 0) { // se houverem patrimonios com chamado aberto...
-
-            $('#divTabelaChamadosAbertos').show();
-
-            for (var i = 0; i < vetorPatrAberto.length; i++) {
-
-                $('#tblPatrimoniosAbertos tbody').append('<tr class=\"table-warning\"><td>' + vetorPatrAberto[i] +
-                    '</td><td>' + vetorPatrAbertoDesc[i] + '</td><td>#' + vetorPatrAbertoChamado[i] +
-                    ' <a target=\"_blank\" href=\"' + base_url + 'chamado/' + vetorPatrAbertoChamado[i] +
-                    '"><small>Mais...</small></a></td></tr>');
-
-            }
-
-            listaVerificada = false;
-
-            $('#btnRemovePatrimonios').show();
-        }
-        if (vetorPatrOK.length > 0) { //se houverem patrimonios válidos...
-
-            $('#divTabelaPatrimonios').show();
-            $("#btnAlteraPatrimonios").show();
-
-            for (var i = 0; i < vetorPatrOK.length; i++) {
-
-                $('#tblPatrimonios tbody').append('<tr><td>' + vetorPatrOK[i] +
-                    '</td><td>' + vetorPatrOKDesc[i] + '</td></tr>');
-
-                vetorListaOK.push(vetorPatrOK[i]);
-
-            }
-
-            if (vetorPatrAberto.length == 0) {
-                listaVerificada = true;
-            }
-
-        }
-
-    }
-
-}
-
-
-
-$("#btnVerificaPatrimonios").click(function() {
-
-    var lista = $('#txtPatrimonios').val();
-
-    $('[name=descricao]').val(lista);
-
-    var vetor = lista.match(/[1-9]\d{5}/g);
-
-    if (vetor != null) {
-
-        $('#msgPatr div[role=alert]').remove();
-
-        $('#txtPatrimonios').prop('readonly', 'true');
-
-        $('#tblPatrimonios tbody tr').remove();
-        $('#tblPatrimoniosAbertos tbody tr').remove();
-
-        $('#btnVerificaPatrimonios').hide();
-
-
-        // verificando duplicatas...
-
-        duplicado = false;
-
-        for (i = 0; i < vetor.length - 1; i++) {
-
-            x = vetor[i];
-
-            for (j = i + 1; j < vetor.length; j++) {
-
-                if (x == vetor[j]) {
-
-                    duplicado = true;
-                    break;
-                }
-            }
-
-        }
-
-        if (duplicado == true) {
-
-            $('#listaVerificada div').remove();
-            $('[for="listaPatrimonios"] .spinner-border').remove();
-
-
-            $("#msgPatr").append("<div class=\"alert alert-warning alert-dismissible fade show\" role=\"alert\">Existem patrimônios duplicados na lista!<button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\"><span aria-hidden=\"true\">&times;</span></button></div>");
-
-            $("#txtPatrimonios").removeAttr('readonly');
-            $("#txtPatrimonios").focus();
-            $("#btnAlteraPatrimonios").hide();
-            $('#btnVerificaPatrimonios').show();
-            $('#divTabelaPatrimonios').hide();
-        } else {
-
-            criaTabelaPatrimonios(vetor, url);
-
-        }
-
-    }
-
-});
-
-
-$("#btnRemovePatrimonios").click(function() {
-
-    $('#tblPatrimoniosAbertos tbody tr').remove();
-    $('#divTabelaChamadosAbertos').hide();
-    $('#tblInserviveis tbody tr').remove();
-    $('#divTabelaInserviveis').hide();
-    $("#btnRemovePatrimonios").hide();
-
-    listaVerificada = true;
-
-    $('#txtPatrimonios').val(vetorListaOK);
-
-    if ($('#txtPatrimonios').val() == '') {
-        $("#txtPatrimonios").removeAttr('readonly');
-        $("#txtPatrimonios").focus();
-        $('#btnVerificaPatrimonios').show();
-
-    }
-
-    vetorListaOK = [];
-
-});
-
-
-$("#btnAlteraPatrimonios").click(function() {
-
-    $('#tblPatrimonios tbody tr').remove();
-    $('#tblPatrimoniosAbertos tbody tr').remove();
-    $('#btnVerificaPatrimonios').show();
-    $("#btnAlteraPatrimonios").hide();
-    $('#txtPatrimonios').removeAttr('readonly');
-    $("#txtPatrimonios").focus();
-    $('#divTabelaPatrimonios').hide();
-    $('#divTabelaChamadosAbertos').hide();
-
-    listaVerificada = false;
-
-});
-
-//--------- FIM Verificaçao da lista de patrimonios ---
-
-
-
-// -- verificando se vai ter anexo
-
-var tem_anexo = 0;
-
-$('#chkAnexo').on('click', function() {
-
-    if (tem_anexo == 0) {
-        $('#divAnexo').append("<input type=\"file\" class=\"form-control-file\" accept=\".gif,.jpg,.png,.pdf,.doc,.docx,.xls,.xlsx,.odt,.ods,.jpeg,.txt\" name=\"anexo\">");
-        $('#chkAnexo').val(1);
-        tem_anexo = 1
-    } else {
-        $("#divAnexo input[name=anexo]").remove();
-        $('#chkAnexo').val(0);
-        tem_anexo = 0
-    }
-
-
-
-});
-
-
-
-
-//------------------ SUBMIT DA ABERTURA DE CHAMADO --------------
-
-
-// $('#frmAbrirChamado').on('submit', 
-
-// function(e) {
-
-// 	e.preventDefault();
-
-// 	}).validate ({
-// 		rules: {
-// 			nome_solicitante: "required",
-// 			nome_local: "required",
-// 			telefone: {
-// 				required: true, 
-// 				digits: true,
-// 				minlength: 3,
-// 			},
-// 			listaPatrimonios: {
-// 				required: true,
-// 				// required: function() {
-// 				// 	if ($('#flagPrecisaPatrimonio').val() == 1 && $('#id_fila').val() != 6) { //bypass da fila Solicitacao de Equipamentos
-// 				// 		return true;
-// 				// 	} else {
-// 				// 		return false;
-// 				// 	}
-// 				// },
-// 				minlength: 6,
-// 				maxlength: 2000
-// 			},
-// 			descricao: {
-// 				required: true,
-// 				maxlength: 2000,
-// 				minlength: 10,
-// 				normalizer: function(value) {
-// 					return $.trim(value);
-// 				}
-// 			}
-// 		},
-// 		messages: {
-// 			nome_solicitante: "Campo obrigatório!",
-// 			nome_local: "Campo obrigatório!",
-// 			telefone: {
-// 				required: "Campo obrigatório!",
-// 				digits: "Somente dígitos (0-9)!",
-// 				minlength: "Mínimo 3 dígitos!"
-// 			} ,
-// 			descricao: {
-// 				required: "Campo obrigatório!",
-// 				minlength: "Descrição insuficiente!",
-// 				maxlength: "Tamanha máximo excedido!"
-// 			},
-
-// 			listaPatrimonios: {
-// 				required: "Campo obrigatório!",
-// 				minlength: "Informe pelo menos 1 patrimônio!",
-// 				maxlength: "Tamanha máximo excedido!"
-// 			},
-// 		},
-// 		submitHandler: function(form) {
-// 			var script_url = base_url + "chamado/registrar_chamado";
-
-// 			var dados = new FormData(form);
-
-// 			$.ajax({
-
-// 					url: script_url,
-// 					type: 'POST',
-// 					data: dados,
-// 					contentType: false,
-// 					cache: false,
-// 					processData: false,
-// 					beforeSend: function () {
-
-// 						if (listaVerificada == false /*&& $( "#flagPrecisaPatrimonio" ).val() == 1*/) {
-
-// 							$("#msg div[id=alerta]").remove();
-
-// 							$("#msg").append("<div id=\"alerta\" class=\"alert alert-warning alert-dismissible\">");
-// 							$("#alerta").append("<a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a>É necessário verificar a lista de patrimônios!");
-// 							$("#btnVerificaPatrimonios").focus();
-
-// 							targetOffset = $('#msg').offset().top;
-
-// 							$('html, body').animate({ 
-// 								scrollTop: targetOffset - 100
-// 							}, 200);
-
-// 							return false;
-// 						}
-
-
-
-// 						$('#btnAbrirChamado').prop("disabled","true");
-
-// 					},
-// 				success: function(msg) {
-
-// 					$("#msg div[id=alerta]").remove();
-
-// 					$("#msg").append(msg);
-
-// 					listaVerificada = false;
-
-// 					if (msg.includes('anexo') == false && msg.includes('Local') == false) {
-
-// 						$(form).trigger('reset'); //só resetar o form se não houver erros no upload ou no anexo
-// 					}
-// 					else {
-
-// 						if (msg.includes('Local')) {
-
-// 							$('input[name=nome_local').focus();
-// 						}
-
-// 						if (msg.includes('anexo')) {
-
-// 							$('input[name=anexo').focus();
-// 						}
-
-// 						listaVerificada = true;
-// 						$('#btnAbrirChamado').removeAttr("disabled");
-// 					}
-
-
-// 					// if ($( "#flagPrecisaPatrimonio" ).val() == 0) {
-
-// 					// 	timeout = setTimeout(function() {
-// 					// 		$('#btnAbrirChamado').removeAttr("disabled");
-
-// 					// 	},10000);
-// 					// }
-
-// 					// else {
-
-// 						$('#btnAbrirChamado').removeAttr("disabled");
-
-// 						if (listaVerificada == false) {
-
-// 							$('#tblPatrimonios tr').remove();
-// 							$('#btnVerificaPatrimonios').show();
-// 							$("#btnAlteraPatrimonios").hide();
-// 							$('#txtPatrimonios').removeAttr('readonly');
-// 							$("#txtPatrimonios").focus();
-// 							$( "#divTabelaPatrimonios" ).hide();
-// 						}
-
-// 					// }
-
-// 					targetOffset = $('#msg').offset().top;
-
-// 					$('html, body').animate({ 
-// 						scrollTop: targetOffset - 100
-// 					}, 200);
-
-// 					msg = null;
-
-
-// 				},
-// 				error: function(xhr, ajaxOptions, thrownError) {
-
-// 					$("#msg").prepend("<div id=\"alerta\" class=\"alert alert-danger alert-dismissible\">");
-// 					$("#alerta").append("<a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a>" + thrownError);
-
-
-// 					targetOffset = $('#msg').offset().top;
-
-// 					$('html, body').animate({ 
-// 						scrollTop: targetOffset - 100
-// 					}, 200);
-
-// 					$('#btnAbrirChamado').removeAttr("disabled");
-// 				}
-
-// 			});
-
-// 	return false;
-
-// 	}
-// });
 
 //------------- CARREGA CHAMADO ---------------------
 
+var tblEquipsChamado = null;
 
-function carregaChamado(p_id_chamado, sem_equipamentos) {
+
+
+
+async function carregaChamado(p_id_chamado, sem_equipamentos) {
 
     //atualiza os dados do chamado
 
     document.title = "#" + p_id_chamado + " - Sigat";
 
     var p_id_responsavel = null;
+
+    $("#tblEquipamentosChamado").jsGrid({
+
+        height: "auto",
+        width: "100%",
+        inserting: false,
+        editing: false,
+        autoload: true,
+        invalidMessage: "Dados inválidos inseridos!",
+        loadMessage: "Aguarde...",
+        deleteConfirm: "Tem certeza?",
+        noDataContent: "Vazio",
+    
+        onInit: function(args) {
+            tblEquipsChamado = args.grid;
+        },
+    
+        fields: [
+            {
+                name: "num_equipamento",
+                title: "ID",
+                type: "text",
+                readOnly: true,
+                validate: [
+                    "required",
+                    { validator: "pattern", param: /^[a-zA-Z0-9]+$/, message: "Atenção!\nCaracteres permitidos:\nA-Z, a-z e 0-1" },
+                ],
+            }, 
+            {
+                name: "descricao_equipamento",
+                type: "text",
+                readOnly: true,
+                title: "Descrição",
+                validate: [
+                    "required",
+                    { validator: "pattern", param: /^[a-zA-Z0-9\s]+$/, message: "Atenção!\nCaracteres permitidos:\nA-Z, a-z e 0-1" },
+                ],
+            }, 
+           
+            {
+                name: "tag_equipamento",
+                type: "text",
+                align: "center",
+                inserting: false,
+                editing: false,
+                title: "Tag",
+                validate: [
+                    { validator: "pattern", param: /^[a-zA-Z0-9]+$/, message: "Atenção!\nCaracteres permitidos:\nA-Z, a-z e 0-1" },
+                ],
+            },
+            {
+                name: "status_equipamento_chamado",
+                title: "Status",
+                width: 30,
+            }, 
+            {
+                type:"control",
+                editButton: false,
+                deleteButton: false,
+            }
+        ],
+    
+        controller: {
+            loadData: function() {
+                
+                return $.ajax({
+                    url: base_url + "listar_equips_chamado/" + g_id_chamado,
+                    dataType: "json",
+                    method: "get",
+                });
+            },
+            updateItem: async function(item) {
+    
+                var d = $.Deferred();
+    
+                var aberto = null;
+                var res = null;
+    
+                var num_equip = item.num_equipamento.replace(/\s+/g, "");
+    
+                await $.ajax({
+                    url: base_url + "json/status_equipamento",
+                    dataType: "json",
+                    method: "post",
+                    data: {e_status: num_equip},
+                }).done(function(data) {
+                    res = data;
+                });
+             
+                if(parseInt(res.id_chamado) !== g_id_chamado) {
+                    alert("O item " + num_equip + " já está em atendimento!\nChamado: " + res.id_chamado + "\n" + res.ticket_chamado);
+                    d.reject();
+                    return d.promise();
+                }
+    
+                else {
+                    return $.ajax({
+                            url: base_url + "edit_equip_chamado",
+                            dataType: "json",
+                            method: "post",
+                            data: item,
+                        });
+                }
+            },
+            insertItem: async function(item) {
+    
+                var d = $.Deferred();
+    
+                var res = null;
+    
+                var num_equip = item.num_equipamento.replace(/\s+/g, "");
+    
+                await $.ajax({
+                    url: base_url + "json/status_equipamento",
+                    dataType: "json",
+                    method: "post",
+                    data: {e_status:num_equip},
+                }).done(function(data) {
+                    res = data;
+                });
+    
+                console.log(res);
+             
+                if(typeof res !== 'undefined'){
+                    alert("O item " + num_equip + " já está em atendimento!\nChamado: " + res.id_chamado + "\n" + res.ticket_chamado);
+                    d.reject();
+                    return d.promise();
+                }
+                else {
+                    return $.ajax({
+                        url: base_url + "add_equip_chamado",
+                        dataType: "json",
+                        method: "post",
+                        data: {item,g_id_chamado},
+                    });
+    
+                }
+            },
+    
+            deleteItem: async function(item) {
+                var d = $.Deferred();
+    
+                var res = null;
+    
+                var num_equip = item.num_equipamento.replace(/\s+/g, "");
+    
+                await $.ajax({
+                    url: base_url + "json/status_equipamento",
+                    dataType: "json",
+                    method: "post",
+                    data: {e_status: num_equip},
+                }).done(function(data) {
+                    res = data;
+                });
+    
+                if (res.status_equipamento_chamado === 'ABERTO') {
+    
+                    return $.ajax({
+                        url: base_url + "del_equip_chamado",
+                        dataType: "json",
+                        method: "post",
+                        data: item,
+                    });
+                }
+    
+                else {
+                    alert("Operação não permitida!\nO item " + num_equip +" já foi alterado neste chamado!");
+                    d.reject();
+                    return d.promise();
+                    
+                }
+                
+            }
+    
+            
+        },
+        
+    
+    });
 
 
     $('#botoesAtendimento #btnModalRegistroEntrega').remove();
@@ -1341,8 +893,8 @@ function carregaChamado(p_id_chamado, sem_equipamentos) {
 
     $('#botoesChamado hr').hide();
 
-    $.ajax({
-        url: base_url + 'backend/chamado',
+    await $.ajax({
+        url: base_url + 'json/chamado',
         dataType: 'json',
         async: true,
         data: {
@@ -1353,13 +905,16 @@ function carregaChamado(p_id_chamado, sem_equipamentos) {
             //preencher os campos conforme o json
 
             $('input[name=fila]').val(data.nome_fila_chamado);
+            $('input[name=resumo]').val(data.resumo_chamado);
+            $('input[name=complemento]').val(data.complemento_chamado);
             $('input[name=data_chamado]').val(data.data_chamado);
             $('input[name=status]').val(data.status_chamado);
             $('input[name=nome_solicitante]').val(data.nome_solicitante_chamado);
             $('input[name=telefone]').val(data.telefone_chamado);
             $('input[name=nome_local]').val(data.nome_local);
             $('input[name=id_fila_ant]').val(data.id_fila);
-            $('div[name=descricao]').html(UTF8.decode(data.descricao_chamado));
+            $('div[name=descricao]').html(data.descricao_chamado);
+            $("#sipLink").attr("href","sip:"+data.telefone_chamado);
 
             if (data.id_responsavel == null) {
                 $('select[name=id_responsavel]').empty();
@@ -1370,159 +925,83 @@ function carregaChamado(p_id_chamado, sem_equipamentos) {
 
             fila_atual = data.id_fila; //variavel global fila_atual
             var entrega = data.entrega_chamado;
-            var status_chamado = data.status_chamado;
-
-            // if (data.id_fila == 6) {
-
-            // 	if (!$('#botoesAtendimento #btnModalEquipamentos').length && data.id_responsavel == g_id_usuario) {
-            // 		$('#botoesAtendimento').prepend(
-            // 			"<button type=\"button\" id=\"btnModalEquipamentos\" class=\"btn btn-primary\""+
-            // 			" data-toggle=\"modal\" data-target=\"#modalEquipamentos\" data-chamado=\"" + p_id_chamado +
-            // 			"\"><i class=\"fas fa-plus-square\"></i> Adicionar Equipamentos</button> ");
-            // 	}
-
-            // 	if (!$('#botoesAtendimento #btnModalRegistro').length && data.id_responsavel == g_id_usuario) {
-
-            // 		$('#botoesAtendimento').append(
-            // 			"<button type=\"button\" id=\"btnModalRegistro\" class=\"btn btn-primary\""+
-            // 			" data-toggle=\"modal\" data-target=\"#modalRegistro\" data-chamado=\"" + p_id_chamado +
-            // 			"\"><i class=\"far fa-stick-note\"></i> Registrar ação</button> ");
-            // 	}
-            // }
-
-            // if (data.equipamentos.length > 0 && (data.id_fila == 6 || data.id_fila == 3)) {
-
-            // 	$('#tblEquipamentosChamado tbody').html('');
-
-            // 	data.equipamentos.forEach(function(equip) {
-
-            // 		$('#tblEquipamentosChamado tbody').append(
-            // 			"<tr>" +
-            // 			"<td>" + equip.num_equipamento + "</td>" +
-            // 			"<td>" + equip.desc_equipamento + "</td>" +
-            // 			"<td>" + equip.status_equipamento + "</td>" +
-            // 			"</tr>");
-            // 	});
-
-            if (!$('#botoesAtendimento #btnModalRegistro').length && data.id_responsavel == g_id_usuario) {
-
-                $('#botoesAtendimento').append(
-                    "<button type=\"button\" id=\"btnModalRegistro\" class=\"btn btn-primary\"" +
-                    " data-toggle=\"modal\" data-target=\"#modalRegistro\" data-chamado=\"" + p_id_chamado +
-                    "\"><i class=\"far fa-sticky-note\"></i> Registrar ação</button> ");
-            }
-
-            // }
-
-            // else {
-
-            // 	$('#listaEquipamentosChamado').hide();
-            // }
 
 
-            if (sem_equipamentos != true /*&& data.requer_equipamento_fila == 1 */ ) { //puxar a descricao de cada patrimonio via api json do SIM
+            var botoes = "<button type=\"button\" id=\"btnModalRegistro\" class=\"btn btn-primary\"" +
+                            " data-toggle=\"modal\" data-target=\"#modalRegistro\" data-chamado=\"" + data.id_chamado +
+                            "\"><i class=\"fas fa-asterisk\"></i> Nova Ação</button> ";
 
-                $('#tblPatrimonios tbody').html('');
+            data.status_equipamentos.forEach(function(item) {
 
-                data.patrimonios.forEach(function(patrimonio) {
+                
 
-                    $.ajax({
-                        url: base_url + 'backend/patrimonio?url=' + url + patrimonio.num_equipamento + '&q=' + patrimonio.num_equipamento,
-                        dataType: 'json',
-                        async: true,
-                        success: function(data) {
+                if ((item.status_equipamento_chamado == 'ABERTO' || item.status_equipamento_chamado == 'ESPERA' ||
+                    item.status_equipamento_chamado == 'FALHA') &&
+                (data.id_responsavel == g_id_usuario)) {
 
-                            var status_equipamento = null;
-                            var ultima_tag_equipamento = null;
-
-                            if (patrimonio.status_equipamento_chamado == 'FALHA') { // se o patrimonio estiver como falha de entrega, mostrar como aberto
-                                status_equipamento = 'ABERTO';
-                            } else {
-                                status_equipamento = patrimonio.status_equipamento_chamado;
-                            }
-
-                            if (patrimonio.ultima_tag_equipamento == null) {
-
-                                ultima_tag_equipamento = "N/A"
+                    
+                    
+                    
+                    
 
 
-                            } else {
+                    $('#botoesAtendimento').html(botoes);
+                }
 
-                                ultima_tag_equipamento = patrimonio.ultima_tag_equipamento
-                            }
+                if ((item.status_equipamento_chamado == 'ENTREGA' || entrega == 1) && data.status_chamado == 'ABERTO' ) {
 
-                            $('#tblPatrimonios tbody').append(
-                                "<tr>" +
-                                "<td>" + patrimonio.num_equipamento + "</td>" +
-                                "<td>" + data.descricao + "</td>" +
-                                "<td>" + ultima_tag_equipamento + "</td>" +
-                                "<td>" + status_equipamento + "</td>" +
-                                "</tr>");
+                    botoes = botoes +  "<button type=\"button\" id=\"btnModalRegistroEntrega\" class=\"btn btn-success\" data-toggle=\"modal\" data-chamado=\"" +
+                                        data.id_chamado + "\" data-target=\"#modalRegistroEntrega\"><i class=\"fas fa-file-signature\"></i> Registrar entrega</button> " +
+                                        "<a href=\"" + base_url + "chamado/gerar_termo/" +
+                                        data.id_chamado + "\" id=\"baixarTermoEntrega\" role=\"button\" class=\"btn btn-info\">" +
+                                        "<i class=\"fas fa-file-download\"></i> Termo de Entrega</a> " +
+                                        "<a href=\"" + base_url + "chamado/gerar_termo_resp/" +
+                                        + data.id_chamado + "\" id=\"baixarTermoResp\" role=\"button\" class=\"btn btn-info\">" +
+                                        "<i class=\"fas fa-file-download\"></i> Termo de Responsabilidade</a>"
 
-
-                            if ((patrimonio.status_equipamento_chamado == 'ENTREGA' || entrega == 1) && status_chamado == 'ABERTO') {
-
-                                //se existerem entregas no chamado, criar o botao Termo de Entrega / Termo de Responsabilidade
-
-                                $('#botoesAtendimento #btnModalRegistroEntrega').remove();
-                                $('#botoesAtendimento #baixarTermoEntrega').remove();
-                                $('#botoesAtendimento #baixarTermoResp').remove();
-                                $('#botoesAtendimento').append(
-                                    "<button type=\"button\" id=\"btnModalRegistroEntrega\" class=\"btn btn-success\" data-toggle=\"modal\" data-chamado=\"" +
-                                    p_id_chamado + "\" data-target=\"#modalRegistroEntrega\"><i class=\"fas fa-file-signature\"></i> Registrar entrega</button> " +
-                                    "<a href=\"" + base_url + "chamado/gerar_termo/" +
-                                    p_id_chamado + "\" id=\"baixarTermoEntrega\" role=\"button\" class=\"btn btn-info\">" +
-                                    "<i class=\"fas fa-file-download\"></i> Termo de Entrega</a> " +
-                                    "<a href=\"" + base_url + "chamado/gerar_termo_resp/" +
-                                    +p_id_chamado + "\" id=\"baixarTermoResp\" role=\"button\" class=\"btn btn-info\">" +
-                                    "<i class=\"fas fa-file-download\"></i> Termo de Responsabilidade</a>");
-
-                            }
-
-                            if ((patrimonio.status_equipamento_chamado == 'ABERTO' || patrimonio.status_equipamento_chamado == 'ESPERA' ||
-                                    patrimonio.status_equipamento_chamado == 'FALHA') &&
-                                (p_id_responsavel == g_id_usuario)) {
-
-
-                                if (!$('#botoesAtendimento #btnModalRegistro').length) {
-
-
-                                    $('#botoesAtendimento').prepend(
-                                        "<button type=\"button\" id=\"btnModalRegistro\" class=\"btn btn-primary\"" +
-                                        " data-toggle=\"modal\" data-target=\"#modalRegistro\" data-chamado=\"" + p_id_chamado +
-                                        "\"><i class=\"far fa-sticky-note\"></i> Registrar ação</button> ");
-                                }
-                            }
-                        }
-                    })
-                });
-
-
-
-            }
-            /*else { // criar o botao de Registrar Antendimento sem patrimonios
-				if (!$('#botoesAtendimento #btnModalRegistro').length && data.id_responsavel == g_id_usuario) {
-									
-					$('#botoesAtendimento').append(
-						"<button type=\"button\" id=\"btnModalRegistro\" class=\"btn btn-primary\""+
-						" data-toggle=\"modal\" data-target=\"#modalRegistro\" data-chamado=\"" + p_id_chamado +
-						"\"><i class=\"far fa-file-alt\"></i> Nova Interação</button> ");
-					}
-
-						
-			}	)*/
-
-            if (data.status_chamado != 'ABERTO') {
-                $('#botoesAtendimento #btnModalRegistro').remove();
-                $('#botoesAtendimento #btnModalEquipamentos').remove();
-            }
-
-
+                    $('#botoesAtendimento').html(botoes);
+                
+                }
+            })
 
 
             // -------------------- PERMISSOES ----------------------------
 
 
+            if (data.id_responsavel == g_id_usuario) {
+
+               
+
+                tblEquipsChamado.option("editing",true);
+                tblEquipsChamado.option("inserting",true);
+                tblEquipsChamado.fieldOption(4,"editButton",true);
+                tblEquipsChamado.fieldOption(4,"deleteButton",true);
+                tblEquipsChamado.fieldOption(0,"readOnly",false);
+                tblEquipsChamado.fieldOption(1,"readOnly",false);
+               
+                if (data.id_fila == 3) {
+
+                    tblEquipsChamado.fieldOption(2,"editing",true);
+                
+                }
+
+                if (g_auto_usuario > 3) {
+
+                    tblEquipsChamado.fieldOption(0,"readOnly",false);
+                    tblEquipsChamado.fieldOption(1,"readOnly",false);
+                    tblEquipsChamado.fieldOption(4,"deleteButton",true);
+                }
+            
+                
+
+
+    
+
+            }
+            
+            
+                    
+            
             if (g_auto_usuario > 3 && data.status_chamado == 'FECHADO') { //somente ADM+ encerra o chamado
 
                 if (!$('#btnEncerrarChamado').length) {
@@ -1594,6 +1073,10 @@ function carregaChamado(p_id_chamado, sem_equipamentos) {
 
 
 
+
+
+
+
 // ---------------- INTERACOES --------------------
 
 function removeInteracao(p_id_interacao, p_id_chamado) {
@@ -1616,7 +1099,7 @@ function removeInteracao(p_id_interacao, p_id_chamado) {
 
 
             $.ajax({
-                url: base_url + 'backend/interacao',
+                url: base_url + 'json/interacao',
                 type: 'GET',
                 dataType: 'text',
                 async: false, //necessario para evitar remoção nao autorizada
@@ -1650,6 +1133,7 @@ function removeInteracao(p_id_interacao, p_id_chamado) {
             atualizaInteracoes(p_id_chamado);
             //$('#btnDesfazer').removeAttr('disabled');
             carregaChamado(p_id_chamado);
+            tblEquipsChamado.loadData();
 
 
 
@@ -1670,12 +1154,12 @@ $('#frmInteracao').on('submit', function(e) { //submit da interacao
     var p_tipo = $('select[name=tipo]').val();
     var p_id_fila = $('select[name=id_fila]').val();
 
-    var p_vetor_equipamentos_atendidos = [];
+    var p_equips_atendidos = [];
 
     $('input[class=chkPatri]').each(function() {
 
         if ($(this).is(':checked')) {
-            p_vetor_equipamentos_atendidos.push($(this).val());
+            p_equips_atendidos.push($(this).val());
         }
 
 
@@ -1691,13 +1175,12 @@ $('#frmInteracao').on('submit', function(e) { //submit da interacao
             tipo: p_tipo,
             id_fila: p_id_fila,
             id_fila_ant: p_id_fila_ant,
-            patrimonios_atendidos: p_vetor_equipamentos_atendidos,
-            equipamentos_atendidos: p_equips,
+            equipamentos_atendidos: p_equips_atendidos,
             id_usuario: g_id_usuario
         },
         beforeSend: function() {
 
-            if ((p_vetor_equipamentos_atendidos.length == 0 && p_id_fila_ant == 3 && p_tipo == 'INSERVIVEL') || (p_vetor_equipamentos_atendidos.length == 0 && (p_tipo == 'REM_ESPERA' || p_tipo == 'ESPERA'))) {
+            if ((p_equips_atendidos.length == 0 && p_id_fila_ant == 3 && p_tipo == 'INSERVIVEL') || (p_equips_atendidos.length == 0 && (p_tipo == 'REM_ESPERA' || p_tipo == 'ESPERA'))) {
 
                 $('#modalRegistro .modal-body').prepend(
                     "<div class=\"alert alert-warning fade show\" role=\"alert\">" +
@@ -1736,8 +1219,9 @@ $('#frmInteracao').on('submit', function(e) { //submit da interacao
             $('textarea[name=txtInteracao]').summernote('reset');
             $('#modalRegistro').modal('hide');
             carregaChamado(p_id_chamado);
+            tblEquipsChamado.loadData();
             //console.log(p_equips)
-            p_equips = [, ]
+            p_equips_atendidos = [, ]
 
         },
         error: function(xhr, ajaxOptions, thrownError) {
@@ -1758,7 +1242,7 @@ $('#frmInteracao').on('submit', function(e) { //submit da interacao
 
 function atualizaInteracoes(id_chamado) { //carrega as interacoes
 
-    $.post(base_url + "backend/interacoes", {
+    $.post(base_url + "json/interacoes", {
             id: id_chamado
         })
         .done(function(dados) {
@@ -2009,7 +1493,7 @@ $('#btnBloquearChamado').on('click', function(e) {
     e.preventDefault();
     $.ajax({
         type: "POST",
-        url: base_url + 'backend/atualiza_responsavel',
+        url: base_url + 'json/atualiza_responsavel',
         data: {
             id_chamado: g_id_chamado,
             id_usuario: g_id_usuario,
@@ -2021,8 +1505,8 @@ $('#btnBloquearChamado').on('click', function(e) {
 
             $.ajax({
                 type: "GET",
-                async: true, //
-                url: base_url + 'backend/chamado',
+                async: false, //
+                url: base_url + 'json/chamado',
                 data: {
                     id_chamado: g_id_chamado,
                 },
@@ -2060,7 +1544,7 @@ $('#btnDesbloquearChamado').on('click', function(e) {
     e.preventDefault();
     $.ajax({
         type: "POST",
-        url: base_url + 'backend/atualiza_responsavel',
+        url: base_url + 'json/atualiza_responsavel',
         data: {
             id_chamado: g_id_chamado,
             id_usuario: g_id_usuario,
@@ -2098,7 +1582,7 @@ $('#btnEditarChamado').on('click', function(e) {
     $('#btnEditarChamado').hide();
 
     $.ajax({
-        url: base_url + 'backend/chamado',
+        url: base_url + 'json/chamado',
         dataType: 'json',
 
         data: {
@@ -2112,7 +1596,7 @@ $('#btnEditarChamado').on('click', function(e) {
                 $('#frmEditarChamado select[name=id_responsavel]').html('');
 
                 $.ajax({
-                    url: base_url + 'backend/usuarios',
+                    url: base_url + 'json/usuarios',
                     dataType: 'json',
                     type: 'post',
                     success: function(data) {
@@ -2225,7 +1709,7 @@ $('#frmEditarChamado').on('submit', function(e) {
 
                 $('#frmEditarChamado input[type=submit]').prop("disabled", "true");
                 $.ajax({
-                    url: base_url + 'backend/chamado',
+                    url: base_url + 'json/chamado',
                     dataType: 'json',
 
                     data: {
@@ -2280,361 +1764,6 @@ $('#frmEditarChamado').on('submit', function(e) {
 });
 
 
-// ------------- SOLICITACAO DE EQUIPAMENTOS ------------- 
-
-async function criaTabelaPatrimoniosEquip(vetor, url) {
-
-    vetorListaOK = [];
-
-    var vetorPatrInv = [];
-
-    var vetorPatrIns = [];
-    var vetorPatrInsDesc = [];
-    var vetorPatrInsChamado = [];
-
-    var vetorPatrOK = [];
-    var vetorPatrOKDesc = [];
-
-    var vetorPatrAberto = [];
-    var vetorPatrAbertoDesc = [];
-    var vetorPatrAbertoChamado = [];
-
-    $('[for="listaPatrimoniosEquip"]').append("<div class=\"spinner-border spinner-border-sm\" role=\"status\">&nbsp;&nbsp;<span class=\"sr-only\">Carregando...</span\></div>");
-
-
-    for (var item of vetor) {
-
-        await fetch(base_url + 'backend/patrimonio?url=' + url + item + '&q=' + item)
-
-        .then(response => response.json())
-
-        .then(data => {
-
-            if (data.descricao != null) {
-
-                if (data.inservivel) { // verificando se não é inservivel
-                    vetorPatrIns.push(item);
-                    vetorPatrInsDesc.push(data.descricao);
-                    vetorPatrInsChamado.push(data.inservivel['id_chamado_equipamento']);
-                } else {
-                    vetorPatrOK.push(item); // se houver descricao, o patrimonio é valido
-                    vetorPatrOKDesc.push(data.descricao);
-                }
-
-                if (data.chamado != null) {
-
-                    vetorPatrAberto.push(item); // se houver chamado, enfileirar nos vetores PatrAberto (num_equipamento, descricao, id_chamado)
-                    vetorPatrAbertoDesc.push(data.descricao);
-                    vetorPatrAbertoChamado.push(data.chamado);
-
-                    vetorPatrOK.pop(); //remover dos vetores de patrimonios validos
-                    vetorPatrOKDesc.pop();
-
-                }
-
-            } else {
-                vetorPatrInv.push(item); //se não houver descricao, o patrimonio é invalido e será enfileirado no vetorPatriInv
-
-            }
-
-        });
-
-    }
-
-
-    if (vetorPatrInv.length > 0) { //se houverem patrimonios invalidos...
-
-        $('#listaVerificadaEquip div').remove();
-        $('[for="listaPatrimoniosEquip"] .spinner-border').remove();
-
-        vetorPatrInv.forEach(function(item) {
-            $("#msgPatrEquip").append("<div class=\"alert alert-warning alert-dismissible fade show\" role=\"alert\">Patrimônio inválido: <strong>" + item + "</strong><button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\"><span aria-hidden=\"true\">&times;</span></button></div>");
-        });
-
-        $("#txtPatrimoniosEquip").removeAttr('readonly');
-        $("#txtPatrimoniosEquip").show();
-        $("#txtPatrimoniosEquip").focus();
-        $("#btnAlteraPatrimoniosEquip").hide();
-        $('#btnVerificaPatrimoniosEquip').show();
-        $('#divTabelaPatrimoniosEquip').hide();
-
-
-    } else { //se não houverem patrimonios inválidos ...
-
-        $('[for="listaPatrimoniosEquip"] .spinner-border').remove();
-
-        if (vetorPatrIns.length > 0) { // se houverem patrimonios inservie...
-
-            $('#divTabelaInserviveisEquip').show();
-
-            for (var i = 0; i < vetorPatrIns.length; i++) {
-
-                $('#tblInserviveisEquip tbody').append('<tr class=\"table-danger\"><td>' + vetorPatrIns[i] +
-                    '</td><td>' + vetorPatrInsDesc[i] + '</td><td>#' + vetorPatrInsChamado[i] +
-                    ' <a target=\"_blank\" href=\"' + base_url + 'chamado/' + vetorPatrInsChamado[i] + '\">Mais...</a></td></tr>');
-
-            }
-
-            listaVerificada = false;
-
-            $('#btnRemovePatrimoniosEquip').show();
-
-        }
-
-
-        if (vetorPatrAberto.length > 0) { // se houverem patrimonios com chamado aberto...
-
-            $('#divTabelaChamadosAbertosEquip').show();
-
-            for (var i = 0; i < vetorPatrAberto.length; i++) {
-
-                $('#tblEquipAbertos tbody').append('<tr class=\"table-warning\"><td>' + vetorPatrAberto[i] +
-                    '</td><td>' + vetorPatrAbertoDesc[i] + '</td><td>#' + vetorPatrAbertoChamado[i] +
-                    ' <a target=\"_blank\" href=\"' + base_url + 'chamado/' + vetorPatrAbertoChamado[i] +
-                    '"><small>Mais...</small></a></td></tr>');
-
-            }
-
-            listaVerificada = false;
-
-            $('#btnRemovePatrimoniosEquip').show();
-        }
-        if (vetorPatrOK.length > 0) { //se houverem patrimonios válidos...
-
-            $('#divTabelaPatrimoniosEquip').show();
-            $("#btnAlteraPatrimoniosEquip").show();
-
-            for (var i = 0; i < vetorPatrOK.length; i++) {
-
-                $('#tblPatrimoniosEquip tbody').append('<tr><td>' + vetorPatrOK[i] +
-                    '</td><td>' + vetorPatrOKDesc[i] + '</td></tr>');
-
-                vetorListaOK.push(vetorPatrOK[i]);
-
-            }
-
-            if (vetorPatrAberto.length == 0) {
-                listaVerificada = true;
-
-            }
-
-        }
-
-    }
-
-}
-
-$("#btnVerificaPatrimoniosEquip").click(function() {
-
-    var lista = $('#txtPatrimoniosEquip').val();
-
-    var vetor = lista.match(/[1-9]\d{5}/g);
-
-    if (vetor != null) {
-
-        $('#msgPatrEquip div[role=alert]').remove();
-
-        $('#txtPatrimoniosEquip').prop('readonly', 'true');
-
-        $('#tblPatrimoniosEquip tbody tr').remove();
-        $('#tblEquipAbertos tbody tr').remove();
-        $('#tblInserviveisEquip tbody tr').remove();
-
-        $('#btnVerificaPatrimoniosEquip').hide();
-
-
-        // verificando duplicatas...
-
-        duplicado = false;
-
-        for (i = 0; i < vetor.length - 1; i++) {
-
-            x = vetor[i];
-
-            for (j = i + 1; j < vetor.length; j++) {
-
-                if (x == vetor[j]) {
-
-                    duplicado = true;
-                    break;
-                }
-            }
-
-        }
-
-        if (duplicado == true) {
-
-            $('[for="listaPatrimoniosEquip"] .spinner-border').remove();
-
-
-            $("#msgPatrEquip").append("<div class=\"alert alert-warning alert-dismissible fade show\" role=\"alert\">Existem patrimônios duplicados na lista!<button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\"><span aria-hidden=\"true\">&times;</span></button></div>");
-
-            $("#txtPatrimoniosEquip").removeAttr('readonly');
-            $("#txtPatrimoniosEquip").focus();
-            $("#btnAlteraPatrimoniosEquip").hide();
-            $('#btnVerificaPatrimoniosEquip').show();
-            $('#divTabelaPatrimoniosEquip').hide();
-        } else {
-
-            criaTabelaPatrimoniosEquip(vetor, url);
-
-        }
-
-    }
-
-});
-
-$("#btnRemovePatrimoniosEquip").click(function() {
-
-    $('#tblPatrimoniosAbertosEquip tbody tr').remove();
-    $('#divTabelaChamadosAbertosEquip').hide();
-    $('#tblInserviveisEquip tbody tr').remove();
-    $('#divTabelaInserviveisEquip').hide();
-    $("#btnRemovePatrimoniosEquip").hide();
-
-
-    $('#txtPatrimoniosEquip').val(vetorListaOK);
-
-    if ($('#txtPatrimoniosEquip').val() == '') {
-        $("#txtPatrimoniosEquip").removeAttr('readonly');
-        $("#txtPatrimoniosEquip").focus();
-        $('#btnVerificaPatrimoniosEquip').show();
-
-    }
-
-    vetorListaOK = [];
-
-});
-
-$("#btnAlteraPatrimoniosEquip").click(function() {
-
-    $('#tblEquipamentos tbody tr').remove();
-    $('#tblPatrimoniosAbertosEquip tbody tr').remove();
-    $('#btnVerificaPatrimoniosEquip').show();
-    $("#btnAlteraPatrimoniosEquip").hide();
-    $('#txtPatrimoniosEquip').removeAttr('readonly');
-    $("#txtPatrimoniosEquip").focus();
-    $('#divTabelaPatrimoniosEquip').hide();
-    $('#divTabelaChamadosAbertosEquip').hide();
-
-    listaVerificada = false;
-
-});
-
-//-------- EQUIP SEM PATRIMONIO ---------
-
-var vEquip = [
-    [, ]
-];
-
-function zeraEquipamentos() {
-    vEquip = [
-        [, ]
-    ];
-};
-
-
-
-$('#btnAdcEquip').on('click', function() { //ADD EQUIP
-    $("#msgEquip div[id=alerta]").remove();
-
-    if ($('#txtNumSerieEquip').val() != '' && $('#txtDescEquip').val() != '') {
-        vEquip.push([$('#txtNumSerieEquip').val(), $('#txtDescEquip').val().toUpperCase()]);
-        $('#tblEquipamentos tbody').append(
-            '<tr><td>' + $('#txtNumSerieEquip').val() + '</td><td>' +
-            $('#txtDescEquip').val().toUpperCase() + '</td></tr>');
-
-        $('#txtNumSerieEquip').val('');
-        $('#txtDescEquip').val('');
-    }
-
-});
-
-$('#btnLimpaEquip').on('click', function() { //LIMPA EQUIP
-    $("#msgEquip div[id=alerta]").remove();
-
-    $('#tblEquipamentos tbody').empty();
-
-    zeraEquipamentos();
-
-});
-
-
-
-//-------- SUBMIT DOS EQUIPAMENTOS ---- 
-
-$('#frmEquipamentos').on('submit', function(e) {
-    e.preventDefault();
-
-    var dados = new FormData($('#frmEquipamentos')[0]);
-
-    if (vEquip.length > 0) { //se houverem equipamentos sem patrimonio . . . 
-        var json_equip = JSON.stringify(vEquip);
-        dados.append('json_equip', json_equip);
-
-    }
-
-    $.ajax({
-
-        url: base_url + 'interacao/adicionar_equipamentos',
-        type: 'POST',
-        data: dados,
-        contentType: false,
-        cache: false,
-        processData: false,
-        beforeSend: function() {
-            $('#btnAdicionarEquipamentos').attr('disabled', 'true');
-
-            if (listaVerificada == false && $('#chkEquipamentos').is(':unchecked')) {
-                $('#btnAdicionarEquipamentos').removeAttr('disabled');
-
-                $("#msgPatrEquip div[id=alerta]").remove();
-
-                $("#msgPatrEquip").append("<div id=\"alerta\" class=\"alert alert-warning alert-dismissible\">");
-                $("#alerta").append("<a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a>É necessário verificar a lista de patrimônios!");
-
-                $("#btnVerificaPatrimoniosEquip").focus();
-
-                $('#btnAdicionarEquipamentos').removeAttr('disabled');
-
-                return false;
-            }
-
-            if ($('#chkEquipamentos').is(':checked') && vEquip.length == 0) {
-
-                $("#msgEquip div[id=alerta]").remove();
-
-                $("#msgEquip").append("<div id=\"alerta\" class=\"alert alert-warning alert-dismissible\">");
-                $("#alerta").append("<a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a>Adicione pelo menos 1 equipamento!");
-
-                $('#btnAdicionarEquipamentos').removeAttr('disabled');
-
-                return false;
-            }
-        },
-        success: function() {
-            $('#modalEquipamentos').modal('hide');
-            zeraEquipamentos();
-            atualizaInteracoes(g_id_chamado);
-            carregaChamado(g_id_chamado);
-            listaVerificada = false;
-            $('#btnAdicionarEquipamentos').removeAttr('disabled');
-            $('#frmEquipamentos').trigger('reset');
-            $('#tblEquipamentos tbody').empty();
-            $("#txtPatrimoniosEquip").removeAttr('readonly');
-            $("#txtPatrimoniosEquip").focus();
-            $("#btnAlteraPatrimoniosEquip").hide();
-            $('#btnVerificaPatrimoniosEquip').show();
-            $('#divTabelaPatrimoniosEquip').hide();
-            $('#listaEquipamentos').hide();
-        },
-        complete: function() {
-
-        }
-
-    });
-});
-
 // ----------- ADMIN -------------------
 
 // ----------- USUARIOS ---------------
@@ -2673,7 +1802,7 @@ var filas = [{
 }];
 
 $.ajax({
-    url: base_url + 'backend/filas',
+    url: base_url + 'json/filas',
     dataType: 'json',
     complete: resp => {
         Array.prototype.push.apply(filas, resp.responseJSON);
@@ -3043,7 +2172,8 @@ $("#tblAnexos").jsGrid({
         { 
             name: "id_anexo_otrs",
             title: "ID",
-            type: "text", 
+            type: "text",
+            visible: false, 
                 
         },
         { 
@@ -3052,6 +2182,11 @@ $("#tblAnexos").jsGrid({
             type: "text", 
             
         },
+        {
+            type: "control",
+            deleteButton: true,
+            editButton: false,
+        }
     ],
     rowClick: function(args) {
         window.open(base_url + 'anexo_otrs/' + args.item.id_anexo_otrs,'_blank ');
@@ -3070,7 +2205,7 @@ async function carregaTriagem(p_id_triagem) {
     var p_id_responsavel = null;
     var anexos = [];
     await $.ajax({
-        url: base_url + 'backend/triagem',
+        url: base_url + 'json/triagem',
         dataType: 'json',
         async: true,
         data: {
@@ -3123,37 +2258,25 @@ function uniq_fast(a) {
 var g_equips = [];
 
 async function verificaStatusEquip(p_e) {
-
     out = null;
-
     await $.ajax({
         method: "post",
-        url: base_url + "backend/status_equipamento",
+        url: base_url + "json/status_equipamento",
         data: { e_status: p_e}
       })
         .done(function( res ) {
-
             if (res !== false) {
-
-                //console.log(res);
-
                 out = res;
             }
-
-
         });
-
     return out;
-
-
 }
 
 async function verificaDescEquip(p_e) {
     out = null;
     await $.ajax({
         method: "post",
-        url: base_url + "backend/desc_equipamento",
-        data: { e_desc: p_e}
+        url: base_url + "desc_equipamento/" + p_e,
       })
         .done(function( res ) {
             if (res !== null) {
@@ -3222,6 +2345,7 @@ $("#tblEquips").jsGrid({
             name: "Descrição", 
             type: "text", 
             width: 50,
+            validate: "required",
         },
         {
             type: "control",
@@ -3269,9 +2393,9 @@ $("#btnValidaEquip").on('click', async function() {
                     }
                 }
 
-                var res = await verificaDescEquip(grid_equips[i].Número);
-                if (res.descricao !== null)
-                    grid_equips[i].Descrição = res.descricao;
+                // var res = await verificaDescEquip(grid_equips[i].Número);
+                // if (res.descricao !== null)
+                //     grid_equips[i].Descrição = res.descricao;
 
                 if (grid_equips[i].Descrição === null) {
                     erros.push("O item "+grid_equips[i].Número+" está sem descrição!\n");
@@ -3425,8 +2549,6 @@ $("#btnInsereLote").on('click', async function() {
 
             while (i <= fim) {
 
-                
-
                 var desc = null;
 
                 var res = await verificaDescEquip(i);
@@ -3561,7 +2683,9 @@ $('#frmImportarChamado').on('submit',
         dados.append('ticket_triagem',g_ticket_triagem);
         dados.append('email_triagem',g_email_triagem);
         var replaced = $("#descricao_triagem").html().replace(/'/g, "\\'" );
-        dados.append('textoTriagem', replaced)
+        dados.append('textoTriagem', replaced);
+        dados.append('g_anexos', JSON.stringify($("#tblAnexos").jsGrid("option","data")));
+        dados.append('id_triagem', g_id_triagem);
         $.ajax({
 
             url: script_url,

@@ -6,14 +6,11 @@ date_default_timezone_set('America/Sao_Paulo');
 
 class Chamado_model extends CI_Model {
 
-
-    
     public function importaChamado($dados) {
         $msg = NULL;
 
         $this_model = new self; //re-instancia a classe Chamado_model para utilizar seus métodos na função 'registrar'
 
-        
         // ------------ FUNCAO PARA IMPORTAR------------------ 
 
         function importar($inst,$sql_insert,$p_nome_fila,$p_id_usuario) {
@@ -28,26 +25,15 @@ class Chamado_model extends CI_Model {
             $p_id_usuario .", ' abriu o chamado na fila <b>" . 
             $p_nome_fila . "</b>', NOW())"); 
 
-            
-
-
-
             echo "<div id=\"alerta\" class=\"alert alert-success\">";
             echo "<small class=\"float-right\">". date('G:i:s') . "</small>";
             echo "Importação concluída! Chamado n. " 
             . $id_novo_chamado . "<br /><a href=". base_url('/painel?v=triagem') . ">Voltar para o painel</a>";
             echo "</div>"; 
 
-            
-
-            
-        
             return $id_novo_chamado;
         
         }
-
-        // ------------------------------------------------------
-        
                        
         $q_buscaIdLocal = "select id_local from local where nome_local = '". addslashes($dados['nome_local']) . "'";
 
@@ -75,46 +61,51 @@ class Chamado_model extends CI_Model {
                 $this->db->query("insert resumo values(NULL,'" . $resumoM . "')"); // cadastrando resumos
                 $this->db->query("insert complemento values(NULL,'" . $complementoM . "')"); // cadastrando complementos
 
+                
+                
+                
 
                 $nome_fila = $this->db->query("select nome_fila from fila where id_fila = 1")->row()->nome_fila;
-
-                    
                     if (!empty($dados['listaEquipamentos'])) {
 
                         $novo_id = importar($this_model,$q_insereChamado,$nome_fila,$dados['id_usuario']);
 
                         if( $novo_id !== FALSE) {
 
+                            // ------------ LOG -------------------
+
+                            $log = array(
+                                'acao_evento' => 'INSERIR_CHAMADO',
+                                'desc_evento' => 'ID CHAMADO: ' . $novo_id ,
+                                'id_usuario_evento' => $_SESSION['id_usuario']
+                            );
+                            
+                            $this->db->insert('evento', $log);
+
+                            // -------------- /LOG ----------------
+                    
                             foreach($dados['listaEquipamentos'] as $equip) { //registrando nas tabelas equipamento_chamado e, se necessario, na tabela equipamento
-
                                 $busca_equip = $this->db->query("select * from equipamento where num_equipamento = '". $equip->Número ."'");
-
                                 if ($busca_equip->num_rows() == 0) { //equipamento novo
                                     $this->db->query("insert into equipamento values('". $equip->Número ."','". $equip->Descrição . "',NOW(),NULL,NULL)");
                                 }
-
                                 $this->db->query("insert into equipamento_chamado values('" . $equip->Número."','ABERTO', NULL, NOW(),". $novo_id .")");
-    
+                            }
+
+                            foreach($dados['anexos'] as $anexo) {
+                                $this->db->query("update anexos_otrs set id_chamado_sigat = " . $novo_id . " where id_anexo_otrs = " . $anexo->id_anexo_otrs);
             
                             }
 
+                        $this->db->query("delete from anexos_otrs where id_chamado_sigat is NULL and id_triagem_sigat = " . $dados['id_triagem']); //deletando anexos descartados
+                        $this->db->query("delete from triagem where id_triagem = " . $dados['id_triagem']); //deletando triagem
                         }
 
+                        
                         else
                             die($novo_id);
 
-                        // ------------ LOG -------------------
-
-                        $log = array(
-                            'acao_evento' => 'INSERIR_CHAMADO',
-                            'desc_evento' => 'ID CHAMADO: ' . $dados['id_chamado'] ,
-                            'id_usuario_evento' => $_SESSION['id_usuario']
-                        );
                         
-                        $this->db->insert('evento', $log);
-
-                        // -------------- /LOG ----------------
-                    
                     }
                 
             } else {
@@ -190,19 +181,19 @@ class Chamado_model extends CI_Model {
 
             $novo_nome_local = $this->db->query('select nome_local from local where id_local = ' . $id_local)->row()->nome_local;
 
-            $texto_alteracao .= '<p>Foi alterado o local <strong>' . $chamado_original->nome_local . '</strong>';
+            $texto_alteracao .= 'alterou o local de <strong>' . $chamado_original->nome_local . '</strong>';
             $texto_alteracao .= ' para <strong>' . $novo_nome_local . '</strong></p>';
         }
 
         if ($chamado_original->telefone_chamado != $dados['telefone']) {
 
-            $texto_alteracao .= '<p>Foi alterado o telefone de <strong>' . $chamado_original->telefone_chamado . '</strong>';
+            $texto_alteracao .= 'alterou o telefone de <strong>' . $chamado_original->telefone_chamado . '</strong>';
             $texto_alteracao .= ' para <strong>' . $dados['telefone'] . '</strong></p>';
         }
 
         if ($chamado_original->nome_solicitante_chamado != $dados['nome_solicitante']) {
 
-            $texto_alteracao .= '<p>Foi alterado o solicitante de <strong>' . $chamado_original->nome_solicitante_chamado . '</strong>';
+            $texto_alteracao .= 'alterou o solicitante de <strong>' . $chamado_original->nome_solicitante_chamado . '</strong>';
             $texto_alteracao .= ' para <strong>' . $dados['nome_solicitante'] . '</strong></p>';
         }
 
@@ -340,13 +331,6 @@ class Chamado_model extends CI_Model {
 
     public function buscaChamado($id_chamado, $status = '') {
 
-        //$chamado = $this->db->query("select * from chamado where id_chamado = ". $id_chamado . " and id_fila_chamado is NULL")->row();
-
-
-        // removida a verficaçao do solicitante, conforme solicitado
-
-		
-
 	   $q_buscaChamado = "select ticket_chamado, id_chamado, id_fila, nome_solicitante_chamado, nome_local, DATE_FORMAT(data_chamado, '%d/%m/%Y - %H:%i:%s') as data_chamado, descricao_chamado, telefone_chamado,
         (select usuario.id_usuario from usuario where usuario.id_usuario = chamado.id_usuario_responsavel_chamado) as id_responsavel, 
         (select fila.nome_fila from fila where fila.id_fila = chamado.id_fila_chamado) as nome_fila_chamado
@@ -354,7 +338,6 @@ class Chamado_model extends CI_Model {
         where local.id_local = chamado.id_local_chamado and
         fila.id_fila = chamado.id_fila_chamado and
         chamado.id_chamado = " . $id_chamado;
-
 
         $q_buscaEquipamentos = "SELECT e.num_equipamento, e.descricao_equipamento
         FROM equipamento AS e, equipamento_chamado
@@ -369,13 +352,13 @@ class Chamado_model extends CI_Model {
         return $result;
     }
 
-    // public function buscaAnexo($id_chamado) {
+    public function buscaHistoricoChamado($id_chamado) {
+        $q_buscaHistorico = "SELECT u.nome_usuario, a.texto_alteracao, a.data_alteracao FROM alteracao_chamado AS a, usuario AS u
+        WHERE u.id_usuario = a.id_usuario_alteracao AND id_chamado_alteracao =". $id_chamado;
 
-    //     $q_buscaAnexos = "select nome_anexo from anexo where id_chamado_anexo = " . $id_chamado;
-        
-    //     return $this->db->query($q_buscaAnexos)->row();
-    // }
+        return $this->db->query($q_buscaHistorico)->result();   
 
+    }
 }
 
 ?>
