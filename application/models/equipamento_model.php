@@ -31,6 +31,8 @@ class Equipamento_model extends CI_Model {
         if($busca->num_rows() == 1) {
 
             return $busca->row();
+
+            
         }
 
         else
@@ -43,6 +45,17 @@ class Equipamento_model extends CI_Model {
         $insercao = $this->db->query("insert into equipamento values(".$num_equip.",'".$desc_equip."')");
 
         if($insercao) {
+            // ------------ LOG -------------------
+
+            $log = array(
+                'acao_evento' => 'ADICIONAR_EQUIP',
+                'desc_evento' => 'ID: ' . $num_equip . ' - DESC: ' . $desc_equip,
+                'id_usuario_evento' => $_SESSION['id_usuario']
+            );
+            
+            $this->db->insert('evento', $log);
+
+            // -------------- /LOG ----------------
 
             return TRUE;
         }

@@ -166,7 +166,8 @@
                     </div>
                 </div>
                 <div class="tab-pane" id="historico" role="tabpanel" aria-labelledby="historico-tab">
-                    <div class="col-0 my-3">
+                    <div class="col-0 my-3" id="historico">
+                        
                         
                     </div>
                 </div>

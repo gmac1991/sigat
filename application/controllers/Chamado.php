@@ -42,7 +42,6 @@ class Chamado extends CI_Controller {
 
         $dados = $this->chamado_model->buscaChamado($id_chamado); //traz patrimonios, info do chamado e anexos...
         $dados['usuarios'] = $this->usuario_model->buscaUsuarios(); //traz a lista de todos os usuarios
-        $dados['historico'] = $this->chamado_model->buscaHistorico($id_chamado); //traz a lista de todos os usuarios
 
         if (isset($dados['chamado'])) {
 

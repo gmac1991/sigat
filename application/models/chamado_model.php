@@ -354,7 +354,7 @@ class Chamado_model extends CI_Model {
 
     public function buscaHistoricoChamado($id_chamado) {
         $q_buscaHistorico = "SELECT u.nome_usuario, a.texto_alteracao, a.data_alteracao FROM alteracao_chamado AS a, usuario AS u
-        WHERE u.id_usuario = a.id_usuario_alteracao AND id_chamado_alteracao =". $id_chamado;
+        WHERE u.id_usuario = a.id_usuario_alteracao AND id_chamado_alteracao =". $id_chamado . " ORDER BY a.data_alteracao DESC LIMIT 50";
 
         return $this->db->query($q_buscaHistorico)->result();   
 

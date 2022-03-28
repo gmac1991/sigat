@@ -18,7 +18,22 @@ class Interacao extends CI_Controller {
 
     public function remover_interacao() {
 
-        $this->interacao_model->removeInteracao($this->input->post('id_interacao'));
+        $dados = $this->input->post();
+
+        $chamado = $this->chamado_model->buscaChamado($dados['id_chamado'])['chamado'];
+
+        //var_dump($chamado);
+
+
+        if($chamado->id_responsavel == $dados['id_usuario'] || $dados['auto_usuario'] >= 4) {
+
+            $this->interacao_model->removeInteracao($dados['id_interacao']);
+
+        }
+        else {
+            header('HTTP/1.0 403 Forbidden');
+        }
+        
     }
       
     public function registrar_interacao() {

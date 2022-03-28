@@ -12,6 +12,7 @@ class Json extends CI_Controller {
         parent::__construct();
         $this->load->library('consulta_ldap');
         $this->load->model("equipamento_model");
+        $this->load->model("chamado_model");
         /* $this->load->library('encryption');
         $this->encryption->initialize(array('driver' => 'openssl')); */
     }
@@ -590,6 +591,7 @@ class Json extends CI_Controller {
         }
     }
 
+
     public function inserir_equipamento_chamado() {
         if (isset($_SESSION['id_usuario'])) {
             $dados = $this->input->post();
@@ -635,6 +637,33 @@ class Json extends CI_Controller {
             
             $dados['item']['status_equipamento_chamado'] = 'ABERTO';
             
+            
+            // ------------ LOG -------------------
+            
+            $nova_alteracao = array (
+                'id_alteracao' => NULL,
+                'data_alteracao' => date('Y-m-d H:i:s'),
+                'texto_alteracao' => "adicionou <b>" . $dados['item']['num_equipamento'] . "</b> - <b>" . $dados['item']['descricao_equipamento'] . "</b> ao chamado" ,
+                'id_chamado_alteracao' => $dados['g_id_chamado'],
+                'id_usuario_alteracao' => $_SESSION['id_usuario'],
+       
+             ); 
+             
+             $this->db->insert('alteracao_chamado',$nova_alteracao);
+
+             
+
+             $log = array(
+                'acao_evento' => 'ALTERAR_CHAMADO',
+                'desc_evento' => 'ID CHAMADO: ' . $dados['g_id_chamado'],
+                'id_usuario_evento' => $_SESSION['id_usuario']
+            );
+            
+            $this->db->insert('evento', $log);
+
+            // -------------- /LOG ----------------
+            
+            
             header("Content-Type: application/json");
             echo json_encode($dados['item']);
 
@@ -642,23 +671,64 @@ class Json extends CI_Controller {
             header('HTTP/1.0 403 Forbidden');
         }
     }
+
+
     public function atualizar_equipamento_chamado() {
         if (isset($_SESSION['id_usuario'])) {
-            $item = $this->input->post();
+            $dados = $this->input->post();
+            $a = $dados['item_antigo'];
+            $i = $dados['item'];
+            
+            $i['num_equipamento'] = preg_replace('/\s+/', '', $i['num_equipamento']); //removendo whitespaces
+            $i['descricao_equipamento'] = mb_strtoupper($i['descricao_equipamento']);
+            
+            if (isset($i['tag_equipamento'])) {
+                $i['tag_equipamento'] = mb_strtoupper($i['tag_equipamento']);
+            }
 
-            $item['num_equipamento'] = preg_replace('/\s+/', '', $item['num_equipamento']); //removendo whitespaces
-            $item['descricao_equipamento'] = mb_strtoupper($item['descricao_equipamento']);
-            $item['tag_equipamento'] = mb_strtoupper($item['tag_equipamento']);
+            else {
+
+                $i['tag_equipamento'] = $a['tag_equipamento'];
+            }
+                 
 
 
             $this->db->query("update equipamento 
-                            set descricao_equipamento = '" . $item['descricao_equipamento'] .
-                            "', tag_equipamento = '"       . $item['tag_equipamento'] .
+                            set descricao_equipamento = '" . $i['descricao_equipamento'] .
+                            "', tag_equipamento = '"       . $i['tag_equipamento'] .
                             "', data_alteracao_equipamento = NOW()" .
-                            " where num_equipamento = '"   . $item['num_equipamento'] . "'"
+                            " where num_equipamento = '"   . $i['num_equipamento'] . "'"
             );
+            
+            // ------------ LOG -------------------
+            
+            $nova_alteracao = array (
+                'id_alteracao' => NULL,
+                'data_alteracao' => date('Y-m-d H:i:s'),
+                'texto_alteracao' =>    "alterou um equipamento. " . $a['num_equipamento'] . 
+                                        ", " . $a['descricao_equipamento'] . ", " . $a['tag_equipamento'] . " => " .
+                                        $i['num_equipamento'] . ", " . $i['descricao_equipamento'] . ", " . $i['tag_equipamento'],
+                'id_chamado_alteracao' => $dados['g_id_chamado'],
+                'id_usuario_alteracao' => $_SESSION['id_usuario'],
+       
+             ); 
+             
+             $this->db->insert('alteracao_chamado',$nova_alteracao);
+
+             
+
+             $log = array(
+                'acao_evento' => 'ALTERAR_CHAMADO',
+                'desc_evento' => 'ID CHAMADO: ' . $dados['g_id_chamado'],
+                'id_usuario_evento' => $_SESSION['id_usuario']
+            );
+            
+            $this->db->insert('evento', $log);
+
+            // -------------- /LOG ----------------
+            
             header("Content-Type: application/json");
-            echo json_encode($item);
+            echo json_encode($i);
         } else {
             header('HTTP/1.0 403 Forbidden');
         }
@@ -666,25 +736,44 @@ class Json extends CI_Controller {
 
     public function remover_equipamento_chamado() {
         if (isset($_SESSION['id_usuario'])) {
-            $item = $this->input->post();
-            $this->db->query("delete from equipamento_chamado where num_equipamento_chamado = '"   . $item['num_equipamento'] . "'");
+            $dados = $this->input->post();
+            $i = $dados['item'];
+
+            $this->db->query("delete from equipamento_chamado where num_equipamento_chamado = '" . $i['num_equipamento'] . "'");
+            
+            // ------------ LOG -------------------
+            
+            $nova_alteracao = array (
+                'id_alteracao' => NULL,
+                'data_alteracao' => date('Y-m-d H:i:s'),
+                'texto_alteracao' => "removeu <b>" . $i['num_equipamento'] . "</b> - <b>" . $i['descricao_equipamento'] . "</b> do chamado" ,
+                'id_chamado_alteracao' => $dados['g_id_chamado'],
+                'id_usuario_alteracao' => $_SESSION['id_usuario'],
+       
+             ); 
+             
+             $this->db->insert('alteracao_chamado',$nova_alteracao);
+
+             
+
+             $log = array(
+                'acao_evento' => 'ALTERAR_CHAMADO',
+                'desc_evento' => 'ID CHAMADO: ' . $dados['g_id_chamado'],
+                'id_usuario_evento' => $_SESSION['id_usuario']
+            );
+            
+            $this->db->insert('evento', $log);
+
+            // -------------- /LOG ----------------
+            
             header("Content-Type: application/json");
-            echo json_encode($item);
+            echo json_encode($i);
         } else {
             header('HTTP/1.0 403 Forbidden');
         }
     }
 
-    public function historico_chamado() {
-
-        if (isset($_SESSION['id_usuario'])) {
-            $historico = $this->chamado_model->buscaHistoricoChamado($_POST['id_chamado']);
-           
-        } else {
-            header('HTTP/1.0 403 Forbidden');
-        }
-        
-    }
+    
 
     public function usuarios() {
         if (isset($_SESSION['id_usuario'])) {
@@ -809,8 +898,21 @@ class Json extends CI_Controller {
 
     }
 
-   
-
+    public function carrega_historico($id_chamado) {
+        if (isset($_SESSION['id_usuario'])) {
+            $lista = array();      
+            $historico = $this->chamado_model->buscaHistoricoChamado($id_chamado);
+            foreach($historico as $linha) {
+                array_push($lista,"<p class=\"border rounded p-2 my-3\"><span class=\"badge badge-info\">" .
+                date("d/m/Y H:i:s",strtotime($linha->data_alteracao)) .
+                "</span> <strong>" . $linha->nome_usuario . "</strong> " . $linha->texto_alteracao . "</p>");
+            }
+            header("Content-Type: text/html");
+            echo implode(" ",$lista);
+        } else {
+            header('HTTP/1.0 403 Forbidden');
+        }
+    }
 }
 
 
