@@ -10,6 +10,7 @@ var p_equips = [, ];
 
 
 
+
 // --- PLUGIN DATETIME.JS
 
 // UMD
@@ -191,6 +192,8 @@ function painel(id_fila) {
                     dataType: 'json',
                     success: interacao => {
 
+                        console.log(interacao);
+
                         $(this).popover({
                             content: interacao.nome_usuario + interacao.texto_interacao,
                             trigger: 'focus',
@@ -311,10 +314,12 @@ function triagem() {
 
 }
 
-$('#tblTriagem').on('click', 'tbody tr', function () {
+$('#tblTriagem').on('click', 'tbody td', function () {
     var row = table_triagem.row($(this)).data();
     document.location.href = base_url + 'triagem/' + row[0];
   });
+
+
 
 // =============== MODAIS ====================
 
@@ -370,6 +375,8 @@ async function buscaEquipamentos(p_id_chamado, p_id_fila_ant, p_atendimento, ins
         }
     });
 
+   
+
     
 
     if (num_equipamentos.length > 0) {
@@ -395,6 +402,9 @@ async function buscaEquipamentos(p_id_chamado, p_id_fila_ant, p_atendimento, ins
                 $('#divEquipamentos').prepend("<p>Marque os equipamentos que sairão da espera:</p>");
             }
         }
+        $('#divEquipamentos').append("<input id=\"chkTudo\" type=\"checkbox\" value=\"#\" onclick=\"$('input:checkbox').not(this).prop('checked', this.checked)\">" +
+            "<label class=\"mr-2\" for=\"chkTudo\">&nbsp;Todos</label>");
+
         num_equipamentos.forEach(function(num) { //criando os checkbox com os patrimonios
          
             $('#divEquipamentos').append(
@@ -410,22 +420,7 @@ async function buscaEquipamentos(p_id_chamado, p_id_fila_ant, p_atendimento, ins
                 $('#btnRegistrarInteracao').prop('disabled', 'true');
             }
 
-        } else if (p_id_fila_ant == 6) { // no caso da fila estar como 'Solicitacao de Equipamento'
-            $('#divEquipamentos').prepend("<p>Para este tipo de interação, altere a fila para <b>Manutenção de Hardware</b></p>");
-            if (!p_alt_fila) {
-                $('#btnRegistrarInteracao').prop('disabled', 'true');
-            }
-        } else {
-
-            if (tem_equipamentos == 0) {
-
-                $('#divEquipamentos').prepend("<p>Não existem equipamentos disponíveis para isso!</p>");
-                if (!p_alt_fila) {
-                    $('#btnRegistrarInteracao').prop('disabled', 'true');
-
-                }
-            }
-        }
+        } 
     }
 }
 
@@ -713,14 +708,19 @@ async function carregaHistorico(p_id_chamado) {
 
 var item_antigo = null;
 
+var entrega = null;
+
+var botoes = "";
+
 async function carregaChamado(p_id_chamado, sem_equipamentos) {
 
     //atualiza os dados do chamado
 
-    document.title = "#" + p_id_chamado + " - Sigat";
+    document.title = "#" + p_id_chamado + " - SIGAT";
 
     var p_id_responsavel = null;
     
+    $("#spnStatusChamado").fadeIn();
     
     var historico = await carregaHistorico(p_id_chamado);
     $("#historico").html(historico);
@@ -784,7 +784,8 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
             {
                 name: "status_equipamento_chamado",
                 title: "Status",
-                width: 30,
+                width: 50,
+                align: "center",
             }, 
             {
                 type:"control",
@@ -827,6 +828,7 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
                             success: async function() {
                                 var historico = await carregaHistorico(p_id_chamado);
                                 $("#historico").html(historico);
+                                carregaChamado(p_id_chamado);
                             }
                         });
                 }
@@ -842,8 +844,10 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
                     data: {e_status:num_equip},
                 }).done(function(data) {
                     res = data;
+                    
                 });
-                if(typeof res !== 'undefined'){
+
+                if(res !== null){
                     alert("O item " + num_equip + " já está em atendimento!\nChamado: " + res.id_chamado + "\n" + res.ticket_chamado);
                     d.reject();
                     return d.promise();
@@ -858,6 +862,7 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
                         success: async function() {
                             var historico = await carregaHistorico(p_id_chamado);
                             $("#historico").html(historico);
+                            carregaChamado(p_id_chamado);
                         }
                     });
     
@@ -886,6 +891,7 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
                         success: async function() {
                             var historico = await carregaHistorico(p_id_chamado);
                             $("#historico").html(historico);
+                            carregaChamado(p_id_chamado);
                         }
                     });
                 }
@@ -898,14 +904,7 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
         },
     });
 
-
-    $('#botoesAtendimento #btnModalRegistroEntrega').remove();
-    $('#botoesAtendimento #baixarTermoEntrega').remove();
-    $('#botoesAtendimento #baixarTermoResp').remove();
-    $('#botoesAtendimento #baixarLaudoIns').remove();
-    $('#botoesAtendimento #btnModalRegistro').remove();
-    $('#botoesAtendimento #btnEncerrarChamado').remove();
-    $('#botoesAtendimento #btnModalEquipamentos').remove();
+    $('#botoesAtendimento').html("");
 
     $('#botoesChamado hr').hide();
 
@@ -940,53 +939,43 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
             }
 
             fila_atual = data.id_fila; //variavel global fila_atual
-            var entrega = data.entrega_chamado;
+            entrega = data.entrega_chamado;
 
 
-            var botoes = "<button type=\"button\" id=\"btnModalRegistro\" class=\"btn btn-primary\"" +
-                            " data-toggle=\"modal\" data-target=\"#modalRegistro\" data-chamado=\"" + data.id_chamado +
-                            "\"><i class=\"fas fa-asterisk\"></i> Nova Ação</button> ";
+            for (var i = 0; i < data.status_equipamentos.length; ++i) {
 
-            data.status_equipamentos.forEach(function(item) {
+                var status = data.status_equipamentos[i].status_equipamento_chamado;
+   
+                if ((status == 'ABERTO' || status == 'ESPERA' || status == 'FALHA')) {
 
-                
+                        botoes = "<button type=\"button\" id=\"btnModalRegistro\" class=\"btn btn-primary\"" +
+                        " data-toggle=\"modal\" data-target=\"#modalRegistro\" data-chamado=\"" + data.id_chamado +
+                        "\"><i class=\"fas fa-asterisk\"></i> Nova Ação</button> ";
 
-                if ((item.status_equipamento_chamado == 'ABERTO' || item.status_equipamento_chamado == 'ESPERA' ||
-                    item.status_equipamento_chamado == 'FALHA') &&
-                (data.id_responsavel == g_id_usuario)) {
-
-                    
-                    
-                    
-                    
-
-
-                    $('#botoesAtendimento').html(botoes);
+                        break;
                 }
-
-                if ((item.status_equipamento_chamado == 'ENTREGA' || entrega == 1) && data.status_chamado == 'ABERTO' ) {
-
-                    botoes = botoes +  "<button type=\"button\" id=\"btnModalRegistroEntrega\" class=\"btn btn-success\" data-toggle=\"modal\" data-chamado=\"" +
-                                        data.id_chamado + "\" data-target=\"#modalRegistroEntrega\"><i class=\"fas fa-file-signature\"></i> Registrar entrega</button> " +
-                                        "<a href=\"" + base_url + "chamado/gerar_termo/" +
-                                        data.id_chamado + "\" id=\"baixarTermoEntrega\" role=\"button\" class=\"btn btn-info\">" +
-                                        "<i class=\"fas fa-file-download\"></i> Termo de Entrega</a> " +
-                                        "<a href=\"" + base_url + "chamado/gerar_termo_resp/" +
-                                        + data.id_chamado + "\" id=\"baixarTermoResp\" role=\"button\" class=\"btn btn-info\">" +
-                                        "<i class=\"fas fa-file-download\"></i> Termo de Responsabilidade</a>"
-
-                    $('#botoesAtendimento').html(botoes);
-                
-                }
-            })
+            }
 
 
             // -------------------- PERMISSOES ----------------------------
+            
+            if ((entrega == 1) && data.status_chamado == 'ABERTO' ) {
 
+                botoes = botoes +  "<button type=\"button\" id=\"btnModalRegistroEntrega\" class=\"btn btn-success\" data-toggle=\"modal\" data-chamado=\"" +
+                                    data.id_chamado + "\" data-target=\"#modalRegistroEntrega\"><i class=\"fas fa-file-signature\"></i> Registrar entrega</button> " +
+                                    "<a href=\"" + base_url + "chamado/gerar_termo/" +
+                                    data.id_chamado + "\" id=\"baixarTermoEntrega\" role=\"button\" class=\"btn btn-info\">" +
+                                    "<i class=\"fas fa-file-download\"></i> Termo de Entrega</a> " +
+                                    "<a href=\"" + base_url + "chamado/gerar_termo_resp/" +
+                                    + data.id_chamado + "\" id=\"baixarTermoResp\" role=\"button\" class=\"btn btn-info\">" +
+                                    "<i class=\"fas fa-file-download\"></i> Termo de Responsabilidade</a>"
+            
+            }
 
             if (data.id_responsavel == g_id_usuario) {
 
-               
+
+                $('#botoesAtendimento').html(botoes);
 
                 tblEquipsChamado.option("editing",true);
                 tblEquipsChamado.option("inserting",true);
@@ -1084,6 +1073,10 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
             }
         }
     });
+
+    $("#spnStatusChamado").fadeOut();
+
+
 }
 
 
@@ -1093,6 +1086,8 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
 function removeInteracao(p_id_interacao, p_id_chamado) {
 
     var bloqueado = false;
+
+    $('#botoesAtendimento').html("");
 
 
     $.ajax({
@@ -1474,38 +1469,21 @@ $('#btnBloquearChamado').on('click', function(e) {
             id_usuario: g_id_usuario,
             tipo: 'b'
         },
+
         beforeSend: function() {
-
             $('#btnBloquearChamado').prop('disabled', 'true');
-
-            $.ajax({
-                type: "GET",
-                async: false, //
-                url: base_url + 'json/chamado',
-                data: {
-                    id_chamado: g_id_chamado,
-                },
-                dataType: 'JSON',
-                complete: function(data) {
-
-                    if (data.id_responsavel != null) {
-                        $('#btnBloquearChamado').removeAttr('disabled');
-                        $('#btnBloquearChamado').hide();
-
-                        alert('Chamado já está bloqueado por ' + data.nome_responsavel);
-                        carregaChamado(g_id_chamado, true);
-                        bloqueado = true;
-                    }
-                }
-            });
-            if (bloqueado) {
-                return;
-            }
         },
+        success: function(data) {
 
-        success: function() {
-            $('#btnBloquearChamado').removeAttr('disabled');
-            carregaChamado(g_id_chamado, true);
+            if (data === "") {
+                $('#btnDesbloquearChamado').removeAttr('disabled');
+                carregaChamado(g_id_chamado, true);
+            } 
+            else {
+                alert('Chamado bloqueado por ' + data);
+                carregaChamado(g_id_chamado, true);
+            }
+            
         },
     });
 
@@ -1523,23 +1501,21 @@ $('#btnDesbloquearChamado').on('click', function(e) {
         data: {
             id_chamado: g_id_chamado,
             id_usuario: g_id_usuario,
-            tipo: 'd'
+            tipo: 'd',
+            auto_usuario: g_auto_usuario,
         },
         beforeSend: function() {
             $('#btnDesbloquearChamado').prop('disabled', 'true');
         },
-        success: function(msg) {
-
-            if (msg == 0) {
-                $('#btnDesbloquearChamado').removeAttr('disabled');
-                $('#btnDesbloquearChamado').hide();
-                carregaChamado(g_id_chamado, true);
-            } else {
-
-                alert('Operação não permitida: o chamado está fechado!')
-            }
-
+        success: function() {
+            $('#btnBloquearChamado').removeAttr('disabled');
+            carregaChamado(g_id_chamado, true);
         },
+        error: function() {
+            $('#btnDesbloquearChamado').removeAttr('disabled');
+            alert('Operação não permitida!');
+            carregaChamado(g_id_chamado, true);
+        }
     });
 
 
@@ -2240,21 +2216,19 @@ async function verificaStatusEquip(p_e) {
         data: { e_status: p_e}
       })
         .done(function( res ) {
-            if (res !== false) {
-                out = res;
-            }
+            out = res;
         });
-    return out;
+    return JSON.parse(out);
 }
 
 async function verificaDescEquip(p_e) {
     out = null;
     await $.ajax({
         method: "post",
-        url: base_url + "desc_equipamento/" + p_e,
+        url: base_url + "json/desc_equipamento/" + p_e,
       })
         .done(function( res ) {
-            if (res !== null) {
+            if (res !== "") {
                 out = res;
             }
         });
@@ -2283,11 +2257,17 @@ async function verificaAutoEquip() {
 
             var status = await verificaStatusEquip(nums_equip[i]);
 
-            if (status.status_equipamento_chamado !== 'ATENDIDO') {
-                ocorrencias.push({"Número":nums_equip[i],"Status":status.status_equipamento_chamado,"ID":status.id_chamado,"Ticket":status.ticket_chamado})
+            if (status !== null) {
+                if (status.status_equipamento_chamado !== 'ATENDIDO') {
+                    ocorrencias.push({"Número":nums_equip[i],"Status":status.status_equipamento_chamado,"ID":status.id_chamado,"Ticket":status.ticket_chamado})
+                }
             }
 
+            
+
             var res = await verificaDescEquip(nums_equip[i]);
+
+            console.log(res);
 
             out.push({"Número":nums_equip[i],"Descrição":res.descricao});
 
@@ -2337,6 +2317,8 @@ var confirmado = false;
 
 $("#btnValidaEquip").on('click', async function() {
 
+    
+
     confirmado = false;
 
     $(this).prop("disabled","true");
@@ -2368,9 +2350,9 @@ $("#btnValidaEquip").on('click', async function() {
                     }
                 }
 
-                // var res = await verificaDescEquip(grid_equips[i].Número);
-                // if (res.descricao !== null)
-                //     grid_equips[i].Descrição = res.descricao;
+                var res = await verificaDescEquip(grid_equips[i].Número);
+                if (res.descricao !== null)
+                    grid_equips[i].Descrição = res.descricao;
 
                 if (grid_equips[i].Descrição === null) {
                     erros.push("O item "+grid_equips[i].Número+" está sem descrição!\n");
@@ -2393,6 +2375,7 @@ $("#btnValidaEquip").on('click', async function() {
                 $(this).html('<i class="fa fa-check"></i> Confirmado!');
                 $("#tblEquips").jsGrid("fieldOption", 2, "visible", false);
                 $("#tblEquips").jsGrid("option","editing", false);
+                $("#tblEquips").jsGrid("option","inserting", false);
                 $(this).prop("disabled","true");
                 $("#btnAlteraEquip").removeAttr("disabled");
                 $("#btnLoteEquip").prop("disabled","true");

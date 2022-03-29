@@ -43,7 +43,7 @@ class Interacao_model extends CI_Model {
                  if ($dados['id_fila'] == 3) { //se estiver na fila Manutenção de Hardware / id = 3
                      
                      $this->db->query("update equipamento_chamado set status_equipamento_chamado = 'ENTREGA', status_equipamento_chamado_ant = 'ABERTO'
-                     where num_equipamento_chamado_chamado = '" . $num_equip . "'");
+                     where num_equipamento_chamado = '" . $num_equip . "'");
                      
                      // ------------ LOG -------------------
 
@@ -543,7 +543,7 @@ class Interacao_model extends CI_Model {
          case 'ATENDIMENTO':
 		 
 		 
-            if (count($pool_equips) > 1) {
+            if (count($pool_equips) >= 1) {
 
                foreach ($pool_equips as $num_equip) { 
                   $this->db->query("update equipamento_chamado set status_equipamento_chamado_ant = status_equipamento_chamado, 

@@ -1,5 +1,5 @@
 <?php
-//HTML2PDF by Clément Lavoillotte
+//HTML2PDF by Clï¿½ment Lavoillotte
 //ac.lavoillotte@noos.fr
 //webmaster@streetpc.tk
 //http://www.streetpc.tk
@@ -66,14 +66,19 @@ function Header()
 	
 
 			
-			$this->Image(base_url('img/logo_pms.png'),50,10,17,17);
-			$this->SetFont('Arial','B',16);
-			$this->Cell(80);
-			$this->Cell(30,10,'Seção de Suporte Técnico',0,0,'C');
-			$this->Ln(10);
-			$this->SetFont('Arial','I',12);
-			$this->Cell(0,5,'Prefeitura Municipal de Sorocaba',0,0,'C');
-			$this->Ln(20);
+        $this->Image(base_url('img/logo_pms.png'),20,10,17,17);
+        $this->SetFont('Arial','B',11);
+        $this->Cell(0,10,utf8_decode('Secretaria de AdministraÃ§Ã£o'),0,0,'C');
+        $this->Ln(5);
+        $this->SetFont('Arial','B',12);
+        $this->Cell(0,10,utf8_decode('DivisÃ£o de GestÃ£o de Tecnologia da InformaÃ§Ã£o'),0,0,'C');
+        $this->Ln(5);
+        $this->SetFont('Arial','',11);
+        $this->Cell(0,10,utf8_decode('SeÃ§Ã£o de Suporte TÃ©cnico'),0,0,'C');
+        $this->Ln(5);
+        $this->SetFont('Arial','I',10);
+        $this->Cell(0,10,'Prefeitura Municipal de Sorocaba',0,0,'C');
+        $this->Ln(20);
 
 
 		
@@ -88,15 +93,15 @@ function Header()
 	// Arial italic 8
 	$this->SetFont('Arial','I',8);
 	// Page number
-	$this->Cell(0,10,'Página '.$this->PageNo().'/{nb}',0,0,'C');
+	$this->Cell(0,10,utf8_decode('PÃ¡gina ').$this->PageNo().'/{nb}',0,0,'C');
 	}
 
 function WriteHTML($html)
 {
     //HTML parser
     $html=strip_tags($html,"<b><u><i><a><img><p><br><strong><em><font><tr><blockquote>"); //supprime tous les tags sauf ceux reconnus
-    $html=str_replace("\n",' ',$html); //remplace retour à la ligne par un espace
-    $a=preg_split('/<(.*)>/U',$html,-1,PREG_SPLIT_DELIM_CAPTURE); //éclate la chaîne avec les balises
+    $html=str_replace("\n",' ',$html); //remplace retour ï¿½ la ligne par un espace
+    $a=preg_split('/<(.*)>/U',$html,-1,PREG_SPLIT_DELIM_CAPTURE); //ï¿½clate la chaï¿½ne avec les balises
     foreach($a as $i=>$e)
     {
         if($i%2==0)

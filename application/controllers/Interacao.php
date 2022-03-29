@@ -12,6 +12,7 @@ class Interacao extends CI_Controller {
         
         $this->load->model("chamado_model"); //carregando o model chamado
         $this->load->model("interacao_model"); //carregando o model interacoes
+        $this->load->model("usuario_model"); //carregando o model usuario
 
         
     }
@@ -48,6 +49,8 @@ class Interacao extends CI_Controller {
         $dados['id_fila_ant'] = $this->input->post('id_fila_ant');
         $dados['equip_atendidos'] = $this->input->post('equipamentos_atendidos');
         $dados['id_usuario'] = $this->input->post('id_usuario');
+
+        //var_dump($dados);
         
         $this->interacao_model->registraInteracao($dados);
     
@@ -149,6 +152,7 @@ class Interacao extends CI_Controller {
     public function gerar_termo($id_chamado) {
 
         $dados = $this->chamado_model->buscaChamado($id_chamado,'ENTREGA');
+        $nome_usuario_atual = $this->usuario_model->buscaUsuario($_SESSION['id_usuario'])->nome_usuario;
 
         $this->load->library('pdf');
                 
@@ -159,7 +163,7 @@ class Interacao extends CI_Controller {
         $pdf->Cell(0,10,'Termo de Entrega',0,0,'C');
         $pdf->Ln(10);
         $pdf->SetFont('Arial','',11);
-        $pdf->Cell(0,10,date('d/m/Y - H:i:s'),0,0,'R');
+        $pdf->Cell(0,10,"Emitido em " . date('d/m/Y - H:i:s'),0,0,'R');
         $pdf->Ln(15);
         $pdf->SetFont('Arial','B',13);
         $pdf->Cell(100,10,$dados['chamado']->ticket_chamado,1);
@@ -184,41 +188,23 @@ class Interacao extends CI_Controller {
         $pdf->SetFont('Arial','B',12);
         $pdf->Ln();
 
-        // =========== PATRIMONIADOS ==========
-        if (!empty($dados['patrimonios'])) {
+        if (!empty($dados['equipamentos'])) {
 
-            $pdf->Cell(36,10,'Num. patrimonio',1,0,'C');
-            $pdf->Cell(0,10,'Descricao',1,0,'C');
+            $pdf->Cell(36,10,'ID',1,0,'C');
+            $pdf->Cell(0,10,utf8_decode('Descrição'),1,0,'C');
             $pdf->SetFont('Arial','',12);
             $pdf->Ln();
             
-            foreach($dados['patrimonios'] as $equip) {
-
-                $pdf->Cell(36,10,$equip->num_equipamento,1,0,'');
-                $json = file_get_contents('https://sistemas.sorocaba.sp.gov.br/acesso_equipamento/api/patrimonio/' . $equip->num_equipamento);
-                $pdf->Cell(0,10,utf8_decode(json_decode($json)->descrBem),1,0,'');
-                $pdf->Ln();
-
-            }
-
-        }
-
-        // ========== SEM PATRIMONIO ==========
-        if (!empty($dados['equipamentos'])) {
-
-            $pdf->Cell(36,10,'Num. serie',1,0,'C');
-            $pdf->Cell(0,10,'Descricao',1,0,'C');
-            $pdf->SetFont('Arial','',12);
-            $pdf->Ln();
-
             foreach($dados['equipamentos'] as $equip) {
 
                 $pdf->Cell(36,10,$equip->num_equipamento,1,0,'');
-                $pdf->Cell(0,10,$equip->desc_equipamento,1,0,'');
+                $pdf->Cell(0,10,$equip->descricao_equipamento,1,0,'');
                 $pdf->Ln();
+
             }
 
         }
+
 
         $pdf->Ln(10);
         $pdf->SetFont('Arial','B',12);
@@ -227,9 +213,12 @@ class Interacao extends CI_Controller {
         $pdf->Cell(120,8,'','B',1);
         $pdf->Ln(0);
         $pdf->SetFont('Arial','I',10);
-        //$pdf->SetX(-20);
         $pdf->Ln(0);
         $pdf->Cell(140,8,'(nome por extenso ou assinatura e carimbo)',0,0,'C');
+        $pdf->Ln(10);
+        $pdf->SetFont('Arial','B',12);
+        $pdf->Cell(30,10,'Entregue por ' . $nome_usuario_atual);
+       
         $pdf->Ln(15);
         $pdf->SetFont('Arial','B',12);
         $pdf->Cell(30,10,'Data: ',0,0,'R');
@@ -266,12 +255,10 @@ class Interacao extends CI_Controller {
         $pdf->Cell(0,10,'Termo de Responsabilidade',0,0,'C');
         $pdf->Ln(10);
         $pdf->SetFont('Arial','',11);
-        $pdf->Cell(0,10,date('d/m/Y H:i:s'),0,0,'R');
+        $pdf->Cell(0,10,"Emitido em " . date('d/m/Y - H:i:s'),0,0,'R');
         $pdf->Ln(15);
         $pdf->SetFont('Arial','B',13);
-        $pdf->Cell(42,10,'Num. do chamado ',1);
-        $pdf->SetFont('Arial','',13);
-        $pdf->Cell(30,10,$dados['chamado']->id_chamado,1);
+        $pdf->Cell(100,10,$dados['chamado']->ticket_chamado,1);
         $pdf->SetFont('Arial','B',13);
         $pdf->Cell(12,10,'Data ',1);
         $pdf->SetFont('Arial','',13);
@@ -293,29 +280,10 @@ class Interacao extends CI_Controller {
         $pdf->SetFont('Arial','B',12);
         $pdf->Ln();
 
-        // =========== PATRIMONIADOS ==========
-        if (!empty($dados['patrimonios'])) {
-
-            $pdf->Cell(36,10,'Num. patrimonio',1,0,'C');
-            $pdf->Cell(0,10,'Descricao',1,0,'C');
-            $pdf->SetFont('Arial','',12);
-            $pdf->Ln();
-            
-            foreach($dados['patrimonios'] as $equip) {
-
-                $pdf->Cell(36,10,$equip->num_equipamento,1,0,'');
-                $json = file_get_contents('https://sistemas.sorocaba.sp.gov.br/acesso_equipamento/api/patrimonio/' . $equip->num_equipamento);
-                $pdf->Cell(0,10,utf8_decode(json_decode($json)->descrBem),1,0,'');
-                $pdf->Ln();
-
-            }
-
-        }
-
-        // ========== SEM PATRIMONIO ==========
+        
         if (!empty($dados['equipamentos'])) {
 
-            $pdf->Cell(36,10,'Num. serie',1,0,'C');
+            $pdf->Cell(36,10,'ID',1,0,'C');
             $pdf->Cell(0,10,'Descricao',1,0,'C');
             $pdf->SetFont('Arial','',12);
             $pdf->Ln();
@@ -323,7 +291,7 @@ class Interacao extends CI_Controller {
             foreach($dados['equipamentos'] as $equip) {
 
                 $pdf->Cell(36,10,$equip->num_equipamento,1,0,'');
-                $pdf->Cell(0,10,$equip->desc_equipamento,1,0,'');
+                $pdf->Cell(0,10,$equip->descricao_equipamento,1,0,'');
                 $pdf->Ln();
             }
 
@@ -332,14 +300,7 @@ class Interacao extends CI_Controller {
         $pdf->Ln(5);
 
         $pdf->SetFont('Arial','',10);
-        $pdf->MultiCell(190,8,'Declaro para os devidos fins, que na presente data ' .
-        'recebi da Prefeitura Municipal de Sorocaba, o (s) material (ais) acima relacionado (s), ' .
-        'para uso exclusivo da municipalidade, pelo (s) qual (ais) assumo inteira responsabilidade ' . 
-        'pelo seu bom uso e conservacao, ficando ainda ciente que deverei comunicar por escrito a ' . 
-        'Secao de Administracao de Materiais Permanentes qualquer alteracao do (s) mesmo (s). '.
-        'Sendo caracterizado o mau uso ou nao localizado, sera comunicado a ' .
-        'Secretaria de Administracao para as demais providencias, ' .
-        'em acordo com o Decreto n. 16.573 de 22 de abril de 2009.');
+        $pdf->MultiCell(190,8,utf8_decode('Declaro para os devidos fins, que na presente data recebi da Prefeitura Municipal de Sorocaba, o (s) material (ais) abaixo relacionado (s), para uso exclusivo da municipalidade, pelo (s) qual (ais) assumo inteira responsabilidade pelo seu bom uso e conservação, ficando ainda ciente que deverei comunicar por escrito à Seção de Administração e Controle de Materiais Permanentes, qualquer alteração do (s) mesmo (s). Sendo caracterizado o mau uso ou não localizado, será comunicado à Secretaria Jurídica para as demais providências, em acordo com o Decreto n. º 23117/2017.'));
 
         $pdf->Ln(10);
         $pdf->SetFont('Arial','B',12);
@@ -376,105 +337,105 @@ class Interacao extends CI_Controller {
   
     public function gerar_laudo($id_chamado) {
   
-        $dados = $this->chamado_model->buscaChamado($id_chamado,'INSERVIVEL');
+       
         $interacao = $this->interacao_model->buscaInteracao($id_chamado,array('FECHAMENTO_INS', 'ATENDIMENTO_INS'));
-  
-        //var_dump($interacao->texto_interacao);
-  
-        $this->load->library('pdf_html');
-             
-        $pdf = new PDF_HTML();
-        $pdf->AliasNbPages();
-        $pdf->AddPage();
-        $pdf->SetFont('Arial','B',18);
-        $pdf->Cell(0,10,'Laudo Tecnico',0,0,'C');
-        $pdf->Ln(10);
-        $pdf->SetFont('Arial','',11);
-        $pdf->Cell(0,10,'Emissao: ' . date('d/m/Y H:i:s'),0,0,'R');
-        $pdf->Ln(15);
-        $pdf->SetFont('Arial','B',13);
-        $pdf->Cell(42,10,'Num. do chamado ',1);
-        $pdf->SetFont('Arial','',13);
-        $pdf->Cell(30,10,$dados['chamado']->id_chamado,1);
-        $pdf->SetFont('Arial','B',13);
-        $pdf->Cell(12,10,'Data ',1);
-        $pdf->SetFont('Arial','',13);
-        $pdf->Cell(0,10,$dados['chamado']->data_chamado,1);
-        $pdf->Ln();
-        $pdf->SetFont('Arial','B',13);
-        $pdf->Cell(14,10,'Local ',1);
-        $pdf->SetFont('Arial','',13);
-        $pdf->Cell(0,10,$dados['chamado']->nome_local,1);
-        $pdf->Ln();
-        $pdf->SetFont('Arial','B',13);
-        $pdf->Cell(25,10,'Solicitante ',1);
-        $pdf->SetFont('Arial','',13);
-        $pdf->Cell(0,10,utf8_decode($dados['chamado']->nome_solicitante_chamado),1);
-        $pdf->Ln();
-        $pdf->Ln(10);
-        $pdf->SetFont('Arial','B',14);
-        $pdf->Cell(0,10,'Equipamentos',0,0,'C');
-        $pdf->SetFont('Arial','B',12);
-        $pdf->Ln();
-  
-        $pdf->Cell(36,10,'Num. patrimonio',1,0,'C');
-        $pdf->Cell(0,10,'Descricao',1,0,'C');
-        $pdf->SetFont('Arial','',12);
-        $pdf->Ln();
-  
-        foreach($dados['patrimonios'] as $equip) {
-  
-          $pdf->Cell(36,10,$equip->num_equipamento,1,0,'');
-          $json = file_get_contents('https://sistemas.sorocaba.sp.gov.br/acesso_equipamento/api/patrimonio/' . $equip->num_equipamento);
-          $pdf->Cell(0,10,utf8_decode(json_decode($json)->descrBem),1,0,'');
-          $pdf->Ln();
-  
+
+        if ($interacao !== NULL) { 
+
+            $dados = $this->chamado_model->buscaChamado($id_chamado,'INSERVIVEL');
+    
+            $this->load->library('pdf_html');
+                
+            $pdf = new PDF_HTML();
+            $pdf->AliasNbPages();
+            $pdf->AddPage();
+            $pdf->SetFont('Arial','B',18);
+            $pdf->Cell(0,10,utf8_decode('Laudo Técnico'),0,0,'C');
+            $pdf->Ln(10);
+            $pdf->SetFont('Arial','',11);
+            $pdf->Cell(0,10,'Emitido em: ' . date('d/m/Y - H:i:s'),0,0,'R');
+            $pdf->Ln(15);
+            $pdf->SetFont('Arial','B',13);
+            $pdf->Cell(100,10,$dados['chamado']->ticket_chamado,1);
+            $pdf->SetFont('Arial','B',13);
+            $pdf->Cell(12,10,'Data ',1);
+            $pdf->SetFont('Arial','',13);
+            $pdf->Cell(0,10,$dados['chamado']->data_chamado,1);
+            $pdf->Ln();
+            $pdf->SetFont('Arial','B',13);
+            $pdf->Cell(14,10,'Local ',1);
+            $pdf->SetFont('Arial','',13);
+            $pdf->Cell(0,10,$dados['chamado']->nome_local,1);
+            $pdf->Ln();
+            $pdf->SetFont('Arial','B',13);
+            $pdf->Cell(25,10,'Solicitante ',1);
+            $pdf->SetFont('Arial','',13);
+            $pdf->Cell(0,10,utf8_decode($dados['chamado']->nome_solicitante_chamado),1);
+            $pdf->Ln();
+            $pdf->Ln(10);
+            $pdf->SetFont('Arial','B',14);
+            $pdf->Cell(0,10,'Equipamentos',0,0,'C');
+            $pdf->SetFont('Arial','B',12);
+            $pdf->Ln();
+    
+            $pdf->Cell(36,10,'ID',1,0,'C');
+            $pdf->Cell(0,10,utf8_decode('Descrição'),1,0,'C');
+            $pdf->SetFont('Arial','',12);
+            $pdf->Ln();
+    
+            foreach($dados['equipamentos'] as $equip) {
+    
+            $pdf->Cell(36,10,$equip->num_equipamento,1,0,'');
+            $pdf->Cell(0,10,$equip->descricao_equipamento,1,0,'');
+            $pdf->Ln();
+    
+    
+            }
+    
+            preg_match("/(.*)(?=<hr)/",$interacao->texto_interacao, $texto); //fazendo o parse para pegar o texto antes do <hr>
+    
+            // $texto = strip_tags($texto[0]); //removendo as tags html
+    
+            $pdf->Ln(10);
+            $pdf->SetFont('Arial','B',12);
+            $pdf->Cell(0,10,'Laudo','B',0,'C');
+            $pdf->Ln(5);
+            $pdf->SetFont('Arial','',12);
+            $pdf->WriteHTML(utf8_decode($texto[0]));
+            $pdf->Ln(10);
+            $pdf->Cell(0,1,'','B',0,'C');
+            $pdf->Ln(5);
+            $pdf->SetFont('Arial','B',12);
+            $pdf->Cell(120,10,'Data: ',0,0,'R');
+            $pdf->SetFont('Arial','',12);
+            $pdf->Cell(0,10,$interacao->data_interacao);
+            $pdf->Ln(10);
+            $pdf->SetFont('Arial','B',12);
+            $pdf->Cell(120,10,utf8_decode('Técnico: '),0,0,'R');
+            $pdf->SetFont('Arial','',12);
+            $pdf->Cell(0,10,$interacao->nome_usuario);
+            
+            //header('Content-Type: charset=utf-8');
+    
+    
+            $pdf->Output('I','laudo_tecnico_' . $id_chamado . '.pdf');
+
+            // ------------ LOG -------------------
+
+            $log = array(
+                'acao_evento' => 'GERAR_LAUDO_INSERVIVEL',
+                'desc_evento' => 'ID CHAMADO: ' . $id_chamado . ' - NOME: laudo_tecnico_' . $id_chamado . '.pdf',
+                'id_usuario_evento' => $_SESSION['id_usuario']
+            );
+            
+            $this->db->insert('evento', $log);
+
+            // -------------- /LOG ----------------
   
         }
-  
-        preg_match("/(.*)(?=<hr)/",$interacao->texto_interacao, $texto); //fazendo o parse para pegar o texto antes do <hr>
-  
-        // $texto = strip_tags($texto[0]); //removendo as tags html
-  
-        $pdf->Ln(10);
-        $pdf->SetFont('Arial','B',12);
-        $pdf->Cell(0,10,'Laudo','B',0,'C');
-        $pdf->SetFont('Arial','',12);
-        $pdf->Ln(10);
-        $pdf->Cell(0,10,'Os equipamentos acima foram classificados como INSERVIVEL conforme laudo abaixo:');
-        $pdf->Ln(5);
-        $pdf->WriteHTML(utf8_decode($texto[0]));
-        $pdf->Ln(10);
-        $pdf->Cell(0,1,'','B',0,'C');
-        $pdf->Ln(5);
-        $pdf->SetFont('Arial','B',12);
-        $pdf->Cell(120,10,'Data: ',0,0,'R');
-        $pdf->SetFont('Arial','',12);
-        $pdf->Cell(0,10,$interacao->data_interacao);
-        $pdf->Ln(10);
-        $pdf->SetFont('Arial','B',12);
-        $pdf->Cell(120,10,'Tecnico: ',0,0,'R');
-        $pdf->SetFont('Arial','',12);
-        $pdf->Cell(0,10,$interacao->nome_usuario);
-        
-        //header('Content-Type: charset=utf-8');
-  
-  
-        $pdf->Output('I','laudo_tecnico_' . $id_chamado . '.pdf');
-
-        // ------------ LOG -------------------
-
-        $log = array(
-            'acao_evento' => 'GERAR_LAUDO_INSERVIVEL',
-            'desc_evento' => 'ID CHAMADO: ' . $id_chamado . ' - NOME: laudo_tecnico_' . $id_chamado . '.pdf',
-            'id_usuario_evento' => $_SESSION['id_usuario']
-        );
-        
-        $this->db->insert('evento', $log);
-
-        // -------------- /LOG ----------------
-  
-        
+        else {
+            header('HTTP/1.0 404 Not Found');
+        }
         
     }
 }

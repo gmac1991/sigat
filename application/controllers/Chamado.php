@@ -245,22 +245,16 @@ class Chamado extends CI_Controller {
 		
 		switch ($linha->id_fila_chamado) {
 			case 1:
-				$nome_local .= "<i class=\"fas fa-headset\" title=\"Atendimento Remoto\"></i>";
+        $fila = $this->consultas_model->listaFila(1);
+				$nome_local .= "<i class=\"" . $fila->icone_fila . " title=\"" . $fila->nome_fila ."></i>";
 				break;
 			case 2:
-				$nome_local .=  "<i class=\"fas fa-walking\" title=\"Atendimento Presencial\"></i>";
+				$fila = $this->consultas_model->listaFila(2);
+				$nome_local .= "<i class=\"" . $fila->icone_fila . " title=\"" . $fila->nome_fila ."></i>";
 				break;
 			case 3:
-				$nome_local .=  "<i class=\"fas fa-tools\" title=\"Manutenção de Hardware\"></i>";
-				break;
-			case 4:
-				$nome_local .=  "<i class=\"fas fa-wifi\" title=\"Manutenção de Rede\"></i>";
-				break;
-			case 5:
-				$nome_local .=  "<i class=\"fas fa-phone-alt\" title=\"Telefonia\"></i>";
-				break;
-			case 6:
-				$nome_local .=  "<i class=\"fas fa-hand-holding-medical\" title=\"Solicitação de Equipamento\"></i>";
+				$fila = $this->consultas_model->listaFila(3);
+				$nome_local .= "<i class=\"" . $fila->icone_fila . " title=\"" . $fila->nome_fila ."></i>";
 				break;
 		}
 		

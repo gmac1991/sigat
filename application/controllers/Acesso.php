@@ -168,13 +168,11 @@ if (!isset($_SESSION['id_usuario'])) {
 
       $usuario = $this->usuario_model->buscaUsuario($_SESSION['id_usuario']);
 
+      $id_fila_usuario = $usuario->fila_usuario;
 
-      if (empty($this->consultas_model->listaFila($id_fila))) {
+      $triagem_usuario = $id_fila_usuario = $usuario->triagem_usuario;
 
-        $id_fila = 0;
-      }
-
-      $dados = array("filas" => $lista_filas, "id_fila" => $id_fila, "fila_atual" => $id_fila);
+      $dados = array("filas" => $lista_filas, "fila_usuario" => $id_fila_usuario, "fila_atual" => $id_fila, "triagem_usuario" => $triagem_usuario);
 
       $this->load->view('templates/cabecalho', $usuario);
       $this->load->view('paginas/painel', $dados);

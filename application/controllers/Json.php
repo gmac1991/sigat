@@ -132,7 +132,7 @@ class Json extends CI_Controller {
                     }
                     
                     echo "<a role=\"button\" class=\"btn btn-info mt-2 float-right\" href=\"" 
-                    . base_url('chamado/gerar_laudo/' .$id_chamado) . "\" download>Baixar Laudo Técnico</a>";
+                    . base_url('chamado/gerar_laudo/' .$id_chamado) . "\" download><i class=\"fas fa-file-download\"></i> Laudo Técnico</a>";
                     
                     echo $interacao['texto_interacao'];
         
@@ -203,7 +203,7 @@ class Json extends CI_Controller {
                     }
 
                     echo "<a role=\"button\" class=\"btn btn-info mt-2 float-right\" href=\"" 
-                    . base_url('chamado/gerar_laudo/' .$id_chamado) . "\" download>Baixar Laudo Técnico</a>";
+                    . base_url('chamado/gerar_laudo/' .$id_chamado) . "\" download><i class=\"fas fa-file-download\"></i> Laudo Técnico</a>";
                     
                     echo $interacao['texto_interacao'];
 
@@ -479,7 +479,7 @@ class Json extends CI_Controller {
 
     }
 
-    public function desc_equipamento($e_desc) {
+    public function desc_equipamento($e_desc,$json = TRUE) {
 
         if (isset($_SESSION['id_usuario'])) {
 
@@ -501,15 +501,29 @@ class Json extends CI_Controller {
 
                     $dados['descricao'] = $descSim;
                 }
+
+                else {
+
+                    $dados['descricao'] = NULL;
+
+                }
             }  
             else {
 
                 $dados['descricao'] = $descEquipSigat; //se estiver cadastrado, pega a desc do SIGAT
             }
 
-            header("Content-Type: application/json");
+            if ($json) {
 
-            return json_encode($dados);
+                header("Content-Type: application/json");
+
+                echo json_encode($dados);
+            }
+
+            else {
+                return $dados;
+            }
+            
 
         } else {
             header('HTTP/1.0 403 Forbidden');
@@ -518,13 +532,9 @@ class Json extends CI_Controller {
 
     public function status_equipamento() {
         $statusEquip = $this->equipamento_model->buscaStatusEquipamento($_POST['e_status']);
-        if($statusEquip == NULL) {
-            header("HTTP/1.0 204 No Content");
-        } 
-        else {
-            header("Content-Type: application/json");
-            echo json_encode($statusEquip);
-        }    
+    
+        header("Content-Type: application/json");
+        echo json_encode($statusEquip);
     }
 
     
@@ -617,9 +627,9 @@ class Json extends CI_Controller {
 
             else {
                 $ext_desc = NULL;
-                $ext_desc = $this->desc_equipamento($dados['item']['num_equipamento']);
-                if (json_decode($ext_desc)->descricao !== NULL) {
-                    $dados['item']['descricao_equipamento'] = json_decode($ext_desc)->descricao;
+                $ext_desc = $this->desc_equipamento($dados['item']['num_equipamento'],FALSE);
+                if ($ext_desc['descricao'] !== NULL) {
+                    $dados['item']['descricao_equipamento'] = $ext_desc['descricao'];
                 }
 
                 $dados['item']['tag_equipamento'] = $tag_equipamento;
@@ -798,47 +808,65 @@ class Json extends CI_Controller {
 
             $id_usuario = $this->input->post('id_usuario');
             $id_chamado = $this->input->post('id_chamado');
+            $auto_usuario = $this->input->post('auto_usuario');
             $tipo = $this->input->post('tipo');
 
-        
+            $chamado = $this->db->query("select id_usuario_responsavel_chamado from chamado where id_chamado = " . $id_chamado);
+            $id_responsavel = $chamado->row()->id_usuario_responsavel_chamado;
+            
 
             if ($tipo == 'b') {
 
-                $busca = $this->db->query("UPDATE chamado set id_usuario_responsavel_chamado = " . $id_usuario .
-                " WHERE id_chamado = " . $id_chamado);
+                //var_dump($id_responsavel);
 
-                // ------------ LOG -------------------
+                if ($id_responsavel === NULL) {
+                    $this->db->query("UPDATE chamado set id_usuario_responsavel_chamado = " . $id_usuario .
+                                             " WHERE id_chamado = " . $id_chamado);
 
-                $log = array(
-                    'acao_evento' => 'BLOQUEAR_CHAMADO',
-                    'desc_evento' => 'ID CHAMADO: ' . $id_chamado,
-                    'id_usuario_evento' => $_SESSION['id_usuario']
-                );
-                
-                $this->db->insert('evento', $log);
+                    // ------------ LOG -------------------
+                    $log = array(
+                        'acao_evento' => 'BLOQUEAR_CHAMADO',
+                        'desc_evento' => 'ID CHAMADO: ' . $id_chamado,
+                        'id_usuario_evento' => $_SESSION['id_usuario']
+                    );
+                    $this->db->insert('evento', $log);
 
-                // -------------- /LOG ----------------
-
+                    // -------------- /LOG ----------------
+                    echo NULL;
+                }
+                else {
+                    $nome_responsavel = $this->db->query("select nome_usuario from usuario where id_usuario = " . $id_responsavel)->row()->nome_usuario;
+                    echo $nome_responsavel;
+                }
             } else {
 
-                $busca = $this->db->query("UPDATE chamado set id_usuario_responsavel_chamado = NULL WHERE id_chamado = " . $id_chamado . " and status_chamado = 'ABERTO'");
-                
-                // ------------ LOG -------------------
+                if ($id_responsavel === $id_usuario || $auto_usuario >= 3) {
 
-                $log = array(
-                    'acao_evento' => 'DESBLOQUEAR_CHAMADO',
-                    'desc_evento' => 'ID CHAMADO: ' . $id_chamado,
-                    'id_usuario_evento' => $_SESSION['id_usuario']
-                );
-                
-                $this->db->insert('evento', $log);
+                    $desbloqueio = $this->db->query("UPDATE chamado set id_usuario_responsavel_chamado = NULL WHERE id_chamado = " . $id_chamado . " and status_chamado = 'ABERTO'");
+                    
+                    if($desbloqueio) {
 
-                // -------------- /LOG ----------------
+                        // ------------ LOG -------------------
+
+                        $log = array(
+                            'acao_evento' => 'DESBLOQUEAR_CHAMADO',
+                            'desc_evento' => 'ID CHAMADO: ' . $id_chamado,
+                            'id_usuario_evento' => $_SESSION['id_usuario']
+                        );
+                        
+                        $this->db->insert('evento', $log);
+
+                        // -------------- /LOG ----------------
+
+                        header('HTTP/1.0 200 OK');
+                    }
+                    else {
+                        header('HTTP/1.0 403 Forbidden');
+                    }
+                }
+                
             }
 
-            if (!$busca) {
-                echo FALSE;
-            }
 
         } else {
             header('HTTP/1.0 403 Forbidden');
@@ -863,7 +891,7 @@ class Json extends CI_Controller {
 
             $result = $busca->row_array();
 
-           // $result['texto_interacao'] = strip_tags($result['texto_interacao']);
+            $result['texto_interacao'] = strip_tags($result['texto_interacao']);
 
 
             header("Content-Type: application/json");

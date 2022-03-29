@@ -59,7 +59,8 @@
                     <button id="btnDesbloquearChamado" class="btn btn-sm btn-primary" style="display:none"><i class="fas fa-unlock"></i> Desbloquear</button>
                 </div>
                  
-                <h3><?= $chamado->ticket_chamado ?> <small>(#<?= $chamado->id_chamado ?>)</small></h3>
+                <h3><?= $chamado->ticket_chamado ?> <small>(#<?= $chamado->id_chamado ?>)&nbsp;<div class="spinner-border spinner-border-sm" role="status" id="spnStatusChamado" style="display: none;"><span class="sr-only">Loading...</span></div></small></h3>
+                
                   
             </div>
             

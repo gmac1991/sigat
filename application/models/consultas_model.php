@@ -115,15 +115,12 @@ class Consultas_model extends CI_Model {
         
     }
 
-    public function listaFila($id_fila = NULL) {
+    public function listaFila($id_fila) {
         
         $this->db->select();
         $this->db->from('fila');
-        if ($id_fila != NULL) {
-            $this->db->where('id_fila = '. $id_fila);
-        }
-        
-        return $this->db->get()->result_array();
+        $this->db->where("id_fila = " . $id_fila);
+        return $this->db->get()->row();
         
     }
     
