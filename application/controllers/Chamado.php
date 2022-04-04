@@ -292,23 +292,22 @@ class Chamado extends CI_Controller {
   
   
 
-  public function listar_encerrados_painel($id_fila) {
+  public function listar_encerrados_painel() {
 
-    $result_banco = $this->consultas_model->listaEncerrados($id_fila);
+    $result_banco = $this->consultas_model->listaEncerrados();
     $lista_painel['data'] = array();
 
     foreach ($result_banco as $linha) {
 
       $lista_painel['data'][] = array(0 => $linha->id_chamado,
-                              1 => $linha->nome_solicitante_chamado,
-                              2 => $linha->nome_local,
-                              3 => $linha->data_chamado,
-                              4 => $linha->nome_responsavel,
-                              5 => $linha->status_chamado,
-							  6 => "", // ultima interacao
-                              7 => "<a href=\"" . base_url('chamado/' . $linha->id_chamado) . "\" rel=\"noopener\" target=\"_blank\" role=\"button\"" .
-                            " class=\"d-block btn btn-sm btn-info\"><i class=\"fas fa-search\"></i> Detalhes</a>"); //detalhes
-
+                              1 => $linha->ticket_chamado,
+                              2 => $linha->nome_solicitante_chamado,
+                              3 => $linha->nome_local,
+                              4 => $linha->data_chamado,
+                              5 => $linha->data_alt_chamado,
+                              6 => $linha->nome_responsavel,
+                              7 => $linha->nome_fila,
+                            );
     }
 
     header('Content-Type: application/json');

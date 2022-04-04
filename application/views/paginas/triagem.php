@@ -109,17 +109,18 @@
 <div id="divTriagem" class="container py-2">
    <div class="row">
       <div class="col-8">
-         <h3><?= $triagem->ticket_triagem; ?></h3>
+         <h3 ><?= $triagem->ticket_triagem; ?></h3>
       </div>
       <div class="col-4 text-right">
          <button type="button" class="btn btn-warning" id="btnDevolveChamado" data-toggle="modal" data-target="#modalDevolucao"><i class="fas fa-file-upload"></i> Devolver ao OTRS</button>
       </div>
    </div>
+   <hr id="header_triagem" />
    <form enctype="multipart/form-data" method="post" id="frmImportarChamado" class="mb-5">
       <div class="row">
          <div class="form-group col">
             <div id="descricao_triagem" class="border rounded p-2 overflow-auto" 
-               style="max-height: 450px;"></div>
+               style="max-height: 450px;"><div class="d-flex align-items-center"><strong>Carregando..</strong><div class="spinner-border ml-auto" role="status" aria-hidden="true"></div></div></div>
          </div>
       </div>
       <div class="row">
@@ -145,7 +146,7 @@
       </div>
       
   
-      <div class="row">
+      <div class="row" id="linhaInfoTriagem">
          <div class="form-group col">
             <p class="h5"><i class="fas fa-info-circle"></i> Informações</p>
             <hr>

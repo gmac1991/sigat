@@ -27,3 +27,17 @@
     cursor: pointer;
     background-color: bisque;
 }
+
+#tblEncerrados tbody tr:hover {
+    cursor: pointer;
+    background-color: bisque;
+}
+#tblEncerrados td, th {
+	font-size: 0.90rem;
+} 
+
+div.diff {
+
+    background-color: #FFF9D3;
+    
+}

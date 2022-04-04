@@ -32,10 +32,10 @@
 							<th>Ticket</th>
 							<th>Solicitante</th>
 							<th>Local</th>
-							<th>Data de abertura</th>
-							<th>Responsável</th>		
-							<th>Status</th>
-							<th>&nbsp;</th>
+							<th>Abertura</th>
+							<th>Encerramento</th>
+							<th>Responsável</th>
+							<th>Fila</th>	
 						</tr>
 						</thead>
 					</table>

@@ -203,15 +203,15 @@ class Chamado_model extends CI_Model {
                 $novo_nome_responsavel = $this->db->query('select nome_usuario from usuario where id_usuario = ' . $dados['id_responsavel'])->row()->nome_usuario;
 
                 if ($chamado_original->id_usuario_responsavel_chamado != NULL) { 
-                    $texto_alteracao .= '<p>Foi alterado o responsável de <strong>' . $chamado_original->nome_responsavel . '</strong>';
-                    $texto_alteracao .= ' para <strong>' . $novo_nome_responsavel . '</strong></p>';
+                    $texto_alteracao .= 'alterou o responsável de <strong>' . $chamado_original->nome_responsavel . '</strong>';
+                    $texto_alteracao .= ' para <strong>' . $novo_nome_responsavel . '</strong>';
 
                 }
 
                 else { //se a alteracao do responsavel for de NULL para algum valor...
 
-                    $texto_alteracao .= '<p>Foi alterado o responsável';
-                    $texto_alteracao .= ' para <strong>' . $novo_nome_responsavel . '</strong></p>';
+                    $texto_alteracao .= 'alterou o responsável';
+                    $texto_alteracao .= ' para <strong>' . $novo_nome_responsavel . '</strong>';
                 }
                 
                 

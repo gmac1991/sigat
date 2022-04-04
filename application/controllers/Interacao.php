@@ -217,7 +217,7 @@ class Interacao extends CI_Controller {
         $pdf->Cell(140,8,'(nome por extenso ou assinatura e carimbo)',0,0,'C');
         $pdf->Ln(10);
         $pdf->SetFont('Arial','B',12);
-        $pdf->Cell(30,10,'Entregue por ' . $nome_usuario_atual);
+        $pdf->Cell(30,10,'Entregue por ' . utf8_decode($nome_usuario_atual));
        
         $pdf->Ln(15);
         $pdf->SetFont('Arial','B',12);
@@ -304,12 +304,12 @@ class Interacao extends CI_Controller {
 
         $pdf->Ln(10);
         $pdf->SetFont('Arial','B',12);
-        $pdf->Cell(30,10,'Responsavel: ');
+        $pdf->Cell(utf8_decode(30,10,'Responsável: '));
         $pdf->SetFont('Arial','',12);
         $pdf->Cell(120,8,'','B',1);
         $pdf->Ln(0);
         $pdf->SetFont('Arial','I',10);
-        //$pdf->SetX(-20);
+        
         $pdf->Ln(0);
         $pdf->Cell(140,8,'(nome por extenso ou assinatura e carimbo)',0,0,'C');
         $pdf->Ln(15);
@@ -394,7 +394,7 @@ class Interacao extends CI_Controller {
     
             preg_match("/(.*)(?=<hr)/",$interacao->texto_interacao, $texto); //fazendo o parse para pegar o texto antes do <hr>
     
-            // $texto = strip_tags($texto[0]); //removendo as tags html
+            $texto = strip_tags($texto[0]); //removendo as tags html
     
             $pdf->Ln(10);
             $pdf->SetFont('Arial','B',12);
@@ -413,7 +413,7 @@ class Interacao extends CI_Controller {
             $pdf->SetFont('Arial','B',12);
             $pdf->Cell(120,10,utf8_decode('Técnico: '),0,0,'R');
             $pdf->SetFont('Arial','',12);
-            $pdf->Cell(0,10,$interacao->nome_usuario);
+            $pdf->Cell(0,10,utf8_decode($interacao->nome_usuario));
             
             //header('Content-Type: charset=utf-8');
     

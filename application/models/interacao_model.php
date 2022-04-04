@@ -284,10 +284,10 @@ class Interacao_model extends CI_Model {
                " and (status_equipamento_chamado = 'ABERTO' or status_equipamento_chamado = 'ESPERA')")->num_rows();
 
          $equip_entregues = $this->db->query("select * from equipamento_chamado where id_chamado_equipamento = " . $dados['id_chamado'] .
-         " and status_equipamento = 'ENTREGA'")->result();
+         " and status_equipamento_chamado = 'ENTREGA'")->result();
 
          $equip_restantes = $this->db->query("select num_equipamento_chamado from equipamento_chamado where id_chamado_equipamento = " . $dados['id_chamado'] .
-               " and status_equipamento = 'ABERTO'")->num_rows();
+               " and status_equipamento_chamado = 'ABERTO'")->num_rows();
 
          
          $this->db->query("insert into termo values(NULL,'" . $dados['nome_termo_entrega'] . "', 'E', NOW()," .  $dados['id_chamado'] . ")");  // registrando o Termo de Entrega
@@ -322,12 +322,12 @@ class Interacao_model extends CI_Model {
             // -------------- /LOG ----------------
 
             $dados['texto'] .= "<a role=\"button\" class=\"btn btn-info float-right mt-2\" href=\"" . base_url('termos/' .
-            $dados['nome_termo_responsabilidade']) . "\" download><i class=\"fas fa-file-download\"></i> Baixar Termo de Responsabilidade</a>";
+            $dados['nome_termo_responsabilidade']) . "\" download><i class=\"fas fa-file-download\"></i> Termo de Responsabilidade</a>";
          }
          
          
          $dados['texto'] .= "<a role=\"button\" class=\"btn btn-info float-right mt-2\" href=\"" . base_url('termos/' . 
-         $dados['nome_termo_entrega']) . "\" download><i class=\"fas fa-file-download\"></i> Baixar Termo de Entrega</a>";
+         $dados['nome_termo_entrega']) . "\" download><i class=\"fas fa-file-download\"></i> Termo de Entrega</a>";
 
          $dados['texto'] .= "<p class=\"m-0\">Os equipamentos foram entregues:</p>";
 
@@ -535,8 +535,6 @@ class Interacao_model extends CI_Model {
       $chamado = $this->db->get_where('chamado', array('id_chamado' => $interacao->id_chamado_interacao))->row();
 	  
 	   $pool_equips = explode("::",$interacao->pool_equipamentos);
-
-      //var_dump($pool_equips);
 
       switch ($interacao->tipo_interacao) {
 
@@ -750,14 +748,14 @@ class Interacao_model extends CI_Model {
             if (!empty($pool_equips)) {
                foreach ($pool_equips as $num_equip) { //patrimonios[0] é o vetor com a lista de patrimonios da interacao
                   $this->db->query("update equipamento_chamado set status_equipamento_chamado = 'ENTREGA'" .
-                  " where num_equipamento_chamado = " . $num_equip . 
-                  " and status_equipamento_chamado = 'ENTREGUE'" .
+                  " where num_equipamento_chamado = '" . $num_equip . 
+                  "' and status_equipamento_chamado = 'ENTREGUE'" .
                   " and id_chamado_equipamento = " . $interacao->id_chamado_interacao);
 
                   // ------------ LOG -------------------
 
                   $log = array(
-                     'acao_evento' => 'DESFAZER_ENTREGA_equipamento',
+                     'acao_evento' => 'DESFAZER_ENTREGA_EQUIP',
                      'desc_evento' => 'ID CHAMADO: ' . $interacao->id_chamado_interacao . " - NUM: " . $num_equip,
                      'id_usuario_evento' => $_SESSION['id_usuario']
                      );
@@ -768,11 +766,7 @@ class Interacao_model extends CI_Model {
                }
 
             }
-            
-            //equipamentos sem patrimonio
-            $this->db->query("update equipamento_chamado set status_equipamento = 'ENTREGA'" .
-            " where status_equipamento = 'ENTREGUE'" .
-            " and id_chamado_equipamento = " . $interacao->id_chamado_interacao);
+           
 
             if ($this->db->affected_rows() > 0) { // se equip. sem patrimonio foram modificados..
                

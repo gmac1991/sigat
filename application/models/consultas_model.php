@@ -74,28 +74,30 @@ class Consultas_model extends CI_Model {
     
 	
 	
-    public function listaEncerrados($id_fila) {
+    public function listaEncerrados() {
 
-        $q = "select id_chamado, nome_solicitante_chamado, 
-        (select nome_local from local where id_local = id_local_chamado) as nome_local, 
-        DATE_FORMAT(data_chamado, \"%d/%m/%Y - %H:%i:%s\") as data_chamado, 
-        (select usuario.nome_usuario 
-        from usuario where usuario.id_usuario = chamado.id_usuario_responsavel_chamado) as nome_responsavel, 
-        status_chamado from chamado where status_chamado = 'ENCERRADO'";
+        $q = "SELECT id_chamado,ticket_chamado, nome_solicitante_chamado, 
+        (SELECT nome_local FROM LOCAL WHERE id_local = id_local_chamado) AS nome_local, 
+        DATE_FORMAT(data_chamado, \"%d/%m/%Y - %H:%i:%s\") AS data_chamado,
+        (SELECT DATE_FORMAT(data_alteracao, \"%d/%m/%Y - %H:%i:%s\") FROM alteracao_chamado WHERE id_chamado_alteracao = id_chamado ORDER BY data_alteracao desc LIMIT 1) AS data_alt_chamado,
+        (SELECT usuario.nome_usuario FROM usuario WHERE usuario.id_usuario = chamado.id_usuario_responsavel_chamado) AS nome_responsavel, 
+        (SELECT nome_fila FROM fila WHERE id_fila = chamado.id_fila_chamado) AS nome_fila 
+        FROM chamado
+        WHERE status_chamado = 'ENCERRADO'";
 
-        if ($id_fila > 0 ) {
+        // if ($id_fila > 0 ) {
 
-            if ($id_fila == 6) {
-                $q .= " and id_fila_chamado = 3";
+        //     if ($id_fila == 6) {
+        //         $q .= " and id_fila_chamado = 3";
 
-                $q .= " and entrega_chamado = 1";
-            } else {
+        //         $q .= " and entrega_chamado = 1";
+        //     } else {
 
-                $q .= " and id_fila_chamado = " . $id_fila;
-            }
-        }
+        //         $q .= " and id_fila_chamado = " . $id_fila;
+        //     }
+        // }
 
-        $q .= ' order by data_chamado';
+        // $q .= ' order by data_chamado';
         
         
         
@@ -141,6 +143,16 @@ class Consultas_model extends CI_Model {
         $this->db->order_by('nome_local');
         return $this->db->get()->result_array();
         
+    }
+
+    public function buscaGrupo($auto) {
+
+        $this->db->select();
+        $this->db->from('grupo');
+        $this->db->where('autorizacao_grupo = ' . $auto);
+        return $this->db->get()->row();
+
+
     }
     
     

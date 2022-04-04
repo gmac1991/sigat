@@ -5,26 +5,18 @@
 $versao = $this->config->item('versao');
 $amb = ENVIRONMENT;
 
+$grupo = $this->consultas_model->buscaGrupo($autorizacao_usuario);
+
+
 echo '<div class="navbar bg-dark text-light fixed-bottom">' .
       '<div class="text-right w-100 h-auto"><small>';
 
 if (isset($_SESSION['id_usuario'])) { 
 
-  echo '<p class="d-inline">Perfil: ';
+  echo '<p class="d-inline">Grupo: ';
 
-  if ($autorizacao_usuario == 2) {
-
-    echo '<span class="badge badge-primary">Técnico</span>';
-  }
-  elseif ($autorizacao_usuario == 3) {
-
-    echo '<span class="badge badge-success">Administrador</span>';
-  }
-
-  elseif ($autorizacao_usuario == 4) {
-    echo '<span class="badge badge-danger">Master</span>';
+  echo '<span class="badge badge-' . $grupo->cor_grupo .'">' . $grupo->nome_grupo . '</span>';
   
-  }
   echo " | Ambiente: " . $amb;
   echo " | Versão: " . $versao . "</p></small></div></div>";
   
@@ -33,10 +25,6 @@ if (isset($_SESSION['id_usuario'])) {
   echo "<script type=\"text/javascript\">const g_auto_usuario = " . $autorizacao_usuario . "</script>";
   echo "<script type=\"text/javascript\">const g_fila_usuario = " . $fila_usuario . "</script>";
 }
-
-// if (isset($filas) && !isset($chamado)) { 
-//   echo "<script type=\"text/javascript\">precisaPatrimonio(" .  $filas[0]['id_fila'] .")</script>"; 
-// } 
  
 if (isset($chamado)) { 
  
@@ -61,7 +49,7 @@ if (isset($triagem)) {
   <script src="<?= base_url("js/jquery.validate.min.js") ?>"></script>
   <script src="<?= base_url("summernote/summernote-bs4.min.js") ?>"></script>
   <script src="<?= base_url("summernote/lang/summernote-pt-BR.js") ?>"></script>
-  <script type="text/javascript" src="<?= base_url("js/jsgrid.min.js"); ?>"></script>
+  <script src="<?= base_url("js/jsgrid.min.js"); ?>"></script>
   <script src="<?= base_url("fa/js/all.min.js")?>"></script>
   <script src="<?= base_url("js/moment.min.js")?>"></script>
   <script src="<?= base_url("js/principal.js")?>"></script>

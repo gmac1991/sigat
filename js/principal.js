@@ -81,6 +81,8 @@ $(function() {
     // TRIAGEM
     triagem(); //incializa o painel de triagem
 
+    painelEncerrados();
+
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
     const view = urlParams.get('v');
@@ -88,6 +90,11 @@ $(function() {
     if (view == 'triagem') {
 
         $('#triagem-tab').tab('show');
+    }
+
+    if (view == 'encerrados') {
+
+        $('#encerrados-tab').tab('show');
     }
 
 
@@ -111,9 +118,7 @@ $(function() {
 });
 
 
-// --------------- PAINEL ---------------------------
-
-var enc = false
+// --------------- PAINEL CHAMADOS ---------------------------
 
 var table_painel = null;
 
@@ -123,15 +128,7 @@ function painel(id_fila) {
 
     table_painel = $('#tblPainel').DataTable({ //  inicializacao do painel
 
-        "rowClick": function(args) {
-            
-            //$linha = this.rowByItem(args.item)
-
-            document.location.href = base_url;
-            
-        },
-        
-        "autoWidth": false,
+        "autoWidth": true,
 
         "columnDefs": [{
             "orderable": false,
@@ -192,8 +189,6 @@ function painel(id_fila) {
                     dataType: 'json',
                     success: interacao => {
 
-                        console.log(interacao);
-
                         $(this).popover({
                             content: interacao.nome_usuario + interacao.texto_interacao,
                             trigger: 'focus',
@@ -216,19 +211,9 @@ $('#tblPainel').on('click', 'tbody tr', function () {
 
 
 function mudaFila(p_id_fila) { //troca de fila no painel => destroi o painel e reconstroi no onChange do $('#slctFila')
-
-    if (enc === true) {
-
-        $('#tblPainel').DataTable().clear().ajax.url(base_url + 'chamado/listar_encerrados_painel/' + p_id_fila).load();
-
-    } else {
-
-        //$('#tblPainel').DataTable().clear().draw();
-        
-        $('#tblPainel').DataTable().ajax.url(base_url + 'chamado/listar_chamados_painel/' + p_id_fila).load();
-
-    }
-
+  
+    $('#tblPainel').DataTable().ajax.url(base_url + 'chamado/listar_chamados_painel/' + p_id_fila).load();
+    
 }
 
 setInterval(function() { //atualiza o painel de chamados
@@ -239,33 +224,61 @@ setInterval(function() { //atualiza o painel de chamados
 
 }, 30000);
 
+// --------------- PAINEL ENCERRADOS ---------------------------
 
-function painelEncerrados(id_fila) {
-
-    if (enc === false) {
-        $('#slctFila').val(0);
-
-        $('#btnChamados').html('<i class="fas fa-binoculars"></i> Chamados Abertos');
-
-        $('#tituloPainel').append(' (encerrados)');
-        $('#tblPainel').DataTable().ajax.url(base_url + 'chamado/listar_encerrados_painel/' + id_fila).load();
-        enc = true;
-
-    } else {
-        $('#slctFila').val(0);
-
-        $('#btnChamados').html('<i class="fas fa-binoculars"></i> Chamados Encerrados');
-        $('#tituloPainel').html('Painel de chamados');
-        $('#tblPainel').DataTable().ajax.url(base_url + 'chamado/listar_chamados_painel/' + id_fila).load();
-        enc = false;
-    }
+var table_encerrados = null;
 
 
+function painelEncerrados() {
 
+    table_encerrados = $('#tblEncerrados').DataTable({ //  inicializacao do painel
 
+        "autoWidth": true,
+
+        "language": {
+            "decimal": "",
+            "emptyTable": "Sem resultados.",
+            "info": "Mostrando _START_ a _END_ de _TOTAL_ chamados",
+            "infoEmpty": "Mostrando 0 a 0 de 0 chamados",
+            "infoFiltered": "(filtrado de _MAX_ chamados)",
+            "infoPostFix": "",
+            "thousands": ".",
+            "lengthMenu": "Mostrando _MENU_ chamados",
+            "loadingRecords": "Carregando...",
+            "processing": "Processando...",
+            "search": "Busca:",
+            "zeroRecords": "Sem resultados!",
+            "paginate": {
+                "first": "Primeiro",
+                "last": "Último",
+                "next": "Próximo",
+                "previous": "Anterior"
+            },
+        },
+
+        "ajax": base_url + 'chamado/listar_encerrados_painel/',
+
+        "order": [],
+
+        "processing": true,
+
+    });
 }
 
+
+$('#tblEncerrados').on('click', 'tbody tr', function () {
+    var row = table_encerrados.row($(this)).data();
+    window.open(base_url + 'chamado/' + row[0]);
+  });
+
+
+
+
+
+
 table_triagem = null;
+
+
 
 // ------------  PAINEL TRIAGEM
 
@@ -703,14 +716,15 @@ async function carregaHistorico(p_id_chamado) {
     
 }
 
-
-
-
 var item_antigo = null;
 
 var entrega = null;
 
 var botoes = "";
+
+var p_id_responsavel = null;
+
+var status_chamado = null;
 
 async function carregaChamado(p_id_chamado, sem_equipamentos) {
 
@@ -718,7 +732,7 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
 
     document.title = "#" + p_id_chamado + " - SIGAT";
 
-    var p_id_responsavel = null;
+    p_id_responsavel = null;
     
     $("#spnStatusChamado").fadeIn();
     
@@ -905,8 +919,14 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
     });
 
     $('#botoesAtendimento').html("");
+    $('#btnBloquearAtendimento').removeAttr("disabled");
+
+    botoes = "";
 
     $('#botoesChamado hr').hide();
+
+   var status_equips = [];
+   var id_responsavel = null;
 
     await $.ajax({
         url: base_url + 'json/chamado',
@@ -940,42 +960,24 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
 
             fila_atual = data.id_fila; //variavel global fila_atual
             entrega = data.entrega_chamado;
+            status_chamado = data.status_chamado;
+
+            
 
 
             for (var i = 0; i < data.status_equipamentos.length; ++i) {
 
-                var status = data.status_equipamentos[i].status_equipamento_chamado;
+                status_equips.push(data.status_equipamentos[i].status_equipamento_chamado);
    
-                if ((status == 'ABERTO' || status == 'ESPERA' || status == 'FALHA')) {
-
-                        botoes = "<button type=\"button\" id=\"btnModalRegistro\" class=\"btn btn-primary\"" +
-                        " data-toggle=\"modal\" data-target=\"#modalRegistro\" data-chamado=\"" + data.id_chamado +
-                        "\"><i class=\"fas fa-asterisk\"></i> Nova Ação</button> ";
-
-                        break;
-                }
+               
             }
 
 
             // -------------------- PERMISSOES ----------------------------
             
-            if ((entrega == 1) && data.status_chamado == 'ABERTO' ) {
-
-                botoes = botoes +  "<button type=\"button\" id=\"btnModalRegistroEntrega\" class=\"btn btn-success\" data-toggle=\"modal\" data-chamado=\"" +
-                                    data.id_chamado + "\" data-target=\"#modalRegistroEntrega\"><i class=\"fas fa-file-signature\"></i> Registrar entrega</button> " +
-                                    "<a href=\"" + base_url + "chamado/gerar_termo/" +
-                                    data.id_chamado + "\" id=\"baixarTermoEntrega\" role=\"button\" class=\"btn btn-info\">" +
-                                    "<i class=\"fas fa-file-download\"></i> Termo de Entrega</a> " +
-                                    "<a href=\"" + base_url + "chamado/gerar_termo_resp/" +
-                                    + data.id_chamado + "\" id=\"baixarTermoResp\" role=\"button\" class=\"btn btn-info\">" +
-                                    "<i class=\"fas fa-file-download\"></i> Termo de Responsabilidade</a>"
             
-            }
 
             if (data.id_responsavel == g_id_usuario) {
-
-
-                $('#botoesAtendimento').html(botoes);
 
                 tblEquipsChamado.option("editing",true);
                 tblEquipsChamado.option("inserting",true);
@@ -996,16 +998,8 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
                     tblEquipsChamado.fieldOption(1,"readOnly",false);
                     tblEquipsChamado.fieldOption(4,"deleteButton",true);
                 }
-            
-                
-
-
-    
-
             }
-            
-            
-                    
+           
             
             if (g_auto_usuario > 3 && data.status_chamado == 'FECHADO') { //somente ADM+ encerra o chamado
 
@@ -1014,8 +1008,6 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
                     $('#botoesAtendimento').prepend(
                         '<button id="btnEncerrarChamado" onclick="encerrarChamado()" class="btn btn-success"><i class=\"far fa-check-circle\"></i> Encerrar chamado</button>');
                 };
-                //$('#btnReabrirChamado').show();
-
             }
 
             if (data.status_chamado != 'ABERTO') { //se o chamado não estiver ABERTO, remover o botao Registrar Atendimento e Editar Chamado
@@ -1074,8 +1066,39 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
         }
     });
 
-    $("#spnStatusChamado").fadeOut();
+    if ((entrega == 1) && status_chamado == 'ABERTO' ) {
 
+               
+
+        botoes = botoes +  "<button type=\"button\" id=\"btnModalRegistroEntrega\" class=\"btn btn-success\" data-toggle=\"modal\" data-chamado=\"" +
+                            p_id_chamado + "\" data-target=\"#modalRegistroEntrega\"><i class=\"fas fa-file-signature\"></i> Registrar Entrega</button> " +
+                            "<a href=\"" + base_url + "chamado/gerar_termo/" +
+                            p_id_chamado + "\" id=\"baixarTermoEntrega\" role=\"button\" class=\"btn btn-info\">" +
+                            "<i class=\"fas fa-file-download\"></i> Termo de Entrega</a> " +
+                            "<a href=\"" + base_url + "chamado/gerar_termo_resp/" +
+                            + p_id_chamado + "\" id=\"baixarTermoResp\" role=\"button\" class=\"btn btn-info\">" +
+                            "<i class=\"fas fa-file-download\"></i> Termo de Responsabilidade</a>"
+    
+    }
+
+    for (var i = 0; i < status_equips.length; ++i) {
+
+        if ((p_id_responsavel == g_id_usuario && 
+            (status_equips[i] == 'ABERTO' || status_equips[i] == 'ESPERA' || status_equips[i] == 'FALHA'))) {
+
+            botoes = "<button type=\"button\" id=\"btnModalRegistro\" class=\"btn btn-primary\"" +
+            " data-toggle=\"modal\" data-target=\"#modalRegistro\" data-chamado=\"" + p_id_chamado +
+            "\"><i class=\"fas fa-asterisk\"></i> Nova Ação</button> ";
+    
+            break;
+        }
+
+       
+    }
+
+    $('#botoesAtendimento').html(botoes);
+
+    $("#spnStatusChamado").fadeOut();
 
 }
 
@@ -1576,6 +1599,7 @@ $('#btnEditarChamado').on('click', function(e) {
                 $('#frmEditarChamado button[type=submit]').removeAttr('hidden');
                 $('#frmEditarChamado button[type=submit]').removeAttr("disabled");
                 $('#frmEditarChamado #btnCancelarEdicao').removeAttr('hidden');
+                $('#btnDesbloquearChamado').removeAttr('disabled');
 
             } else {
 
@@ -2144,10 +2168,15 @@ $("#tblAnexos").jsGrid({
     }
 });
 
+var agrupamento = false;
+var diffDesc = null
+
 async function carregaTriagem(p_id_triagem) {
 
+    var desc_triagem = null;
 
-    $('div[name=descricao_triagem]').html('<div class="d-flex align-items-center"><strong>Carregando..</strong><div class="spinner-border ml-auto" role="status" aria-hidden="true"></div></div>');
+
+    //$('div[name=descricao_triagem]').html('');
 
     //traz os dados do chamado MIGRADO (OTRS)
 
@@ -2155,6 +2184,9 @@ async function carregaTriagem(p_id_triagem) {
 
     var p_id_responsavel = null;
     var anexos = [];
+
+    $("#linhaInfoTriagem").hide();
+
     await $.ajax({
         url: base_url + 'json/triagem',
         dataType: 'json',
@@ -2164,27 +2196,42 @@ async function carregaTriagem(p_id_triagem) {
         },
         success: function(data) {
 
+            if (data.agrupamento == 1) {
+                $("#header_triagem")
+                .after("<div class=\"alert alert-info\" role=\"alert\">" +
+                "<p class=\"mb-0\"><i class=\"fas fa-info-circle\"></i> Já existe um <a target=\"_blank\" href=\"" + base_url + "chamado/" + data.chamado.id_chamado + 
+                "\" class=\"alert-link\">chamado aberto<sup><i class=\"fas fa-external-link-square-alt\"></i></sup></a> para este ticket! Caso seja feita a importação, as novas informações serão agrupadas nele.</p></div>");
+            
+                agrupamento = true;
+                diffDesc = data.diff;
+
+                $("#linhaInfoTriagem").html("");
+            }
+
+
+            $("#linhaInfoTriagem").show();
             //preencher os campos conforme o json
 
             $('input[name=nome_solicitante]').val(data.triagem.nome_solicitante_triagem);
             $('input[name=id_triagem]').val(p_id_triagem);
-            $('#descricao_triagem').html(UTF8.decode(data.triagem.descricao_triagem));
+            desc_triagem = data.triagem.descricao_triagem;
 
+            
             if (data.anexos_otrs.length > 0) {
 
                 data.anexos_otrs.forEach(function(item){
                     anexos.push({id_anexo_otrs:item.id_anexo_otrs,nome_arquivo_otrs:item.nome_arquivo_otrs})
 
-                })
-
-                
-               
-                
-            }
-
-            
-        }
+                })   
+            }            
+        },
     });
+
+    if (!agrupamento) {
+        desc_triagem = UTF8.decode(desc_triagem)
+    }
+
+    $('#descricao_triagem').html(desc_triagem);
 
     verificaAutoEquip();
     $("#tblAnexos").jsGrid("option","data",anexos);
@@ -2218,7 +2265,7 @@ async function verificaStatusEquip(p_e) {
         .done(function( res ) {
             out = res;
         });
-    return JSON.parse(out);
+    return out;
 }
 
 async function verificaDescEquip(p_e) {
@@ -2239,46 +2286,72 @@ async function verificaAutoEquip() {
     var nums_equip = [];
     var out = [];
     var ocorrencias = [];
-    var textoTriagem = null;
+   
     $("#btnValidaEquip").prop("disabled","true");
     $("#pbEquips").css("width","0%");
-    if (($("#chkSoSelecaoTriagem").is(':checked'))) {
-        textoTriagem = window.getSelection().toString();
-    } else {
-        textoTriagem = $('#descricao_triagem').html();
-    }
-    nums_equip = textoTriagem.match(patrimonio_regex);
-    if (nums_equip.length > 0) {
-        nums_equip = uniq_fast(nums_equip);
+    
+    var textoBase = "";
+    
+    if (agrupamento) {
+
+        var diff_n1 = $('#descricao_triagem').html().match(/<div class="diff">(.*?)<\/div>/g);
+
+        var novo_texto = null
+
+        diff_n1.forEach(function (item) {
+
+            novo_texto = novo_texto + item.match(/<div class="diff">(.*?)<\/div>/g);
+
         
-        percentage = (100*1)/nums_equip.length;
-        total_percentage = 0;
-        for (i=0;i<nums_equip.length;i++) {
+        });
 
-            var status = await verificaStatusEquip(nums_equip[i]);
+        nums_equip = novo_texto.match(patrimonio_regex);
 
-            if (status !== null) {
-                if (status.status_equipamento_chamado !== 'ATENDIDO') {
-                    ocorrencias.push({"Número":nums_equip[i],"Status":status.status_equipamento_chamado,"ID":status.id_chamado,"Ticket":status.ticket_chamado})
-                }
-            }
+        confirmado = true;
+        
+    }
+    else {
+        nums_equip = $('#descricao_triagem').html().match(patrimonio_regex);
+    }
 
+    if (nums_equip !== null) {
+        if (nums_equip.length > 0) {
+            nums_equip = uniq_fast(nums_equip);
             
+            percentage = (100*1)/nums_equip.length;
+            total_percentage = 0;
+            for (i=0;i<nums_equip.length;i++) {
+    
+                var status = await verificaStatusEquip(nums_equip[i]);
+    
+                if (status !== null) {
+                    if (status.status_equipamento_chamado !== 'ATENDIDO') {
+                        ocorrencias.push({"Número":nums_equip[i],"Status":status.status_equipamento_chamado,"ID":status.id_chamado,"Ticket":status.ticket_chamado})
+                    }
+                }
+    
+                
+    
+                var res = await verificaDescEquip(nums_equip[i]);
+    
+    
+                out.push({"Número":nums_equip[i],"Descrição":res.descricao});
+    
+                total_percentage = total_percentage + percentage;
+                $("#pbEquips").css("width",total_percentage+"%");   
+            }
+            $("#tblEquips").jsGrid("option","data",out);
+            g_equips = out;
+            $("#btnValidaEquip").removeAttr("disabled");
+            $("#btnLoteEquip").removeAttr("disabled");
+        } 
+    }
+    else {
 
-            var res = await verificaDescEquip(nums_equip[i]);
-
-            console.log(res);
-
-            out.push({"Número":nums_equip[i],"Descrição":res.descricao});
-
-            total_percentage = total_percentage + percentage;
-            $("#pbEquips").css("width",total_percentage+"%");   
-        }
-        $("#tblEquips").jsGrid("option","data",out);
-        g_equips = out;
         $("#btnValidaEquip").removeAttr("disabled");
-        $("#btnLoteEquip").removeAttr("disabled");
+            $("#btnLoteEquip").removeAttr("disabled");
     } 
+    
 }
 
 
@@ -2317,11 +2390,11 @@ var confirmado = false;
 
 $("#btnValidaEquip").on('click', async function() {
 
-    
 
-    confirmado = false;
+    agrupamento ? confirmado = true : confirmado = false;
 
     $(this).prop("disabled","true");
+    
     
     $("#pbEquips").css("width","0%");  
    
@@ -2345,7 +2418,7 @@ $("#btnValidaEquip").on('click', async function() {
                 }
                 else {
                     var status = await verificaStatusEquip(grid_equips[i].Número);
-                    if (status !== "" && status.status_equipamento_chamado !== 'ATENDIDO') {
+                    if (status !== null && status.status_equipamento_chamado !== 'ATENDIDO') {
                         ocorrencias.push({"Número":grid_equips[i].Número,"Status":status.status_equipamento_chamado,"ID":status.id_chamado,"Ticket":status.ticket_chamado})
                     }
                 }
@@ -2363,7 +2436,7 @@ $("#btnValidaEquip").on('click', async function() {
             $("#pbEquips").css("width",total_percentage+"%"); 
         }
 
-        if (erros.length == 0 && g_equips.length == 0 ) {
+        if (erros.length == 0 && g_equips.length == 0 && agrupamento == false ) {
             $("#tblEquips").jsGrid("option","data",grid_equips); 
             if (ocorrencias.length > 0) {
                 $('#modalOcorrencias').modal('show');
@@ -2388,8 +2461,16 @@ $("#btnValidaEquip").on('click', async function() {
         }
     }
     else {
-        alert("A lista está vazia!");
-        $(this).removeAttr("disabled");
+        if (agrupamento == false) {
+            alert("A lista está vazia!");   
+        }
+        else {
+            $(this).html('<i class="fa fa-check"></i> Confirmado!');
+            $("#btnAlteraEquip").removeAttr("disabled");
+            $("#btnLoteEquip").prop("disabled","true");
+            //$(this).removeAttr("disabled");
+        }
+        
     }
 });
 
@@ -2563,7 +2644,7 @@ $("#frmDevolveChamado").on('submit',function(e) {
                 async: true,
                 method: 'post',
                 data: {
-                    id_triagem: g_id_chamado,
+                    id_triagem: g_id_triagem,
                     desc_devo: txtDescDevo
                 },
                 beforeSend: function() {
@@ -2592,8 +2673,8 @@ $('#frmImportarChamado').on('submit',
 
         e.preventDefault();
 
-    }).validate({
-    rules: {
+    }).validate(agrupamento == true ? {ignore: "*"} : {
+        rules: {
         nome_solicitante: "required",
         nome_local: "required",
         telefone: {
@@ -2603,7 +2684,6 @@ $('#frmImportarChamado').on('submit',
         },
         descricao: {
             required: true,
-            // maxlength: 2000,
             minlength: 10,
             normalizer: function(value) {
                 return $.trim(value);
@@ -2634,6 +2714,7 @@ $('#frmImportarChamado').on('submit',
             required: "Campo obrigatório!",
         }
     },
+    
     submitHandler: function(form) {
         var script_url = base_url + "chamado/importar_chamado";
         var dados = new FormData(form);

@@ -6,7 +6,7 @@ class Json extends CI_Controller {
 
     /*Classe para Respostas às requisições AJAX e outras do Frontend */
 
-    private $tags_permitidas = "<p><br><div><span><style>";
+    private $tags_permitidas = "<p><br><div><span><style><mark>";
 
     function __construct() {
         parent::__construct();
@@ -330,10 +330,6 @@ class Json extends CI_Controller {
             
             $result['descricao_chamado'] = strip_tags($result['descricao_chamado'],$this->tags_permitidas);
 
-            if ($result['id_fila'] == 3 && $result['entrega_chamado'] == 1) {
-                $result['nome_fila_chamado'] = 'Entrega';
-            }
-
             
             $result['status_equipamentos'] = $this->db->query($q_buscaStatusEquipamentos)->result_array();
             
@@ -358,6 +354,8 @@ class Json extends CI_Controller {
 
    
             $q_buscaTriagem = "select * from triagem where id_triagem = " . $id_triagem;
+
+            
 				
 			$q_buscaAnexosOTRS = "select id_anexo_otrs, nome_arquivo_otrs from anexos_otrs
 			where id_triagem_sigat = " . $id_triagem;
@@ -366,8 +364,38 @@ class Json extends CI_Controller {
 
             $result['triagem'] = $this->db->query($q_buscaTriagem)->row_array();
 
-            $result['triagem']['descricao_triagem'] = 
-            strip_tags($result['triagem']['descricao_triagem'],$this->tags_permitidas);
+            $chamado_existente = $this->db->query("select * from chamado 
+                                where ticket_chamado = '" 
+                                . $result['triagem']['ticket_triagem'] . "' 
+                                and status_chamado = 'ABERTO'");
+
+            $diff = "";
+            
+            if ($chamado_existente->num_rows() > 0) {
+                $result['chamado'] = $chamado_existente->row_array();
+                $result['agrupamento'] = 1;
+
+                $this->load->library('simplediff');
+
+                $sd = new SimpleDiff;
+
+                $novo_texto = $result['triagem']['descricao_triagem'];
+                $antigo_texto = $chamado_existente->row()->descricao_chamado;
+                //$novo_texto = $novo_trecho . $antigo_texto;
+                
+                $diff = $sd->htmlDiff($antigo_texto,$novo_texto);
+                //var_dump($diff);
+
+                $result['triagem']['descricao_triagem'] = strip_tags($diff,$this->tags_permitidas);
+            }
+
+            else {
+
+                $result['triagem']['descricao_triagem'] = strip_tags($result['triagem']['descricao_triagem'],$this->tags_permitidas);
+
+            }
+
+           
             
             
             $result['anexos_otrs'] = $this->db->query($q_buscaAnexosOTRS)->result_array();
@@ -381,9 +409,7 @@ class Json extends CI_Controller {
             echo json_encode($result);
         }
 
-        else {
-            header('HTTP/1.0 403 Forbidden');
-        }
+        
     }
 	
 	public function anexo_otrs($id_anexo) {
