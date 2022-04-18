@@ -6,3 +6,4 @@ icon/Thumbs.db
 application/config/config.php
 application/config/database.php
 sessions/*
+application/libraries/mailer.php

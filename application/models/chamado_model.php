@@ -256,20 +256,19 @@ class Chamado_model extends CI_Model {
 
         
 
-        $auto_usuario = $this->db->query('select autorizacao_usuario from usuario where id_usuario = ' 
-                                    . $dados['id_usuario'])->row()->autorizacao_usuario;
+        $usuario = $this->db->query('select autorizacao_usuario, encerramento_usuario from usuario where id_usuario = ' 
+                                    . $dados['id_usuario']);
 
-        if($auto_usuario == 4) {
+
+        if($usuario->row()->autorizacao_usuario >= 3 && $usuario->row()->encerramento_usuario == 1) {
             
             $q_encerraChamado = $this->db->query("update chamado set status_chamado = 'ENCERRADO' where id_chamado = " . $dados['id_chamado']);
 
             if($q_encerraChamado) {
 
                 $this->db->query("insert into interacao values(NULL, 'ENC', NOW(), ' encerrou o chamado'," 
-                . $dados['id_chamado'] . "," . $dados['id_usuario'] . " ,NULL)"); //inserindo a interacao
+                . $dados['id_chamado'] . "," . $dados['id_usuario'] . " ,NULL,NULL)"); //inserindo a interacao
 
-
-                echo '1';
 
                 // ------------ LOG -------------------
 
@@ -291,7 +290,7 @@ class Chamado_model extends CI_Model {
             
         } else {
 
-            return FALSE;
+            header("HTTP/1.1 403 Forbidden");
         }
         
         

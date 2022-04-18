@@ -624,9 +624,18 @@ $('#modalRegistroEntrega').on('show.bs.modal', function(event) {
         "<input onchange=\"verificaEntrega()\" type=\"radio\" value=\"0\" id=\"rdNao\" name=\"confirmaEntrega\" class=\"custom-control-input\">" +
         "<label class=\"custom-control-label\" for=\"rdNao\">Não</label>" +
         "</div>" +
+        "<div id=\"divErroEntrega\" style=\"display: none\">" +
+        "<div class=\"form-group\">" +
+        "<label for=\"txtFalhaEntrega\"><b>Selecione o motivo:</b></label>" +
+        "<select class=\"form-control\" id=\"slcErroEntrega\" onchange=\"verificaEntrega()\">" +
+        "<option value=\"1\">Verificado defeito na instalação</option>" +
+        "<option value=\"2\">Responsável no local ausente</option>" +
+        "</select>" +
+        "</div>" +
+        "</div>" +
         "<div id=\"divFalhaEntrega\" style=\"display: none\">" +
         "<div class=\"form-group\">" +
-        "<label for=\"txtFalhaEntrega\"><b>Descreva o motivo:</b></label>" +
+        "<label for=\"txtFalhaEntrega\"><b>Detalhes:</b></label>" +
         "<textarea class=\"form-control\" id=\"txtFalhaEntrega\" rows=\"3\"></textarea>" +
         "</div>" +
         "</div>" +
@@ -949,7 +958,11 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
             $('input[name=nome_local]').val(data.nome_local);
             $('input[name=id_fila_ant]').val(data.id_fila);
             $('div[name=descricao]').html(data.descricao_chamado);
-            $("#sipLink").attr("href","sip:"+data.telefone_chamado);
+            
+            var telefone = null;
+            data.telefone_chamado.length > 4 ? telefone = "0" + data.telefone_chamado : telefone = data.telefone_chamado;
+
+            $("#sipLink").attr("href","sip:"+telefone);
 
             if (data.id_responsavel == null) {
                 $('select[name=id_responsavel]').empty();
@@ -961,9 +974,6 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
             fila_atual = data.id_fila; //variavel global fila_atual
             entrega = data.entrega_chamado;
             status_chamado = data.status_chamado;
-
-            
-
 
             for (var i = 0; i < data.status_equipamentos.length; ++i) {
 
@@ -1001,20 +1011,21 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
             }
            
             
-            if (g_auto_usuario > 3 && data.status_chamado == 'FECHADO') { //somente ADM+ encerra o chamado
-
-                if (!$('#btnEncerrarChamado').length) {
-
-                    $('#botoesAtendimento').prepend(
-                        '<button id="btnEncerrarChamado" onclick="encerrarChamado()" class="btn btn-success"><i class=\"far fa-check-circle\"></i> Encerrar chamado</button>');
-                };
-            }
+            
 
             if (data.status_chamado != 'ABERTO') { //se o chamado não estiver ABERTO, remover o botao Registrar Atendimento e Editar Chamado
 
                 $('#btnEditarChamado').hide();
                 $('#btnDesbloquearChamado').hide();
                 $('#botoesChamado hr').hide();
+
+                tblEquipsChamado.option("editing",false);
+                tblEquipsChamado.option("inserting",false);
+                tblEquipsChamado.fieldOption(4,"editButton",false);
+                tblEquipsChamado.fieldOption(4,"deleteButton",false);
+                tblEquipsChamado.fieldOption(0,"readOnly",true);
+                tblEquipsChamado.fieldOption(1,"readOnly",true);
+                tblEquipsChamado.fieldOption(2,"editing",false);
 
             } else {
                 if ((g_auto_usuario >= 3 && data.id_responsavel != null) || data.id_responsavel == g_id_usuario) {
@@ -1065,6 +1076,12 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
             }
         }
     });
+
+
+    if (g_auto_usuario > 3 && status_chamado == 'FECHADO') {//somente ADM+ encerra o chamado
+
+        botoes = '<button id="btnEncerrarChamado" onclick="encerrarChamado()" class="btn btn-success"><i class=\"far fa-check-circle\"></i> Encerrar chamado</button>';
+    }
 
     if ((entrega == 1) && status_chamado == 'ABERTO' ) {
 
@@ -1154,7 +1171,6 @@ $('#frmInteracao').on('submit', function(e) { //submit da interacao
         if ($(this).is(':checked')) {
             p_equips_atendidos.push($(this).val());
         }
-
 
     });
 
@@ -1252,32 +1268,53 @@ function verificaEntrega() { //confirmando se a entrega foi realizada
 
     if ($('input[name=confirmaEntrega]:checked').val() == 1) {
 
+        $('#btnRegistrarEntrega').attr("class",'btn btn-success');
+
         $('#divEntrega').show();
         $('#divFalhaEntrega').hide();
+        $('#divErroEntrega').hide();
         $('#btnRegistrarEntrega').show();
-        $('#btnRegistrarEntrega span').html(' Registrar entrega');
+        $('#btnRegistrarEntrega span').html(' Registrar Entrega');
     } else {
 
         $('#divEntrega').hide();
         $('#divFalhaEntrega').show();
+        $('#divErroEntrega').show();
         $('#btnRegistrarEntrega').show();
-        $('#btnRegistrarEntrega span').html(' Registrar falha de entrega');
         $('#txtFalhaEntrega').summernote({ //inicialização do SummerNote 
 
             toolbar: [
                 // [groupName, [list of button]]
                 ['style', ['bold', 'italic', 'underline', 'clear']],
-                ['font', ['strikethrough', 'superscript', 'subscript']],
                 ['fontsize', ['fontsize']],
                 ['color', ['color']],
                 ['para', ['ul', 'ol', 'paragraph']],
-                ['height', ['height']]
+                ['insert', ['link', 'picture', 'video']],
             ],
             height: 200,
             lang: 'pt-BR',
             dialogsInBody: true,
             disableDragAndDrop: true,
         });
+
+        if ($("#slcErroEntrega").val() == 1) {
+
+            $('#btnRegistrarEntrega span').html(' Registrar Falha de Entrega');
+            $('#btnRegistrarEntrega').attr("class",'btn btn-danger');
+            
+
+        }
+
+        else {
+
+            $('#btnRegistrarEntrega span').html(' Registrar Tentativa de Entrega');
+            $('#btnRegistrarEntrega').attr("class",'btn btn-success');
+            $('#txtFalhaEntrega').hide();
+        }
+
+       
+        
+       
     }
 }
 
@@ -1287,29 +1324,32 @@ $('#frmRegistroEntrega').on('submit', function(e) { //submit do registro de entr
 
     e.preventDefault();
 
-    const script_url = base_url + "interacao/registrar_entrega";
 
-    const script_url_falha = base_url + "interacao/registrar_falha_entrega";
-
-    var form = $(this)[0];
-
+    var dados = new FormData($(this)[0]);
+    var opcao = $('input[name=confirmaEntrega]:checked').val();
+    var erro = $('#slcErroEntrega').val();
     var p_id_chamado = $('input[name=id_chamado]').val();
 
-    var opcao = $('input[name=confirmaEntrega]:checked').val();
+    dados.append("opcao_entrega",opcao);
+    dados.append("id_chamado",p_id_chamado);
+    dados.append("erro_entrega",erro);
 
-    //;
+    $('input[name="termo_responsabilidade"]').val() !== "" ? dados.append("termo_resp",1) : dados.append("termo_resp",0);
 
-    if (opcao == 1) {
+    // console.log(dados);
 
-        $.ajax({
 
-            url: script_url,
-            type: 'POST',
-            data: new FormData(form),
-            contentType: false,
-            processData: false,
+    $.ajax({
 
-            beforeSend: function() {
+        url: base_url + "interacao/registrar_entrega",
+        type: 'POST',
+        data: dados,
+        processData: false,
+        contentType: false,
+
+        beforeSend: function() {
+
+            if (opcao == 1) { //entrega OK
 
                 if ($('input[name=termo]').val() == '') {
 
@@ -1340,102 +1380,71 @@ $('#frmRegistroEntrega').on('submit', function(e) { //submit do registro de entr
 
                     return false;
                 }
-
-                $('#btnRegistrarEntrega').prop("disabled", "true");
-
-            },
-
-            success: function(msg) {
-
-                if (msg.includes('ok')) {
-
-
-                    atualizaInteracoes(p_id_chamado);
-                    $('#modalRegistroEntrega').modal('hide');
-                    carregaChamado(p_id_chamado);
-                    $('#btnRegistrarEntrega').removeAttr("disabled");
-
-
-
-                } else {
-
-
-                    $('#divEntrega').prepend(
-                        "<div class=\"alert alert-warning fade show\" role=\"alert\">" +
-                        "<button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\">" +
-                        "<span aria-hidden=\"true\">&times;</span>" +
-                        "</button>" +
-                        msg +
-                        "</div>");
-
-                    $('#btnRegistrarEntrega').removeAttr("disabled");
-
-
-
-                }
             }
 
-        });
-
-
-    } else { // falha na entrega
-
-
-
-        var desc = $('#txtFalhaEntrega').summernote('code');
-
-
-        $.ajax({
-
-            url: script_url_falha,
-            type: 'POST',
-            data: {
-                descr_falha: desc,
-                id_chamado: p_id_chamado
-            },
-
-            beforeSend: function() {
+            else { //problema na entrega
 
                 if ($('#txtFalhaEntrega').summernote('isEmpty')) {
 
                     $('#divFalhaEntrega').prepend(
                         "<div class=\"alert alert-warning fade show\" role=\"alert\">" +
-                        "Preencha a descrição!" +
+                        "Descreva os detalhes." +
                         "<button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\">" +
                         "<span aria-hidden=\"true\">&times;</span>" +
                         "</button>" +
                         "</div>");
 
-                    return false;
+                        return false;
+
+                    
                 }
 
-                $('#btnRegistrarEntrega').prop("disabled", "true");
+                
 
-            },
-
-            success: function() {
-
-                atualizaInteracoes(p_id_chamado);
-                $('#modalRegistroEntrega').modal('hide');
-                carregaChamado(p_id_chamado);
-                $('#btnRegistrarEntrega').removeAttr("disabled");
-
-            },
-            error: function() {
-
-                atualizaInteracoes(p_id_chamado);
-                $('#modalRegistroEntrega').modal('hide');
-                carregaChamado(p_id_chamado);
-                $('#btnRegistrarEntrega').removeAttr("disabled");
 
             }
 
-        });
+            $('#btnRegistrarEntrega').prop("disabled", "true");
 
-    }
+        },
+
+        success: function(msg) {
+
+            if (msg === "") {
+
+
+                atualizaInteracoes(p_id_chamado);
+                $('#modalRegistroEntrega').modal('hide');
+                carregaChamado(p_id_chamado);
+                $('#btnRegistrarEntrega').removeAttr("disabled");
 
 
 
+            } else {
+
+
+                $('#divEntrega').prepend(
+                    "<div class=\"alert alert-warning fade show\" role=\"alert\">" +
+                    "<button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\">" +
+                    "<span aria-hidden=\"true\">&times;</span>" +
+                    "</button>" +
+                    msg +
+                    "</div>");
+
+                $('#btnRegistrarEntrega').removeAttr("disabled");
+
+
+
+            }
+        },
+
+        error: function(msg) {
+
+            alert(msg);
+            $('#btnRegistrarEntrega').removeAttr("disabled");
+        },
+
+    });
 
 });
 
@@ -1462,13 +1471,14 @@ function encerrarChamado() {
                 beforeSend: function() {
                     btn.prop('disabled', 'true')
                 },
-                success: function(msg) {
-                    if (msg != 0) { // se for autorizado
-                        //console.log('ok');
-                        btn.removeAttr('disabled');
-                        atualizaInteracoes(g_id_chamado);
-                        carregaChamado(g_id_chamado, true);
-                    }
+                success: function() {
+                    atualizaInteracoes(g_id_chamado);
+                    carregaChamado(g_id_chamado, true);
+                },
+                error: function() {
+                    btn.removeAttr('disabled');
+                    alert("Operação não permitida!")
+                    
                 }
             });
         }

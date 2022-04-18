@@ -274,20 +274,18 @@ class Interacao_model extends CI_Model {
 
       }
 
+      else {
+
+         $dados['equip_atendidos'] = array();
+         $dados['texto'] = "";
+
+
+      }
+
 
       if($dados['tipo'] == 'ENTREGA') {
 
-         $patri_entregues = $this->db->query("select num_equipamento_chamado from equipamento_chamado where id_chamado_equipamento = " . $dados['id_chamado'] .
-         " and status_equipamento_chamado = 'ENTREGA'")->result();
-
-         $patri_restantes = $this->db->query("select num_equipamento_chamado from equipamento_chamado where id_chamado_equipamento = " . $dados['id_chamado'] .
-               " and (status_equipamento_chamado = 'ABERTO' or status_equipamento_chamado = 'ESPERA')")->num_rows();
-
-         $equip_entregues = $this->db->query("select * from equipamento_chamado where id_chamado_equipamento = " . $dados['id_chamado'] .
-         " and status_equipamento_chamado = 'ENTREGA'")->result();
-
-         $equip_restantes = $this->db->query("select num_equipamento_chamado from equipamento_chamado where id_chamado_equipamento = " . $dados['id_chamado'] .
-               " and status_equipamento_chamado = 'ABERTO'")->num_rows();
+        
 
          
          $this->db->query("insert into termo values(NULL,'" . $dados['nome_termo_entrega'] . "', 'E', NOW()," .  $dados['id_chamado'] . ")");  // registrando o Termo de Entrega
@@ -321,65 +319,60 @@ class Interacao_model extends CI_Model {
 
             // -------------- /LOG ----------------
 
-            $dados['texto'] .= "<a role=\"button\" class=\"btn btn-info float-right mt-2\" href=\"" . base_url('termos/' .
+            $dados['texto'] .= "<a role=\"button\" class=\"btn btn-sm btn-primary float-right mt-2 ml-2\" href=\"" . base_url('termos/' .
             $dados['nome_termo_responsabilidade']) . "\" download><i class=\"fas fa-file-download\"></i> Termo de Responsabilidade</a>";
          }
          
          
-         $dados['texto'] .= "<a role=\"button\" class=\"btn btn-info float-right mt-2\" href=\"" . base_url('termos/' . 
+         $dados['texto'] .= "<a role=\"button\" class=\"btn btn-sm btn-primary float-right mt-2\" href=\"" . base_url('termos/' . 
          $dados['nome_termo_entrega']) . "\" download><i class=\"fas fa-file-download\"></i> Termo de Entrega</a>";
 
-         $dados['texto'] .= "<p class=\"m-0\">Os equipamentos foram entregues:</p>";
+         
 
-         if(!empty($patri_entregues)) {  
+         $equip_entregues = $this->db->query("select * from equipamento_chamado where id_chamado_equipamento = " . $dados['id_chamado'] .
+         " and status_equipamento_chamado = 'ENTREGA'")->result_array();
 
-            $dados['texto'] .= "<ul>";
-            
-            foreach ($patri_entregues as $num_equip) {
-               $this->db->query("update equipamento_chamado set status_equipamento_chamado = 'ENTREGUE', status_equipamento_chamado_ant = 'ENTREGA'
-                  where num_equipamento_chamado = " . $num_equip->num_equipamento_chamado . " and id_chamado_equipamento = " . $dados['id_chamado']);
-               $dados['texto'] .= "<li>" . $num_equip->num_equipamento_chamado . "</li>";
+         $equip_restantes = $this->db->query("select num_equipamento_chamado from equipamento_chamado where id_chamado_equipamento = " . $dados['id_chamado'] .
+               " and status_equipamento_chamado = 'ABERTO'")->num_rows();
 
+
+         if(!empty($equip_entregues)) { // verificando se existem equipamentos sem patrimonio que foram entregues
+
+            $dados['texto'] .= "Os equipamentos foram entregues:<ul>";
+
+            //var_dump($equip_entregues);
+
+
+         for ($i = 0; $i < count($equip_entregues); $i++) {
+
+          
+            $this->db->query("update equipamento_chamado set status_equipamento_chamado = 'ENTREGUE', ultima_alteracao_equipamento_chamado = NOW()
+               where num_equipamento_chamado = '" . $equip_entregues[$i]['num_equipamento_chamado'] . "' and id_chamado_equipamento = " . $dados['id_chamado']);
+
+               array_push($dados['equip_atendidos'],$equip_entregues[$i]['num_equipamento_chamado']);
+               
                // ------------ LOG -------------------
 
                $log = array(
                   'acao_evento' => 'ALTERAR_STATUS_EQUIP',
                   'desc_evento' => 'ID CHAMADO: ' . $dados['id_chamado'] . 
-                  " - NUM: " . $num_equip->num_equipamento_chamado . " - NOVO STATUS: ENTREGUE",
+                  " - EQUIPAMENTO: " . $equip_entregues[$i]['num_equipamento_chamado'] . " - NOVO STATUS: ENTREGUE",
                   'id_usuario_evento' => $_SESSION['id_usuario']
                   );
 
                $this->db->insert('evento', $log);
 
                // -------------- /LOG ----------------
-            }
 
-            $dados['texto'] .= "</ul>";
+            $dados['texto'] .= "<li>" . $equip_entregues[$i]['num_equipamento_chamado'] . "</li>";
+         
+
+
          }
 
-         if(!empty($equip_entregues)) { // verificando se existem equipamentos sem patrimonio que foram entregues
+           
 
-            $dados['texto'] .= "<p>Equipamentos sem patrimônio:</p><ul>";
-
-            foreach ($equip_entregues as $equip) {
-               $this->db->query("update equipamento_chamado set status_equipamento = 'ENTREGUE', ult_alt_equipamento = NOW()
-                  where num_equipamento_chamado = '" . $equip->num_equipamento_chamado . "' and id_chamado_equipamento = " . $dados['id_chamado']);
-
-                  // ------------ LOG -------------------
-
-                  $log = array(
-                     'acao_evento' => 'ALTERAR_STATUS_EQUIP',
-                     'desc_evento' => 'ID CHAMADO: ' . $dados['id_chamado'] . 
-                     " - EQUIPAMENTO: " . $equip->num_equipamento_chamado . " - " . $equip->desc_equipamento . " - NOVO STATUS: ENTREGUE",
-                     'id_usuario_evento' => $_SESSION['id_usuario']
-                     );
-   
-                  $this->db->insert('evento', $log);
-
-                  // -------------- /LOG ----------------
-
-               $dados['texto'] .= "<li>" . $equip->num_equipamento_chamado . " - " . $equip->desc_equipamento . "</li>";
-            }
+            
 
             $dados['texto'] .= "</ul>";
 
@@ -388,7 +381,7 @@ class Interacao_model extends CI_Model {
 
          $dados['texto'] .= "<p>Recebido por: <strong>" . $dados['nome_recebedor'] ."</strong></p>"; 
 
-         if ($patri_restantes == 0 && $equip_restantes == 0) {
+         if ($equip_restantes == 0) {
             $dados['texto'] .= "<hr class=\"m-0 p-0\">O chamado foi <strong>fechado</strong>"; 
             $this->db->query("update chamado set status_chamado = 'FECHADO' where id_chamado = " . $dados['id_chamado']); //fechando o chamado
 
@@ -427,19 +420,25 @@ class Interacao_model extends CI_Model {
          $this->db->query('update chamado set entrega_chamado = 0 where id_chamado = ' . $dados['id_chamado']); //tirando o sinal de entrega.. entrega_chamado = 0
          
          $equip_entrega = $this->db->query("select num_equipamento_chamado from equipamento_chamado where id_chamado_equipamento = " . $dados['id_chamado'] .
-         " and status_equipamento_chamado = 'ENTREGA'")->result();
+         " and status_equipamento_chamado = 'ENTREGA'")->result_array();
+
+         $dados['texto'] .= "<p class=\"m-0\">Os seguintes equipamentos retornaram:</p><ul>";
 
                            
          if(!empty($equip_entrega)) {
-            foreach ($equip_entrega as $num_equip) {
+            foreach ($equip_entrega as $equip) {
                $this->db->query("update equipamento_chamado set status_equipamento_chamado = 'FALHA', status_equipamento_chamado_ant = 'ENTREGA'
-                  where num_equipamento_chamado = " . $num_equip->num_equipamento_chamado . " and id_chamado_equipamento = " . $dados['id_chamado']);
+                  where num_equipamento_chamado = " . $equip['num_equipamento_chamado'] . " and id_chamado_equipamento = " . $dados['id_chamado']);
                
-                // ------------ LOG -------------------
+                  $dados['texto'] .= '<li>' . $equip['num_equipamento_chamado'] . '</li>';
+
+                  array_push($dados['equip_atendidos'],$equip['num_equipamento_chamado']);
+                
+                  // ------------ LOG -------------------
 
                 $log = array(
                   'acao_evento' => 'ALTERAR_STATUS_EQUIP',
-                  'desc_evento' => 'ID CHAMADO: ' . $dados['id_chamado'] . " - NUM: " . $num_equip->num_equipamento_chamado . " - NOVO STATUS: FALHA",
+                  'desc_evento' => 'ID CHAMADO: ' . $dados['id_chamado'] . " - NUM: " . $equip['num_equipamento_chamado'] . " - NOVO STATUS: FALHA",
                   'id_usuario_evento' => $_SESSION['id_usuario']
                   );
 
@@ -447,21 +446,46 @@ class Interacao_model extends CI_Model {
 
                // -------------- /LOG ----------------
                   
-               }
+            }
+            $dados['texto'] .= '</ul>';
 
-            $equip_falha = $this->db->query("select num_equipamento_chamado from equipamento_chamado where id_chamado_equipamento = " . $dados['id_chamado'] .
-               " and status_equipamento_chamado = 'FALHA'")->result();
-
-            $dados['texto'] .= "<hr class=\"m-0\" /><p class=\"m-0\">Os seguintes equipamentos retornaram:</p>";
-            $dados['texto'] .= '<ul>';
-               
-            foreach ($equip_falha as $num_equip) {
-
-               $dados['texto'] .= '<li>' . $num_equip->num_equipamento_chamado . '</li>';
+         }
    
 
-            }
+      }
 
+      if ($dados['tipo'] == 'TENTATIVA_ENTREGA') {
+
+         $this->db->query('update chamado set entrega_chamado = 0 where id_chamado = ' . $dados['id_chamado']); //tirando o sinal de entrega.. entrega_chamado = 0
+         
+         $equip_entrega = $this->db->query("select num_equipamento_chamado from equipamento_chamado where id_chamado_equipamento = " . $dados['id_chamado'] .
+         " and status_equipamento_chamado = 'ENTREGA'")->result_array();
+
+         $dados['texto'] .= "<p class=\"m-0\">Os seguintes equipamentos retornaram:</p><ul>";
+
+                           
+         if(!empty($equip_entrega)) {
+            foreach ($equip_entrega as $equip) {
+               $this->db->query("update equipamento_chamado set status_equipamento_chamado = 'FALHA', status_equipamento_chamado_ant = 'ENTREGA'
+                  where num_equipamento_chamado = " . $equip['num_equipamento_chamado'] . " and id_chamado_equipamento = " . $dados['id_chamado']);
+               
+                  $dados['texto'] .= '<li>' . $equip['num_equipamento_chamado'] . '</li>';
+
+                  array_push($dados['equip_atendidos'],$equip['num_equipamento_chamado']);
+                
+                  // ------------ LOG -------------------
+
+                $log = array(
+                  'acao_evento' => 'ALTERAR_STATUS_EQUIP',
+                  'desc_evento' => 'ID CHAMADO: ' . $dados['id_chamado'] . " - NUM: " . $equip['num_equipamento_chamado'] . " - NOVO STATUS: FALHA",
+                  'id_usuario_evento' => $_SESSION['id_usuario']
+                  );
+
+               $this->db->insert('evento', $log);
+
+               // -------------- /LOG ----------------
+                  
+            }
             $dados['texto'] .= '</ul>';
 
          }
@@ -487,6 +511,8 @@ class Interacao_model extends CI_Model {
 
 
       }
+
+      //var_dump($dados['equip_atendidos']);
 
 
       $nova_interacao = array (
@@ -767,23 +793,6 @@ class Interacao_model extends CI_Model {
 
             }
            
-
-            if ($this->db->affected_rows() > 0) { // se equip. sem patrimonio foram modificados..
-               
-               // ------------ LOG -------------------
-
-               $log = array(
-                  'acao_evento' => 'DESFAZER_ENTREGA_EQUIPAMENTOS',
-                  'desc_evento' => 'ID CHAMADO: ' . $interacao->id_chamado_interacao . ' - TODOS EQUIPS. DO CHAMADO FORAM REVERTIDOS PARA ENTREGA',
-                  'id_usuario_evento' => $_SESSION['id_usuario']
-                  );
-
-               $this->db->insert('evento', $log);
-
-               // -------------- /LOG ----------------
-
-            }
-           
             
             $this->db->set('entrega_chamado', '1');
             $this->db->set('status_chamado', 'ABERTO');
@@ -895,11 +904,6 @@ class Interacao_model extends CI_Model {
                   // -------------- /LOG ----------------
                }
             }
-
-            //equipamentos sem patrimonio
-            $this->db->query("update equipamento_chamado set status_equipamento = 'ENTREGA'" .
-            " where status_equipamento = 'ABERTO'" .
-            " and id_chamado_equipamento = " . $interacao->id_chamado_interacao);
 
             if ($this->db->affected_rows() > 0) { // se equip. sem patrimonio foram modificados..
                

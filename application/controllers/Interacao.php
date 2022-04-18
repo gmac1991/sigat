@@ -65,88 +65,101 @@ class Interacao extends CI_Controller {
         $dados['nome_recebedor'] = $this->input->post('nome_recebedor');
        
         $dados['id_chamado'] = $this->input->post('id_chamado');
-        $dados['tipo'] = 'ENTREGA';
-  
-        // ----- UPLOAD TERMO ENTREGA ----  
-        
+        $opcao_entrega = $this->input->post('opcao_entrega');
+        $erro_entrega = $this->input->post('erro_entrega');
+        $termo_resp = $this->input->post('termo_resp');
+
+
         $config = array();
-        
+
         $config['upload_path']          = $this->config->item('caminho_termos');
         $config['overwrite']            = TRUE;
         $config['allowed_types']        = 'pdf'; //tipos de arquivos permitidos
         $config['max_size']             = 5000; //tamanho maximo: 5 Megabytes
-        
-        $config['file_name'] = 'Entrega_' . date('d-m-Y') . '_' . $dados['id_chamado'] . '.pdf';
-        
-        $this->load->library('upload', $config);
 
-        if (! $this->upload->do_upload('termo_entrega')) {
+        if ($opcao_entrega == 1) { //entrega OK
 
-            $dados['erros_upload'] = array('error' => $this->upload->display_errors());
-
-            foreach ($dados['erros_upload'] as $erro) {
-
-                echo strip_tags($erro);
-
-            }
-
-        } else {
-
-            $dados['nome_termo_entrega'] = $config['file_name'];
-
-            unset($this->upload);
-
-            // ----- UPLOAD TERMO RESP (se houver) ---- 
-
-            $config = array();
-
-            $config['upload_path']          = $this->config->item('caminho_termos');
-            $config['overwrite']            = TRUE;
-            $config['allowed_types']        = 'pdf'; //tipos de arquivos permitidos
-            $config['max_size']             = 5000; //tamanho maximo: 5 Megabytes
-            $config['file_name'] = 'Resp_' . date('d-m-Y') . '_' . $dados['id_chamado'] . '.pdf';
-
+            $dados['tipo'] = 'ENTREGA';
+  
+            // ----- UPLOAD TERMO ENTREGA ----  
+            
+            $config['file_name'] = 'Entrega_' . date('d-m-Y') . '_' . $dados['id_chamado'] . '.pdf';
+            
             $this->load->library('upload', $config);
 
-            if ($this->upload->do_upload('termo_responsabilidade')) {
+            if (! $this->upload->do_upload('termo_entrega')) {
 
-                $dados['nome_termo_responsabilidade'] = $config['file_name'];    
-            }
-
-            else {
+                echo "Erros no Termo de Entrega<br>";
 
                 $dados['erros_upload'] = array('error' => $this->upload->display_errors());
 
                 foreach ($dados['erros_upload'] as $erro) {
 
-                    echo strip_tags($erro);
+                    echo $erro;
 
                 }
+
+            } else {
+
+                $dados['nome_termo_entrega'] =  $config['file_name'];
             }
 
-            echo "ok"; //nao apagar
-            $this->interacao_model->registraInteracao($dados);
+            unset($this->upload);
+
+            // ----- UPLOAD TERMO RESP (se houver) ----
+            
+            if ($termo_resp == 1) {
+
+                $config['file_name'] = 'Resp_' . date('d-m-Y') . '_' . $dados['id_chamado'] . '.pdf';
+
+                $this->load->library('upload', $config);
+
+                if (! $this->upload->do_upload('termo_responsabilidade')) {
+
+                    echo "Erros no Termo de Resp.<br>";
+
+                    $dados['erros_upload'] = array('error' => $this->upload->display_errors());
+
+                    foreach ($dados['erros_upload'] as $erro) {
+
+                        echo $erro;
+
+                    }   
+                }
+
+                else {
+
+                    $dados['nome_termo_responsabilidade'] =  $config['file_name'];
+                }
+            }
+        }
+
+        else { //problema na entrega
+
+            if ($erro_entrega == 1) { //defeito na entrega
+
+
+                $dados['tipo'] = 'FALHA_ENTREGA';
+
+
+            }
+
+            else {
+
+                $dados['tipo'] = 'TENTATIVA_ENTREGA';
+
+
+            }
+
 
         }
+        
+        $this->interacao_model->registraInteracao($dados);
          
     }
            
   
-    public function registrar_falha_entrega() {
-        
-        $dados = array();
-        
-        $dados['id_chamado'] = $this->input->post('id_chamado');
-        
-        $dados['tipo'] = 'FALHA_ENTREGA';
-  
-        $dados['texto'] = $this->input->post('descr_falha');
-
-        $dados['id_usuario'] = $_SESSION['id_usuario'];
-          
-        $this->interacao_model->registraInteracao($dados); 
-  
-    }
+   
   
   
     public function gerar_termo($id_chamado) {
@@ -224,6 +237,8 @@ class Interacao extends CI_Controller {
         $pdf->Cell(30,10,'Data: ',0,0,'R');
         $pdf->Cell(30,10,date('d/m/Y'));
 
+        $pdf->SetTitle('TE_' . date('d-m-Y') . "_" . $id_chamado);
+
         $pdf->Output('I','termo_entrega_' . $id_chamado . '.pdf', TRUE);
 
         // ------------ LOG -------------------
@@ -284,7 +299,7 @@ class Interacao extends CI_Controller {
         if (!empty($dados['equipamentos'])) {
 
             $pdf->Cell(36,10,'ID',1,0,'C');
-            $pdf->Cell(0,10,'Descricao',1,0,'C');
+            $pdf->Cell(0,10,utf8_decode('Descrição'),1,0,'C');
             $pdf->SetFont('Arial','',12);
             $pdf->Ln();
 
@@ -304,7 +319,7 @@ class Interacao extends CI_Controller {
 
         $pdf->Ln(10);
         $pdf->SetFont('Arial','B',12);
-        $pdf->Cell(utf8_decode(30,10,'Responsável: '));
+        $pdf->Cell(30,10,utf8_decode('Responsável: '));
         $pdf->SetFont('Arial','',12);
         $pdf->Cell(120,8,'','B',1);
         $pdf->Ln(0);
@@ -316,6 +331,8 @@ class Interacao extends CI_Controller {
         $pdf->SetFont('Arial','B',12);
         $pdf->Cell(30,10,'Data: ',0,0,'R');
         $pdf->Cell(30,10,date('d/m/Y'));
+
+        $pdf->SetTitle('TR_' . date('d-m-Y') . "_" . $id_chamado);
 
         $pdf->Output('I','termo_resp_' . $id_chamado . '.pdf', TRUE);
 
@@ -416,6 +433,8 @@ class Interacao extends CI_Controller {
             $pdf->Cell(0,10,utf8_decode($interacao->nome_usuario));
             
             //header('Content-Type: charset=utf-8');
+
+            $pdf->SetTitle('LAUDO_' . date('d-m-Y') . "_" . $id_chamado);
     
     
             $pdf->Output('I','laudo_tecnico_' . $id_chamado . '.pdf');
