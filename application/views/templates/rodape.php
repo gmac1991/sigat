@@ -23,6 +23,7 @@ if (isset($_SESSION['id_usuario'])) {
 
   echo "<script type=\"text/javascript\">const g_id_usuario = " . $id_usuario . "</script>";
   echo "<script type=\"text/javascript\">const g_auto_usuario = " . $autorizacao_usuario . "</script>";
+  echo "<script type=\"text/javascript\">const g_auto_usuario_enc = " . $encerramento_usuario . "</script>";
   echo "<script type=\"text/javascript\">const g_fila_usuario = " . $fila_usuario . "</script>";
 }
  

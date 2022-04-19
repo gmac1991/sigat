@@ -779,7 +779,7 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
 
     //atualiza os dados do chamado
 
-    document.title = "#" + p_id_chamado + " - SIGAT";
+    //document.title = "#" + p_id_chamado + " - SIGAT";
 
     p_id_responsavel = null;
     
@@ -1120,7 +1120,7 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
    
 
 
-    if (g_auto_usuario > 3 && status_chamado == 'FECHADO') {//somente ADM+ encerra o chamado
+    if (g_auto_usuario >= 3 && g_auto_usuario_enc == 1  && status_chamado == 'FECHADO') {//somente ADM+ encerra o chamado
 
         botoes = '<button id="btnEncerrarChamado" onclick="encerrarChamado()" class="btn btn-success"><i class=\"far fa-check-circle\"></i> Encerrar chamado</button>';
     }
