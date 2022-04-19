@@ -11,7 +11,13 @@
 
 #tblTriagem td, th {
 	font-size: 0.90rem;
-} 
+}
+
+#tblEncerrados td, th {
+	font-size: 0.90rem;
+}
+
+
 
 #listaAnexosOTRS {
 
