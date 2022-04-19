@@ -1,7 +1,9 @@
 !anexos/index.html
 !termos/index.html
+!img/index.html
 anexos/*
 termos/*
+img/*
 icon/Thumbs.db
 application/config/config.php
 application/config/database.php
