@@ -155,6 +155,50 @@ class Consultas_model extends CI_Model {
 
     }
     
+
+    public function buscaRapida($termo) {
+
+        $result = NULL;
+
+        if (strlen($termo) >= 3) {
+
+            $result = array();
+            
+            $equip = NULL;
+
+            $this->db->select();
+            $this->db->from("v_equipamento");
+            $this->db->where("num_equip like '%" . $termo ."%'");
+            $this->db->or_where("desc_equip like '%" . $termo ."%'");
+            $this->db->limit(10);
+            $equip = $this->db->get()->result_array();
+
+            $result["equip"] = count($equip) > 0 ? $equip : array();
+
+            $this->db->select();
+            $this->db->from("v_chamado");
+            $this->db->where("ticket like '%" . $termo ."%'");
+            $this->db->or_where("nome_solicitante like '%" . $termo ."%'");
+            $this->db->or_where("nome_local like '%" . $termo ."%'");
+            $this->db->limit(10); 
+            $chamado = $this->db->get()->result_array();
+
+            $result["chamado"] = count($chamado) > 0 ?  $chamado : array();
+               
+
+            $this->db->select();
+            $this->db->from("v_triagem");
+            $this->db->where("ticket like '%" . $termo ."%'");
+            $this->db->or_where("nome_solicitante like '%" . $termo ."%'");
+            $this->db->limit(10); 
+            $triagem = $this->db->get()->result_array();
+            
+            $result["triagem"] = count($triagem) > 0 ? $triagem : array();
+
+        }
+
+        return $result;
+    }
     
     
 }

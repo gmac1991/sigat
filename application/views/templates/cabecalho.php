@@ -40,13 +40,39 @@
         
     </head>
     <body>
+        <div class="modal" id="modalBuscaRapida" tabindex="-1">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+
+                    
+                    
+                </div> <!-- FIM MODAL BODY -->
+                </div>
+            </div>
+        </div>
         <nav class="navbar navbar-dark bg-dark">
         <a class="navbar-brand" href="<?= base_url() ?>">
-        <img id="img-logo" src="<?= base_url("img/logo_pms.png") ?>" width="40" height="40" class="d-inline-block align-top" alt="">
-        <h3 style="display: inline">SIGAT <small style="color:orange">Teste</small></h3>
+        <img id="img-logo" src="<?= base_url("img/logo_sigat.png") ?>" width="40" height="40" class="d-inline-block align-top" alt="">
+       SIGAT <small style="color:red">DEV</small>
         </a>
+        <form class="form-inline" id="frmBuscaRapida">
+        <div class="input-group">
+            <input type="text" class="form-control" placeholder="Busca rápida..." id="txtBuscaRapida" value="<?php if($this->input->get("t") !== NULL) echo $this->input->get("t"); ?>">
+            <div class="input-group-append">
+                <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i></button>
+            </div>
+            </div>
+        </form>
         <?php if(isset($nome_usuario)): ?>
-        <div class="float-right d-inline text-white">
+        <div class="float-right d-inline text-light">
+           
             Olá, <strong><?= $nome_usuario ?></strong>!
 			<a href="<?= base_url("painel") ?>" class="btn btn-primary btn-sm" role="button" aria-pressed="true"><i class="fas fa-bullhorn"></i> Painel</a>
             <?php if ($autorizacao_usuario >= 4): ?>

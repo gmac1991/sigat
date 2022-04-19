@@ -41,3 +41,8 @@ div.diff {
     background-color: #FFF9D3;
     
 }
+
+#tblEquipsBr, #tblTriagemBr, #tblChamadosBr tbody tr {
+    cursor: pointer;
+    font-size: 0.80rem;
+}

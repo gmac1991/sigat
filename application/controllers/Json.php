@@ -435,6 +435,26 @@ class Json extends CI_Controller {
         }
     }
 
+    public function anexos_chamado($id_chamado) {
+
+        if (isset($_SESSION['id_usuario'])) {
+		
+				
+			$q_buscaAnexoOTRSChamado = "select * from anexos_otrs where id_chamado_sigat = " . $id_chamado;
+
+            $anexos = $this->db->query($q_buscaAnexoOTRSChamado)->row();
+
+            header("Content-Type: application/json");
+
+            echo json_encode($anexos);
+        }
+
+        else {
+            header('HTTP/1.0 403 Forbidden');
+        }
+    }
+
+
     public function desc_chamado() {
 
         if (isset($_SESSION['id_usuario'])) {

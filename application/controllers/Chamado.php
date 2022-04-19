@@ -10,6 +10,7 @@ class Chamado extends CI_Controller {
     $this->load->model("consultas_model"); //carregando o model das consultas 
     $this->load->model("chamado_model"); //carregando o model chamado
     $this->load->model("usuario_model"); //carregando o model usuario
+    $this->load->library("mailer");
 
     
   }
@@ -128,9 +129,43 @@ class Chamado extends CI_Controller {
       $dados['ticket_triagem'] =      $this->input->post("ticket_triagem");
       $dados['email_triagem'] =       $this->input->post("email_triagem");
       $dados['id_usuario'] =          $_SESSION["id_usuario"];
+
+      
+      
+    $nome_usuario = $this->usuario_model->buscaUsuario($_SESSION["id_usuario"])->nome_usuario;
   
+    $novo_chamado = $this->chamado_model->importaChamado($dados);
+
+    echo $novo_chamado["msg"];
+
+   
+
+      $mail = new Mailer(true);
   
-      $this->chamado_model->importaChamado($dados);
+      try {
+  
+         
+          // //Attachments
+          // $mail->addAttachment('/var/tmp/file.tar.gz');         //Add attachments
+          // $mail->addAttachment('/tmp/image.jpg', 'new.jpg');    //Optional name
+  
+          //Content
+          $mail->isHTML(true);                                  //Set email format to HTML
+          $mail->Subject = 'SIGAT - NOVO CHAMADO - ' . $dados['ticket_triagem'];
+          $mail->Body = '<span style="font-family:Arial,Helvetica,sans-serif">
+          <h2>SIGAT</h2>
+          <h3><em>'.$dados['ticket_triagem'].'</em></h3>
+          <p><strong>'.$nome_usuario.'</strong> criou o chamado #'.$novo_chamado["novo_id"].' no SIGAT.<br />
+          <a href="'. base_url("chamado/" . $novo_chamado["novo_id"]) . '">Clique para acessar</a></p>
+          ---<br>
+          <span style="font-size: 11px">ID SIGAT: #'.$novo_chamado["novo_id"].' | IMPORTACAO_SIGAT<br />
+          Esta mensagem &eacute; autom&aacute;tica, n&atilde;o responda.</span></span>';
+  
+          $mail->send();
+  
+      } catch (Exception $e) {
+          echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+      }
     
   }
 
@@ -184,26 +219,11 @@ class Chamado extends CI_Controller {
 
     $nome_usuario = $this->usuario_model->buscaUsuario($_SESSION["id_usuario"])->nome_usuario;
 
-    $mail = new PHPMailer(true);
+    $this->load->library("mailer");
+
+    $mail = new Mailer(true);
 
     try {
-        //Server settings
-        $mail->SMTPDebug = SMTP::DEBUG_SERVER;                      //Enable verbose debug output
-        $mail->isSMTP();                                            //Send using SMTP
-        $mail->Host       = 'webmail.sorocaba.sp.gov.br';                     //Set the SMTP server to send through
-        $mail->SMTPAuth   = true;                                   //Enable SMTP authentication
-        $mail->Username   = $_SESSION["usi"];                     //SMTP username
-        $mail->Password   = $_SESSION["psi"];                               //SMTP password
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;            //Enable implicit TLS encryption
-        $mail->Port       = 587;                                    //TCP port to connect to; use 587 if you have set `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
-
-        //Recipients
-        $mail->setFrom('sigat@sorocaba.sp.gov.br', 'SIGAT');
-        $mail->addAddress('gmacedo@sorocaba.sp.gov.br');     //Add a recipient
-        $mail->addAddress('asjunior@sorocaba.sp.gov.br');    //Name is optional
-        // $mail->addReplyTo('info@example.com', 'Information');
-        // $mail->addCC('cc@example.com');
-        // $mail->addBCC('bcc@example.com');
 
         // //Attachments
         // $mail->addAttachment('/var/tmp/file.tar.gz');         //Add attachments
@@ -213,12 +233,14 @@ class Chamado extends CI_Controller {
         $mail->isHTML(true);                                  //Set email format to HTML
         $mail->Subject = utf8_decode('SIGAT - DEVOLUÇÃO ') . $ticket;
         $mail->Body    = 
-        '<h1><strong><span style="font-size:18px"><span style="font-family:Arial,Helvetica,sans-serif">'.$ticket.'</span></span></strong></h1>
-        <p><span style="font-size:18px"><span style="font-family:Arial,Helvetica,sans-serif">Este ticket foi devolvido pelo SIGAT por <strong>'.$nome_usuario.'</strong>.<br />
-        <strong>Motivo:</strong> '.$desc_devo.'</span></span></p>
-        <p><span style="font-size:12px"><span style="font-family:Arial,Helvetica,sans-serif">ID SIGAT: #'.$id_triagem.' | DEVOLUCAO_SIGAT<br />
-        Esta mensagem &eacute; autom&aacute;tica, n&atilde;o responda.</span></span></p>';
-        //$mail->AltBody = 'Este ticket foi recusado pelo SIGAT. Esta mensagem e automatica. DEVOLUCAO_SIGAT';
+        '<span style="font-family:Arial,Helvetica,sans-serif">
+        <h2>SIGAT</h2>
+        <h3><em>'.$ticket.'</em></h3>
+        <p>Este ticket foi devolvido pelo SIGAT por <strong>'.$nome_usuario.'</strong>.<br />
+        <strong>Motivo:</strong> '.$desc_devo.'</p>
+        ---<br>
+        <span style="font-size:11px">ID SIGAT: #'.$id_triagem.' | DEVOLUCAO_SIGAT<br />
+        Esta mensagem &eacute; autom&aacute;tica, n&atilde;o responda.</span></span>';
 
         $mail->send();
         //header("Location: " . base_url('painel?v=triagem'));

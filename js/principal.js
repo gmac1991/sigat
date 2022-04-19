@@ -725,6 +725,43 @@ async function carregaHistorico(p_id_chamado) {
     
 }
 
+
+$("#tblAnexosChamado").jsGrid({
+    width: '100%',
+    autoload: true,
+    editing: false,
+    inserting: false,
+    noDataContent: "Sem anexos.",
+    deleteConfirm: "Tem certeza?",
+    fields: [
+        { 
+            name: "id_anexo_otrs",
+            title: "ID",
+            type: "text",
+            visible: false, 
+                
+        },
+        { 
+            name: "nome_arquivo_otrs",
+            title: "Nome do arquivo",
+            type: "text", 
+            
+        },
+    ],
+    controller: {
+        loadData: function() {
+            return $.ajax({
+                url: base_url + "anexos_chamado/" + g_id_chamado,
+                dataType: "json",
+                method: "get",
+            });
+        },
+    },
+    rowClick: function(args) {
+        window.open(base_url + 'anexo_otrs/' + args.item.id_anexo_otrs,'_blank ');
+    }
+});
+
 var item_antigo = null;
 
 var entrega = null;
@@ -2677,6 +2714,14 @@ $("#frmDevolveChamado").on('submit',function(e) {
 //------------------ SUBMIT DA TRIGEM --------------
 
 
+$('input[name="telefone"]').on("keyup keyup keypress blur change", function(){
+
+    var out = $(this).val();
+
+    $(this).val(out.replace(/[-\s]/g,""));
+} );
+
+
 $('#frmImportarChamado').on('submit',
 
     function(e) {
@@ -2755,7 +2800,7 @@ $('#frmImportarChamado').on('submit',
                 if (msg.includes('Local') == false) {
                     $('#divTriagem').html('');
                     $("#msg div[id=alerta]").remove();
-                    $("#msg").append(msg);
+                    $("#msg").html(msg);
                 } else {
                     $('input[name=nome_local').focus();
                     $('#listaLocais').popover({
@@ -2784,3 +2829,73 @@ $('#frmImportarChamado').on('submit',
 });
 
 //--------  /TRIAGEM ---------
+
+// --------- BUSCA RAPIDA ----------
+
+var result_br = [];
+
+$("#frmBuscaRapida button").on("click", async function(e) {
+
+    e.preventDefault();
+
+    var termo = $("#txtBuscaRapida").val();
+
+    if (termo.length >= 3) {
+
+        await $.ajax({
+
+            url: base_url + "busca",
+            type: 'GET',
+            data: {"t":termo},
+            success: function(res) {
+                result_br = res
+            },
+            error: function(xhr, ajaxOptions, thrownError) {
+                alert(thrownError);
+            }
+        });
+
+
+    }
+
+
+    $("#modalBuscaRapida").modal("show");
+
+
+
+});
+
+$("#modalBuscaRapida").on("show.bs.modal", function() {
+
+    $(this).find(".modal-body").html(result_br);
+    $(this).find(".modal-title").html("<i class=\"fas fa-search\"></i> Buscando por <em>" + $("#txtBuscaRapida").val() + "</em>");
+
+
+});
+
+$("#modalBuscaRapida").on("shown.bs.modal", function() {
+
+    $("#tblChamadosBr tbody tr").on("click", function() {
+
+       window.open(base_url + "chamado/" + $(this).find("td").first().text());
+    });
+
+    $("#tblTriagemBr tbody tr").on("click", function() {
+ 
+        window.open(base_url + "triagem/" + $(this).find("td").first().text());
+     });
+
+
+});
+
+
+
+
+$("#frmBuscaRapida").on("submit", function(e) {
+
+    e.preventDefault();
+
+});
+
+
+

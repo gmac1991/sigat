@@ -148,6 +148,14 @@
                                 <input type="text" class="form-control" name="complemento" aria-describedby="" placeholder=""  disabled />
                             </div>
                         </div>
+
+                        <div class="row">
+                            <div class="form-group col">
+                                <p class="h5"><i class="fas fa-paperclip"></i> Anexos</p>
+                                <hr />
+                                <div id="tblAnexosChamado" class="jsgrid"></div>
+                            </div>
+                        </div>
                     </form>
                 </div>
                 <div class="tab-pane" id="equip" role="tabpanel" aria-labelledby="equip-tab">

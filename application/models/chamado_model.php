@@ -25,11 +25,7 @@ class Chamado_model extends CI_Model {
             $p_id_usuario .", ' abriu o chamado na fila <b>" . 
             $p_nome_fila . "</b>', NOW())"); 
 
-            echo "<div id=\"alerta\" class=\"alert alert-success\">";
-            echo "<small class=\"float-right\">". date('G:i:s') . "</small>";
-            echo "Importação concluída! Chamado n. " 
-            . $id_novo_chamado . "<br /><a href=". base_url('/painel?v=triagem') . ">Voltar para o painel</a>";
-            echo "</div>"; 
+            
 
             return $id_novo_chamado;
         
@@ -56,7 +52,7 @@ class Chamado_model extends CI_Model {
                 $dados['ticket_triagem'] . "','" .
                 $dados['email_triagem'] . "','" .
                 $complementoM . "','" .
-                $resumoM . "')";
+                $resumoM . "',NULL)";
 
                 $this->db->query("insert resumo values(NULL,'" . $resumoM . "')"); // cadastrando resumos
                 $this->db->query("insert complemento values(NULL,'" . $complementoM . "')"); // cadastrando complementos
@@ -99,7 +95,17 @@ class Chamado_model extends CI_Model {
 
                         $this->db->query("delete from anexos_otrs where id_chamado_sigat is NULL and id_triagem_sigat = " . $dados['id_triagem']); //deletando anexos descartados
                         $this->db->query("delete from triagem where id_triagem = " . $dados['id_triagem']); //deletando triagem
-                        }
+                        
+                    
+                        $msg = "";
+                        $msg = "<div id=\"alerta\" class=\"alert alert-success\">";
+                        $msg .= "<small class=\"float-right\">". date('G:i:s') . "</small>";
+                        $msg .= "Importação concluída! Chamado n. "; 
+                        $msg .= $novo_id . "<br /><a href=". base_url('/painel?v=triagem') . ">Voltar para o painel</a>";
+                        $msg .= "</div>"; 
+
+                        return array("novo_id" => $novo_id, "msg" => $msg);
+                    }
 
                         
                         else
@@ -262,7 +268,7 @@ class Chamado_model extends CI_Model {
 
         if($usuario->row()->autorizacao_usuario >= 3 && $usuario->row()->encerramento_usuario == 1) {
             
-            $q_encerraChamado = $this->db->query("update chamado set status_chamado = 'ENCERRADO' where id_chamado = " . $dados['id_chamado']);
+            $q_encerraChamado = $this->db->query("update chamado set status_chamado = 'ENCERRADO', data_encerramento_chamado = NOW() where id_chamado = " . $dados['id_chamado']);
 
             if($q_encerraChamado) {
 

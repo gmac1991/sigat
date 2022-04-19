@@ -18,7 +18,7 @@ if (isset($_SESSION['id_usuario'])) {
   echo '<span class="badge badge-' . $grupo->cor_grupo .'">' . $grupo->nome_grupo . '</span>';
   
   echo " | Ambiente: " . $amb;
-  echo " | Versão: " . $versao . "</p></small></div></div>";
+  echo " | Versão: " . $versao . "</p> | SEAD/DGTI</small></div></div>";
   
 
   echo "<script type=\"text/javascript\">const g_id_usuario = " . $id_usuario . "</script>";
