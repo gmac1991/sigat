@@ -779,7 +779,7 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
 
     //atualiza os dados do chamado
 
-    //document.title = "#" + p_id_chamado + " - SIGAT";
+    document.title = "Chamado #" + p_id_chamado + " - SIGAT";
 
     p_id_responsavel = null;
     
@@ -1156,14 +1156,9 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
                             "<i class=\"fas fa-file-download\"></i> Termo de Responsabilidade</a>"
     
     }
-
     $('#botoesAtendimento').html(botoes);
-
     $("#spnStatusChamado").fadeOut();
-
 }
-
-
 
 // ---------------- INTERACOES --------------------
 
@@ -1172,7 +1167,6 @@ function removeInteracao(p_id_interacao, p_id_chamado) {
     var bloqueado = false;
 
     $('#botoesAtendimento').html("");
-
 
     $.ajax({
 
