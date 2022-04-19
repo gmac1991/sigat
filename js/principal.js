@@ -2853,11 +2853,12 @@ $("#frmBuscaRapida button").on("click", async function(e) {
             }
         });
 
+        $("#modalBuscaRapida").modal("show");
 
-    }
+    } 
 
 
-    $("#modalBuscaRapida").modal("show");
+    
 
 
 
