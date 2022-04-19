@@ -965,7 +965,7 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
     });
 
     $('#botoesAtendimento').html("");
-    $('#btnBloquearAtendimento').removeAttr("disabled");
+    $('#btnBloqueaChamado').removeAttr("disabled");
 
     botoes = "";
 
@@ -1120,20 +1120,7 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
         botoes = '<button id="btnEncerrarChamado" onclick="encerrarChamado()" class="btn btn-success"><i class=\"far fa-check-circle\"></i> Encerrar chamado</button>';
     }
 
-    if ((entrega == 1) && status_chamado == 'ABERTO' ) {
-
-               
-
-        botoes = botoes +  "<button type=\"button\" id=\"btnModalRegistroEntrega\" class=\"btn btn-success\" data-toggle=\"modal\" data-chamado=\"" +
-                            p_id_chamado + "\" data-target=\"#modalRegistroEntrega\"><i class=\"fas fa-file-signature\"></i> Registrar Entrega</button> " +
-                            "<a href=\"" + base_url + "chamado/gerar_termo/" +
-                            p_id_chamado + "\" id=\"baixarTermoEntrega\" role=\"button\" class=\"btn btn-info\">" +
-                            "<i class=\"fas fa-file-download\"></i> Termo de Entrega</a> " +
-                            "<a href=\"" + base_url + "chamado/gerar_termo_resp/" +
-                            + p_id_chamado + "\" id=\"baixarTermoResp\" role=\"button\" class=\"btn btn-info\">" +
-                            "<i class=\"fas fa-file-download\"></i> Termo de Responsabilidade</a>"
     
-    }
 
     for (var i = 0; i < status_equips.length; ++i) {
 
@@ -1148,6 +1135,21 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
         }
 
        
+    }
+
+    if ((entrega == 1) && status_chamado == 'ABERTO' ) {
+
+               
+
+        botoes = botoes +  "<button type=\"button\" id=\"btnModalRegistroEntrega\" class=\"btn btn-success\" data-toggle=\"modal\" data-chamado=\"" +
+                            p_id_chamado + "\" data-target=\"#modalRegistroEntrega\"><i class=\"fas fa-file-signature\"></i> Registrar Entrega</button> " +
+                            "<a href=\"" + base_url + "chamado/gerar_termo/" +
+                            p_id_chamado + "\" id=\"baixarTermoEntrega\" role=\"button\" class=\"btn btn-info\">" +
+                            "<i class=\"fas fa-file-download\"></i> Termo de Entrega</a> " +
+                            "<a href=\"" + base_url + "chamado/gerar_termo_resp/" +
+                            + p_id_chamado + "\" id=\"baixarTermoResp\" role=\"button\" class=\"btn btn-info\">" +
+                            "<i class=\"fas fa-file-download\"></i> Termo de Responsabilidade</a>"
+    
     }
 
     $('#botoesAtendimento').html(botoes);
@@ -1266,14 +1268,11 @@ $('#frmInteracao').on('submit', function(e) { //submit da interacao
             $('#modalRegistro').modal('hide');
             carregaChamado(p_id_chamado);
             tblEquipsChamado.loadData();
-            //console.log(p_equips)
             p_equips_atendidos = [, ]
 
         },
         error: function(xhr, ajaxOptions, thrownError) {
-
             alert(xhr + thrownError);
-
             $('#btnRegistrarInteracao').removeAttr("disabled");
         }
 

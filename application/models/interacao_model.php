@@ -456,18 +456,12 @@ class Interacao_model extends CI_Model {
 
       if ($dados['tipo'] == 'TENTATIVA_ENTREGA') {
 
-         $this->db->query('update chamado set entrega_chamado = 0 where id_chamado = ' . $dados['id_chamado']); //tirando o sinal de entrega.. entrega_chamado = 0
-         
-         $equip_entrega = $this->db->query("select num_equipamento_chamado from equipamento_chamado where id_chamado_equipamento = " . $dados['id_chamado'] .
-         " and status_equipamento_chamado = 'ENTREGA'")->result_array();
-
          $dados['texto'] .= "<p class=\"m-0\">Os seguintes equipamentos retornaram:</p><ul>";
 
                            
          if(!empty($equip_entrega)) {
             foreach ($equip_entrega as $equip) {
-               $this->db->query("update equipamento_chamado set status_equipamento_chamado = 'FALHA', status_equipamento_chamado_ant = 'ENTREGA'
-                  where num_equipamento_chamado = " . $equip['num_equipamento_chamado'] . " and id_chamado_equipamento = " . $dados['id_chamado']);
+               
                
                   $dados['texto'] .= '<li>' . $equip['num_equipamento_chamado'] . '</li>';
 
@@ -476,7 +470,7 @@ class Interacao_model extends CI_Model {
                   // ------------ LOG -------------------
 
                 $log = array(
-                  'acao_evento' => 'ALTERAR_STATUS_EQUIP',
+                  'acao_evento' => 'TENTATIVA_ENTREGA',
                   'desc_evento' => 'ID CHAMADO: ' . $dados['id_chamado'] . " - NUM: " . $equip['num_equipamento_chamado'] . " - NOVO STATUS: FALHA",
                   'id_usuario_evento' => $_SESSION['id_usuario']
                   );
@@ -894,7 +888,7 @@ class Interacao_model extends CI_Model {
                   // ------------ LOG -------------------
 
                   $log = array(
-                     'acao_evento' => 'DESFAZER_FALHA_ENTREGA_PATRI',
+                     'acao_evento' => 'DESFAZER_FALHA_ENTREGA_EQUIP',
                      'desc_evento' => 'ID CHAMADO: ' . $interacao->id_chamado_interacao . " - NUM: " . $num_equip,
                      'id_usuario_evento' => $_SESSION['id_usuario']
                      );
@@ -937,6 +931,27 @@ class Interacao_model extends CI_Model {
                $this->db->insert('evento', $log);
 
             // -------------- /LOG ----------------
+
+         break;
+
+         case 'TENTATIVA_ENTREGA':
+
+            if (!empty($pool_equips)) {
+               foreach ($pool_equips as $num_equip) { //patrimonios[0] é o vetor com a lista de patrimonios da interacao
+
+                  // ------------ LOG -------------------
+
+                  $log = array(
+                     'acao_evento' => 'DESFAZER_TENTATIVA_ENTREGA_EQUIP',
+                     'desc_evento' => 'ID CHAMADO: ' . $interacao->id_chamado_interacao . " - NUM: " . $num_equip,
+                     'id_usuario_evento' => $_SESSION['id_usuario']
+                     );
+
+                  $this->db->insert('evento', $log);
+
+                  // -------------- /LOG ----------------
+               }
+            }
 
          break;
 

@@ -151,7 +151,7 @@ class Chamado extends CI_Controller {
   
           //Content
           $mail->isHTML(true);                                  //Set email format to HTML
-          $mail->Subject = 'SIGAT - NOVO CHAMADO - ' . $dados['ticket_triagem'];
+          $mail->Subject = '[SIGAT] NOVO CHAMADO - ' . $dados['ticket_triagem'];
           $mail->Body = '<span style="font-family:Arial,Helvetica,sans-serif">
           <h2>SIGAT</h2>
           <h3><em>'.$dados['ticket_triagem'].'</em></h3>
@@ -180,6 +180,37 @@ class Chamado extends CI_Controller {
     $dados['id_usuario'] =        $_SESSION['id_usuario'];
 
     $this->chamado_model->encerraChamado($dados);
+
+    $nome_usuario = $this->usuario_model->buscaUsuario($_SESSION["id_usuario"])->nome_usuario;
+    $result =  $this->chamado_model->buscaChamado($dados['id_chamado']);
+    $ticket = $result['chamado']->ticket_chamado;
+
+    $mail = new Mailer(true);
+  
+      try {
+  
+         
+          // //Attachments
+          // $mail->addAttachment('/var/tmp/file.tar.gz');         //Add attachments
+          // $mail->addAttachment('/tmp/image.jpg', 'new.jpg');    //Optional name
+  
+          //Content
+          $mail->isHTML(true);                                  //Set email format to HTML
+          $mail->Subject = '[SIGAT] CHAMADO ENCERRADO - ' . $ticket;
+          $mail->Body = '<span style="font-family:Arial,Helvetica,sans-serif">
+          <h2>SIGAT</h2>
+          <h3><em>'.$ticket.'</em></h3>
+          <p><strong>'.$nome_usuario.'</strong> encerrou o chamado #'.$dados['id_chamado'].' no SIGAT.<br />
+          <a href="'. base_url("chamado/" . $dados['id_chamado']) . '">Clique para acessar</a></p>
+          ---<br>
+          <span style="font-size: 11px">ID SIGAT: #'.$dados['id_chamado'].' | ENCERRAMENTO_SIGAT<br />
+          Esta mensagem &eacute; autom&aacute;tica, n&atilde;o responda.</span></span>';
+  
+          $mail->send();
+  
+      } catch (Exception $e) {
+          echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+      }
 
 
   }
@@ -231,7 +262,7 @@ class Chamado extends CI_Controller {
 
         //Content
         $mail->isHTML(true);                                  //Set email format to HTML
-        $mail->Subject = utf8_decode('SIGAT - DEVOLUÇÃO ') . $ticket;
+        $mail->Subject = utf8_decode('[SIGAT] DEVOLUÇÃO - ') . $ticket;
         $mail->Body    = 
         '<span style="font-family:Arial,Helvetica,sans-serif">
         <h2>SIGAT</h2>

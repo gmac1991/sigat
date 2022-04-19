@@ -221,6 +221,17 @@ class Json extends CI_Controller {
 
                 break;
 
+                case 'TENTATIVA_ENTREGA':
+                    echo "<div class=\"mb-3 p-1 table-info rounded\">";
+                    echo "<span class=\"float-right\">" . $interacao['data_interacao'] . "</span>";
+                    echo "<strong>" . $interacao['nome_usuario'] . "</strong> registrou uma <b>tentativa</b> de entrega<hr class=\"m-0\" />";
+                    if ($r_ult_interacao['id_interacao'] == $interacao['id_interacao']) 
+                        echo $btn_desfazer;
+                    echo $interacao['texto_interacao'];
+                    echo "</div>";
+
+                break;
+
                 case 'FALHA_ENTREGA':
                     echo "<div class=\"mb-3 p-1 table-danger rounded\">";
                     echo "<span class=\"float-right\">" . $interacao['data_interacao'] . "</span>";
