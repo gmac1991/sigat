@@ -446,14 +446,20 @@ class Json extends CI_Controller {
         }
     }
 
-    public function anexos_chamado($id_chamado) {
+    public function anexos_chamado() {
+
+
+        $id_chamado = $this->input->post("id_chamado");
 
         if (isset($_SESSION['id_usuario'])) {
+
 		
 				
-			$q_buscaAnexoOTRSChamado = "select * from anexos_otrs where id_chamado_sigat = " . $id_chamado;
+			$q_buscaAnexoOTRSChamado = "select id_anexo_otrs,nome_arquivo_otrs from anexos_otrs where id_chamado_sigat = " . $id_chamado;
 
-            $anexos = $this->db->query($q_buscaAnexoOTRSChamado)->row();
+            $anexos = $this->db->query($q_buscaAnexoOTRSChamado)->result_array();
+
+            //print_r($anexos);
 
             header("Content-Type: application/json");
 

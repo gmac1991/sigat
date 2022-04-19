@@ -149,7 +149,7 @@
                             </div>
                         </div>
 
-                        <div class="row">
+                        <div class="row mb-4">
                             <div class="form-group col">
                                 <p class="h5"><i class="fas fa-paperclip"></i> Anexos</p>
                                 <hr />

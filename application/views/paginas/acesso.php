@@ -38,7 +38,7 @@
             <div class="card" style="margin-top:75%">
                 <article class="card-body">
                     <div class="text-center">
-                        <img id="img-logo" src="<?= base_url("img/logo_sigat.png") ?>" width="100" height="100">
+                        <img id="img-logo" src="<?= base_url("img/logo_pms.png") ?>" width="100" height="100">
                         <h1>SIGAT</h1>
                     </div>
                     

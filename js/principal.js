@@ -751,14 +751,17 @@ $("#tblAnexosChamado").jsGrid({
     controller: {
         loadData: function() {
             return $.ajax({
-                url: base_url + "anexos_chamado/" + g_id_chamado,
+                url: base_url + "json/anexos_chamado",
                 dataType: "json",
-                method: "get",
+                method: "post",
+                data : {
+                    id_chamado: g_id_chamado
+                }
             });
         },
     },
     rowClick: function(args) {
-        window.open(base_url + 'anexo_otrs/' + args.item.id_anexo_otrs,'_blank ');
+        window.open(base_url + 'anexo_otrs/' + args.item.id_anexo_otrs);
     }
 });
 
@@ -1113,6 +1116,8 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
             }
         }
     });
+
+   
 
 
     if (g_auto_usuario > 3 && status_chamado == 'FECHADO') {//somente ADM+ encerra o chamado

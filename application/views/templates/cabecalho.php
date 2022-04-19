@@ -59,8 +59,8 @@
         </div>
         <nav class="navbar navbar-dark bg-dark">
         <a class="navbar-brand" href="<?= base_url() ?>">
-        <img id="img-logo" src="<?= base_url("img/logo_sigat.png") ?>" width="40" height="40" class="d-inline-block align-top" alt="">
-       SIGAT <small style="color:red">DEV</small>
+        <img id="img-logo" src="<?= base_url("img/logo_pms.png") ?>" width="40" height="40" class="d-inline-block align-top" alt="">
+       <h3 class="d-inline">SIGAT</h3>
         </a>
         <form class="form-inline" id="frmBuscaRapida">
         <div class="input-group">
@@ -74,7 +74,7 @@
         <div class="float-right d-inline text-light">
            
             Olá, <strong><?= $nome_usuario ?></strong>!
-			<a href="<?= base_url("painel") ?>" class="btn btn-primary btn-sm" role="button" aria-pressed="true"><i class="fas fa-bullhorn"></i> Painel</a>
+			<a href="<?= base_url("painel") ?>" class="btn btn-primary btn-sm" role="button" aria-pressed="true"><i class="fas fa-bars"></i> Painel</a>
             <?php if ($autorizacao_usuario >= 4): ?>
             <a class="btn btn-sm btn-secondary" href="<?= base_url('admin'); ?>" role="button"><i class="fas fa-wrench"></i> Administração</a> 
             <?php endif; ?>
