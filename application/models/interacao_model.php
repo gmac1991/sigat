@@ -467,7 +467,7 @@ class Interacao_model extends CI_Model {
 
                   array_push($dados['equip_atendidos'],$equip['num_equipamento_chamado']);
                 
-                  // ------------ LOG -------------------
+               // ------------ LOG -------------------
 
                 $log = array(
                   'acao_evento' => 'TENTATIVA_ENTREGA',

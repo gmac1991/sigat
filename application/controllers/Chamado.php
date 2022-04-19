@@ -327,9 +327,9 @@ class Chamado extends CI_Controller {
                               4 => $linha->data_chamado,
                               5 => $linha->nome_responsavel,
                               6 => $linha->status_chamado,
-                              7 => "<button class=\"btn btn-secondary btn-sm btn-block PopoverPainel\"" .
-                              " data-chamado=\"" . $linha->id_chamado . "\">" .
-                              "<i class=\"far fa-clock\"></i></button>", // ultima interacao
+                              // 7 => "<button class=\"btn btn-secondary btn-sm btn-block PopoverPainel\"" .
+                              // " data-chamado=\"" . $linha->id_chamado . "\">" .
+                              // "<i class=\"far fa-clock\"></i></button>", // ultima interacao
                               // 7 => "<a href=\"" . base_url('chamado/' . $linha->id_chamado) . 
                               // "\" role=\"button\"" .
                               // " class=\"d-block btn btn-sm btn-info\"><i class=\"fas fa-search\"></i></a> "

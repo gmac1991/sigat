@@ -131,8 +131,8 @@ function painel(id_fila) {
         "autoWidth": true,
 
         "columnDefs": [{
-            "orderable": false,
-            "targets": [7]
+            // "orderable": false,
+            // "targets": [7]
 
 
         }, {

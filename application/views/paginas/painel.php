@@ -95,7 +95,7 @@
 							<th>Data de abertura</th>
 							<th>Responsável</th>		
 							<th>Status</th>
-							<th>&nbsp;</th>
+							<!-- <th>&nbsp;</th> -->
 						</tr>
 						</thead>
 					</table>
