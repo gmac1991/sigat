@@ -2228,7 +2228,7 @@ async function carregaTriagem(p_id_triagem) {
 
     //traz os dados do chamado MIGRADO (OTRS)
 
-    document.title = "Triagem #" + p_id_triagem + " - Sigat";
+    document.title = "Triagem #" + p_id_triagem + " - SIGAT";
 
     var p_id_responsavel = null;
     var anexos = [];
