@@ -1178,6 +1178,9 @@ function removeInteracao(p_id_interacao, p_id_chamado) {
             id_usuario: g_id_usuario,
             auto_usuario: g_auto_usuario,
         },
+        beforeSend: function() {
+            $('#btnDesfazer').prop('disabled','true');
+        },
         success: function() {
             atualizaInteracoes(p_id_chamado);
             carregaChamado(p_id_chamado);
