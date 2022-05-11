@@ -968,7 +968,7 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
     });
 
     $('#botoesAtendimento').html("");
-    $('#btnBloqueaChamado').removeAttr("disabled");
+    $('#btnBloquearChamado').removeAttr("disabled");
 
     botoes = "";
 

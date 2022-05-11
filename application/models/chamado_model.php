@@ -42,6 +42,8 @@ class Chamado_model extends CI_Model {
                 $complementoM = mb_strtoupper($dados['comp_local'],'UTF-8');
                 $resumoM = mb_strtoupper($dados['resumo_solicitacao'],'UTF-8');
 
+                $id_ticket_otrs = $this->db->query("select id_ticket_triagem from triagem where id_triagem = " .$dados['id_triagem'])->row()->id_ticket_triagem;
+
                 $q_insereChamado = 
                 "insert into chamado values(NULL," . 
                 $id_local . ",'" .
@@ -49,7 +51,8 @@ class Chamado_model extends CI_Model {
                 $dados['textoTriagem'] . "','" .
                 $dados['telefone'] . "'," .
                 $dados['id_usuario'] . ", NULL, 'ABERTO', 1, NOW(), 0, '" .
-                $dados['ticket_triagem'] . "','" .
+                $dados['ticket_triagem'] . "'," .
+                strval($id_ticket_otrs) . ",'" .
                 $dados['email_triagem'] . "','" .
                 $complementoM . "','" .
                 $resumoM . "',NULL)";
@@ -94,7 +97,7 @@ class Chamado_model extends CI_Model {
                             }
 
                         $this->db->query("delete from anexos_otrs where id_chamado_sigat is NULL and id_triagem_sigat = " . $dados['id_triagem']); //deletando anexos descartados
-                        $this->db->query("delete from triagem where id_triagem = " . $dados['id_triagem']); //deletando triagem
+                        $this->db->query("update triagem set triado_triagem = 1 where id_triagem = " . $dados['id_triagem']); //marcando triagem como realizada
                         
                     
                         $msg = "";
@@ -336,7 +339,7 @@ class Chamado_model extends CI_Model {
 
     public function buscaChamado($id_chamado, $status = '') {
 
-	   $q_buscaChamado = "select ticket_chamado, id_chamado, id_fila, nome_solicitante_chamado, nome_local, DATE_FORMAT(data_chamado, '%d/%m/%Y - %H:%i:%s') as data_chamado, descricao_chamado, telefone_chamado,
+	   $q_buscaChamado = "select id_ticket_chamado, ticket_chamado, id_chamado, id_fila, nome_solicitante_chamado, nome_local, DATE_FORMAT(data_chamado, '%d/%m/%Y - %H:%i:%s') as data_chamado, descricao_chamado, telefone_chamado,
         (select usuario.id_usuario from usuario where usuario.id_usuario = chamado.id_usuario_responsavel_chamado) as id_responsavel, 
         (select fila.nome_fila from fila where fila.id_fila = chamado.id_fila_chamado) as nome_fila_chamado
         from local, fila, chamado

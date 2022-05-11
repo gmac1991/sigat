@@ -9,10 +9,10 @@ else :
 <p class="h5"><i class="fas fa-desktop"></i> Equipamentos</p> <!-- TABELA EQUIPS -->
 <table id="tblEquipsBr" class="table table-hover table-sm">
     <thead>
-        <th>num_equip</th>
-        <th>desc_equip</th>
-        <th>chamado_equip</th>
-        <th>status_equip</th>
+        <th>ID</th>
+        <th>Descrição</th>
+        <th>Núm. chamado</th>
+        <th>Status</th>
     </thead>
     <tbody>
     <?php
@@ -35,12 +35,12 @@ else :
     <p class="h5"><i class="fas fa-info-circle"></i> Chamados</p> <!-- TABELA CHAMADOS -->
     <table id="tblChamadosBr"class="table table-hover table-sm">
         <thead>
-            <th>id</th>
-            <th>ticket</th>
-            <th>nome_solicitante</th>
-            <th>nome_local</th>
-            <th>status</th>
-            <th>responsavel</th>
+            <th>ID</th>
+            <th>Ticket</th>
+            <th>Solicitante</th>
+            <th>Local</th>
+            <th>Status</th>
+            <th>Responsável</th>
         </thead>
         <tbody>
         <?php
@@ -64,10 +64,10 @@ else :
             <p class="h5"><i class="fas fa-filter"></i> Triagem</p> <!-- TABELA TRIAGEM -->
             <table id="tblTriagemBr" class="table table-hover table-sm">
                 <thead>
-                    <th>id</th>
-                    <th>ticket</th>
-                    <th>nome_solicitante</th>
-                    <th>data</th>
+                    <th>ID</th>
+                    <th>Ticket</th>
+                    <th>Solicitante</th>
+                    <th>Data</th>
                 </thead>
                 <tbody>
                 <?php

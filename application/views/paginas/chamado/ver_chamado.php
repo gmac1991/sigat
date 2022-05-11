@@ -59,7 +59,7 @@
                     <button id="btnDesbloquearChamado" class="btn btn-sm btn-primary" style="display:none"><i class="fas fa-unlock"></i> Desbloquear</button>
                 </div>
                  
-                <h3><?= $chamado->ticket_chamado ?> <small>(#<?= $chamado->id_chamado ?>)&nbsp;<div class="spinner-border spinner-border-sm" role="status" id="spnStatusChamado" style="display: none;"><span class="sr-only">Loading...</span></div></small></h3>
+                <h3><?= $chamado->ticket_chamado ?> <a style="font-size:medium" target="_blank" href="http://csti.sorocaba.sp.gov.br/otrs/index.pl?Action=AgentTicketZoom;TicketID=<?= $chamado->id_ticket_chamado?>"><i class="fas fa-external-link-alt"></i></a> <small>(#<?= $chamado->id_chamado ?>)&nbsp;<div class="spinner-border spinner-border-sm" role="status" id="spnStatusChamado" style="display: none;"><span class="sr-only">Loading...</span></div></small></h3>
                 
                   
             </div>

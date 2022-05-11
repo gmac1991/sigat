@@ -109,7 +109,7 @@
 <div id="divTriagem" class="container py-2">
    <div class="row">
       <div class="col-8">
-         <h3 ><?= $triagem->ticket_triagem; ?></h3>
+         <h3 ><?= $triagem->ticket_triagem; ?> <a style="font-size:medium" target="_blank" href="http://csti.sorocaba.sp.gov.br/otrs/index.pl?Action=AgentTicketZoom;TicketID=<?= $triagem->id_ticket_triagem?>"><i class="fas fa-external-link-alt"></i></a></h3>
       </div>
       <div class="col-4 text-right">
          <button type="button" class="btn btn-warning" id="btnDevolveChamado" data-toggle="modal" data-target="#modalDevolucao"><i class="fas fa-file-upload"></i> Devolver ao OTRS</button>
