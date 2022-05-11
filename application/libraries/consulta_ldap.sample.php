@@ -4,13 +4,13 @@ class Consulta_LDAP {
 
     private $usuario = '';
     private $senha = '';
-    private $servidor = "10.28.10.13";
-    private $dn = "DC=PREFEITURA,DC=LOCAL";
+    private $servidor = '';
+    private $dn = "";
     private $ad = NULL;
 
     function __construct($usr = '',$pass = '')
     {
-        $this->usuario = 'prefeitura\\' . $usr;
+        $this->usuario = 'domain\\' . $usr;
         $this->senha = $pass;
         
         $this->ad = ldap_connect($this->servidor)

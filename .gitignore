@@ -9,3 +9,4 @@ application/config/config.php
 application/config/database.php
 sessions/*
 application/libraries/mailer.php
+application/libraries/consulta_ldap.php

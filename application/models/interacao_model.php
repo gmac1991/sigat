@@ -1020,7 +1020,7 @@ class Interacao_model extends CI_Model {
    }
     
    
-   public function buscaInteracao($id_chamado,$tipo = array()) {
+   public function buscaInteracaoChamado($id_chamado,$tipo = array()) {
 
       $this->db->select('DATE_FORMAT(data_interacao, \'%d/%m/%Y - %H:%i:%s\') as data_interacao, texto_interacao, nome_usuario');
       $this->db->from('interacao');
@@ -1038,6 +1038,15 @@ class Interacao_model extends CI_Model {
 
       $result = $this->db->get()->row();
 
+      return $result;
+   }
+
+   public function buscaInteracao($id_interacao) {
+
+      $this->db->select();
+      $this->db->from('interacao');
+      $this->db->where(array('id_interacao' => $id_interacao));
+      $result = $this->db->get()->row();
       return $result;
    }
     

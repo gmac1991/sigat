@@ -22,11 +22,12 @@ class Interacao extends CI_Controller {
         $dados = $this->input->post();
 
         $chamado = $this->chamado_model->buscaChamado($dados['id_chamado'])['chamado'];
+        $interacao = $this->interacao_model->buscaInteracao($dados['id_interacao']);
 
         //var_dump($chamado);
 
-
-        if($chamado->id_responsavel == $dados['id_usuario'] || $dados['auto_usuario'] >= 4) {
+        if(($chamado->id_responsavel == $dados['id_usuario'] && $interacao->id_usuario_interacao == $dados['id_usuario']) 
+            || $dados['auto_usuario'] >= 4) {
 
             $this->interacao_model->removeInteracao($dados['id_interacao']);
 
@@ -355,7 +356,7 @@ class Interacao extends CI_Controller {
     public function gerar_laudo($id_chamado) {
   
        
-        $interacao = $this->interacao_model->buscaInteracao($id_chamado,array('FECHAMENTO_INS', 'ATENDIMENTO_INS'));
+        $interacao = $this->interacao_model->buscaInteracaoChamado($id_chamado,array('FECHAMENTO_INS', 'ATENDIMENTO_INS'));
 
         if ($interacao !== NULL) { 
 

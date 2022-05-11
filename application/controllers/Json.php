@@ -394,7 +394,7 @@ class Json extends CI_Controller {
                 $antigo_texto = $chamado_existente->row()->descricao_chamado;
                 //$novo_texto = $novo_trecho . $antigo_texto;
                 
-                $diff = $sd->htmlDiff($antigo_texto,$novo_texto);
+                $diff = utf8_decode($sd->htmlDiff($antigo_texto,$novo_texto));
                 //var_dump($diff);
 
                 $result['triagem']['descricao_triagem'] = strip_tags($diff,$this->tags_permitidas);

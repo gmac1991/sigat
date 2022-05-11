@@ -2720,6 +2720,15 @@ $('input[name="telefone"]').on("keyup keyup keypress blur change", function(){
 } );
 
 
+$('input[name="resumo_solicitacao"]').on("keyup keyup keypress blur change", function(){
+
+    var out = $(this).val();
+
+    $(this).val(out.replace(/[\"\']/g,""));
+} );
+
+
+
 $('#frmImportarChamado').on('submit',
 
     function(e) {

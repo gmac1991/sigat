@@ -53,8 +53,7 @@ if (isset($triagem)) {
   <script src="<?= base_url("js/jsgrid.min.js"); ?>"></script>
   <script src="<?= base_url("fa/js/all.min.js")?>"></script>
   <script src="<?= base_url("js/moment.min.js")?>"></script>
-  <script src="<?= base_url("js/principal.min.js")?>"></script>
-  <!-- <script src="<?= base_url("js/principal.min.js") ?>"></script> -->
+  <script src="<?= $amb == 'development' ? base_url("js/principal.min.js") : base_url("js/principal.min.js") ?>"></script>
 
 <?php
 
