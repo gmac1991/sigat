@@ -1170,7 +1170,7 @@ function removeInteracao(p_id_interacao, p_id_chamado) {
 
     $.ajax({
 
-        url: base_url + 'interacao/remover_interacao',
+        url: base_url + "interacao/remover_interacao",
         type: 'POST',
         data: {
             id_interacao: p_id_interacao,
