@@ -323,7 +323,7 @@ class Json extends CI_Controller {
             $id_chamado = $this->input->get('id_chamado');
 
    
-            $q_buscaChamado = "select complemento_chamado, resumo_chamado, ticket_chamado, id_chamado, id_fila, status_chamado, nome_solicitante_chamado, nome_local, DATE_FORMAT(data_chamado, '%d/%m/%Y - %H:%i:%s') as data_chamado, descricao_chamado, telefone_chamado,
+            $q_buscaChamado = "select complemento_chamado, resumo_chamado, ticket_chamado, id_chamado, id_fila, status_chamado, nome_solicitante_chamado, nome_local, DATE_FORMAT(data_chamado, '%d/%m/%Y - %H:%i:%s') as data_chamado, telefone_chamado,
                 (select usuario.nome_usuario from usuario where usuario.id_usuario = chamado.id_usuario_responsavel_chamado) as nome_responsavel,
                 (select usuario.id_usuario from usuario where usuario.id_usuario = chamado.id_usuario_responsavel_chamado) as id_responsavel,  
                 (select fila.nome_fila from fila where fila.id_fila = chamado.id_fila_chamado) as nome_fila_chamado, entrega_chamado
@@ -339,7 +339,7 @@ class Json extends CI_Controller {
 
             $result['nome_solicitante_chamado'] = str_replace(array('"', "'"), '', $result['nome_solicitante_chamado']);
             
-            $result['descricao_chamado'] = strip_tags($result['descricao_chamado'],$this->tags_permitidas);
+            //$result['descricao_chamado'] = strip_tags($result['descricao_chamado'],$this->tags_permitidas);
 
             
             $result['status_equipamentos'] = $this->db->query($q_buscaStatusEquipamentos)->result_array();
@@ -364,9 +364,21 @@ class Json extends CI_Controller {
             $id_triagem = $this->input->get('id_triagem');
 
    
-            $q_buscaTriagem = "select * from triagem where id_triagem = " . $id_triagem;
+            $q_buscaTriagem = "select ticket_triagem, nome_solicitante_triagem from triagem where id_triagem = " . $id_triagem;
+
+            $ticket_triagem =  $this->db->query("select ticket_triagem from triagem 
+            where id_triagem = " . $id_triagem)->row()->ticket_triagem;
+
+            $chamado_existente = $this->db->query("select * from chamado 
+                                where ticket_chamado = '" 
+                                . $ticket_triagem . "' 
+                                and status_chamado = 'ABERTO'");
 
             
+            if ($chamado_existente->num_rows() > 0) {
+                $result['chamado'] = $chamado_existente->row_array();
+                $result['agrupamento'] = 1;
+            }
 				
 			$q_buscaAnexosOTRS = "select id_anexo_otrs, nome_arquivo_otrs from anexos_otrs
 			where id_triagem_sigat = " . $id_triagem;
@@ -374,46 +386,11 @@ class Json extends CI_Controller {
             
 
             $result['triagem'] = $this->db->query($q_buscaTriagem)->row_array();
-
-            $chamado_existente = $this->db->query("select * from chamado 
-                                where ticket_chamado = '" 
-                                . $result['triagem']['ticket_triagem'] . "' 
-                                and status_chamado = 'ABERTO'");
-
-            $diff = "";
-            
-            if ($chamado_existente->num_rows() > 0) {
-                $result['chamado'] = $chamado_existente->row_array();
-                $result['agrupamento'] = 1;
-
-                $this->load->library('simplediff');
-
-                $sd = new SimpleDiff;
-
-                $novo_texto = $result['triagem']['descricao_triagem'];
-                $antigo_texto = $chamado_existente->row()->descricao_chamado;
-                //$novo_texto = $novo_trecho . $antigo_texto;
-                
-                $diff = utf8_decode($sd->htmlDiff($antigo_texto,$novo_texto));
-                //var_dump($diff);
-
-                $result['triagem']['descricao_triagem'] = strip_tags($diff,$this->tags_permitidas);
-            }
-
-            else {
-
-                $result['triagem']['descricao_triagem'] = strip_tags($result['triagem']['descricao_triagem'],$this->tags_permitidas);
-
-            }
-
-           
             
             
             $result['anexos_otrs'] = $this->db->query($q_buscaAnexosOTRS)->result_array();
 			
-			
 
-           
 
             header("Content-Type: application/json");
                 

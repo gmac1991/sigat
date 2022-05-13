@@ -60,7 +60,7 @@
         <nav class="navbar navbar-dark bg-dark">
         <a class="navbar-brand" href="<?= base_url() ?>">
         <img id="img-logo" src="<?= base_url("img/logo_pms.png") ?>" width="40" height="40" class="d-inline-block align-top" alt="">
-       <h3 class="d-inline">SIGAT</h3>
+       <h3 class="d-inline">SIGAT <?= ENVIRONMENT == 'development' ? "<small><span style=\"color:orange\">DEV</span></small>" : "" ?></h3>
         </a>
         <form class="form-inline" id="frmBuscaRapida">
         <div class="input-group">
@@ -71,8 +71,7 @@
             </div>
         </form>
         <?php if(isset($nome_usuario)): ?>
-        <div class="float-right d-inline text-light">
-           
+        <div class="float-right d-inline text-light">   
             Olá, <strong><?= $nome_usuario ?></strong>!
 			<a href="<?= base_url("painel") ?>" class="btn btn-primary btn-sm" role="button" aria-pressed="true"><i class="fas fa-bars"></i> Painel</a>
             <?php if ($autorizacao_usuario >= 4): ?>

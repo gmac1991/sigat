@@ -171,7 +171,8 @@
                 </div>
                 <div class="tab-pane" id="descricao" role="tabpanel" aria-labelledby="descricao-tab">
                     <div class="col-0 my-3">
-                        <div name="descricao" class="border rounded p-2 overflow-auto" style="max-height: 450px;"></div>
+                        <!-- <div name="descricao" class="border rounded p-2 overflow-auto" style="max-height: 450px;"></div> -->
+                        <iframe src="<?= base_url("chamado/descricao/" . $chamado->id_chamado) ?>" width="100%" height="500"></iframe>
                     </div>
                 </div>
                 <div class="tab-pane" id="historico" role="tabpanel" aria-labelledby="historico-tab">

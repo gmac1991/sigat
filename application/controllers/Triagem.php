@@ -4,12 +4,14 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Triagem extends CI_Controller {
 
+
   function __construct() {
     parent::__construct();
 
     $this->load->model("consultas_model"); //carregando o model das consultas 
     $this->load->model("chamado_model"); //carregando o model chamado
     $this->load->model("usuario_model"); //carregando o model usuario
+    $this->load->library("charsetNormalizer");
 
     
   }
@@ -52,21 +54,21 @@ class Triagem extends CI_Controller {
   }
 
 
-public function listar_triagem() {
+  public function listar_triagem() {
 
     $result_banco = $this->consultas_model->listaTriagem();
     $lista_painel['data'] = array();
 
     foreach ($result_banco as $linha) {
-		
-	
+    
+  
 
-		$lista_painel['data'][] = array(
+    $lista_painel['data'][] = array(
                               0 => $linha->id_triagem,
                               1 => $linha->ticket_triagem,
                               2 => $linha->data_triagem,
                               3 => $linha->nome_solicitante_triagem,
-							                4 => $linha->email_triagem,
+                              4 => $linha->email_triagem,
                               // 5 => "<a href=\"" . base_url('triagem/' . $linha->id_triagem) . 
                               // "\" rel=\"noopener\" role=\"button\"" .
                               // " class=\"d-block btn btn-sm btn-info\"><i class=\"fas fa-search\"></i></a> "
@@ -79,8 +81,39 @@ public function listar_triagem() {
     echo json_encode($lista_painel);
 
   }
-  
- 
-}
 
-?>
+  public function gerar_descricao_iframe($id_triagem) {
+
+    $ticket_triagem =  $this->db->query("select ticket_triagem from triagem 
+    where id_triagem = " . $id_triagem)->row()->ticket_triagem;
+
+    $desc = $this->db->query("select descricao_triagem from triagem where id_triagem = " . $id_triagem)->row()->descricao_triagem;
+
+    $chamado_existente = $this->db->query("select * from chamado 
+                        where ticket_chamado = '" 
+                        . $ticket_triagem . "' 
+                        and status_chamado = 'ABERTO'");
+
+    $cn = new CharsetNormalizer;
+
+    header('Content-Type: text/html;');
+
+    $diff = "";
+    
+    if ($chamado_existente->num_rows() > 0) {
+
+        $this->load->library('simplediff');
+
+        $sd = new SimpleDiff;
+
+        $novo_texto = $desc;
+        $antigo_texto = $chamado_existente->row()->descricao_chamado;
+        $diff = $sd->htmlDiff($antigo_texto,$novo_texto);
+
+        echo $cn->normalize($diff);
+    }
+    else {
+      echo $cn->normalize($desc);
+    }
+  }
+}

@@ -119,9 +119,11 @@
    <form enctype="multipart/form-data" method="post" id="frmImportarChamado" class="mb-5">
       <div class="row">
          <div class="form-group col">
-            <div id="descricao_triagem" class="border rounded p-2 overflow-auto" 
-               style="max-height: 450px;"><div class="d-flex align-items-center"><strong>Carregando..</strong><div class="spinner-border ml-auto" role="status" aria-hidden="true"></div></div></div>
+            <!-- <div id="descricao_triagem" class="border rounded p-2 overflow-auto" 
+               style="max-height: 450px;"><div class="d-flex align-items-center"><strong>Carregando..</strong><div class="spinner-border ml-auto" role="status" aria-hidden="true"></div></div></div> -->
+            <iframe src="<?= base_url("triagem/descricao/" . $triagem->id_triagem) ?>" width="100%" height="500"></iframe>
          </div>
+         
       </div>
       <div class="row">
          <div class="form-group col">

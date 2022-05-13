@@ -997,7 +997,7 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
             $('input[name=telefone]').val(data.telefone_chamado);
             $('input[name=nome_local]').val(data.nome_local);
             $('input[name=id_fila_ant]').val(data.id_fila);
-            $('div[name=descricao]').html(data.descricao_chamado);
+            //$('div[name=descricao]').html(data.descricao_chamado);
             
             var telefone = null;
             data.telefone_chamado.length > 4 ? telefone = "0" + data.telefone_chamado : telefone = data.telefone_chamado;
@@ -2251,7 +2251,7 @@ async function carregaTriagem(p_id_triagem) {
                 "\" class=\"alert-link\">chamado aberto<sup><i class=\"fas fa-external-link-square-alt\"></i></sup></a> para este ticket! Caso seja feita a importação, as novas informações serão agrupadas nele.</p></div>");
             
                 agrupamento = true;
-                diffDesc = data.diff;
+                //diffDesc = data.diff;
 
                 $("#linhaInfoTriagem").html("");
             }
@@ -2262,7 +2262,7 @@ async function carregaTriagem(p_id_triagem) {
 
             $('input[name=nome_solicitante]').val(data.triagem.nome_solicitante_triagem);
             $('input[name=id_triagem]').val(p_id_triagem);
-            desc_triagem = data.triagem.descricao_triagem;
+            //desc_triagem = data.triagem.descricao_triagem;
 
             
             if (data.anexos_otrs.length > 0) {
@@ -2275,11 +2275,11 @@ async function carregaTriagem(p_id_triagem) {
         },
     });
 
-    if (!agrupamento) {
-        desc_triagem = UTF8.decode(desc_triagem)
-    }
+    // if (!agrupamento) {
+    //     desc_triagem = UTF8.decode(desc_triagem)
+    // }
 
-    $('#descricao_triagem').html(desc_triagem);
+    // $('#descricao_triagem').html(desc_triagem);
 
     verificaAutoEquip();
     $("#tblAnexos").jsGrid("option","data",anexos);
@@ -2338,11 +2338,19 @@ async function verificaAutoEquip() {
     $("#btnValidaEquip").prop("disabled","true");
     $("#pbEquips").css("width","0%");
     
-    var textoBase = "";
+    var text = "";
+
+    let response = await fetch(base_url + "triagem/descricao/" + g_id_triagem);
+
+    if (response.ok) { 
+        text = await response.text();
+    } else {
+        console.log("HTTP-Error: " + response.status);
+    }
     
     if (agrupamento) {
 
-        var diff_n1 = $('#descricao_triagem').html().match(/<div class="diff">(.*?)<\/div>/g);
+        var diff_n1 = text.match(/<div class="diff">(.*?)<\/div>/g);
 
         var novo_texto = null
 
@@ -2359,7 +2367,7 @@ async function verificaAutoEquip() {
         
     }
     else {
-        nums_equip = $('#descricao_triagem').html().match(patrimonio_regex);
+        nums_equip = text.match(patrimonio_regex);
     }
 
     if (nums_equip !== null) {

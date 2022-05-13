@@ -11,6 +11,7 @@ class Chamado extends CI_Controller {
     $this->load->model("chamado_model"); //carregando o model chamado
     $this->load->model("usuario_model"); //carregando o model usuario
     $this->load->library("mailer");
+    $this->load->library("charsetNormalizer");
 
     
   }
@@ -369,6 +370,19 @@ class Chamado extends CI_Controller {
 
   }
   
+  public function gerar_descricao_iframe($id_chamado) {
+
+    $desc = $this->db->query("select descricao_chamado from chamado where id_chamado = " . $id_chamado)->row()->descricao_chamado;
+
+    header('Content-Type: text/html');
+
+    $cn = new CharsetNormalizer;
+
+    header('Content-Type: text/html;');
+
+    echo $cn->normalize($desc);
+
+  }
  
 }
 
