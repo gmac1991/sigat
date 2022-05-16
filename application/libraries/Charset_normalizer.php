@@ -3,12 +3,12 @@
 class Charset_normalizer {
 
   private $chars_html_utf = array(
-  "Ãƒ" => "&Atilde;", //Ã
-  "Ã£" => "&atilde;", //ã
-  "Ã¡" => "&aacute;", //á
-  "Ã�" => "&Aacute;",//Á
-  "Ã¢" => "&acirc;",  //â
-  "Ã " => "&agrave;", //à
+  "Ãƒ" =>     "&Atilde;", //Ã
+  "Ã£" =>     "&atilde;", //ã
+  "Ã¡" =>     "&aacute;", //á
+  "Ã�" =>     "&Aacute;",//Á
+  "Ã¢" =>     "&acirc;",  //â
+  "Ã\x20" =>  "&agrave;", //à
 
   
   "ÃŠ" => "&Ecirc;",  //Ê
