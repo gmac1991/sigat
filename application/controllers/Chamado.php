@@ -11,7 +11,7 @@ class Chamado extends CI_Controller {
     $this->load->model("chamado_model"); //carregando o model chamado
     $this->load->model("usuario_model"); //carregando o model usuario
     $this->load->library("mailer");
-    $this->load->library("charsetNormalizer");
+    $this->load->library("Charset_normalizer");
 
     
   }
@@ -376,7 +376,7 @@ class Chamado extends CI_Controller {
 
     header('Content-Type: text/html');
 
-    $cn = new CharsetNormalizer;
+    $cn = new Charset_normalizer;
 
     header('Content-Type: text/html;');
 
