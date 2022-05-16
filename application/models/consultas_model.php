@@ -65,7 +65,7 @@ class Consultas_model extends CI_Model {
         
 
 
-        $q = "select * from triagem where triagem_triado = 0 and id_triagem = ". $id_triagem;
+        $q = "select * from triagem where triado_triagem = 0 and id_triagem = ". $id_triagem;
    
 
         return $this->db->query($q)->row();
