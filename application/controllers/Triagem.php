@@ -11,7 +11,7 @@ class Triagem extends CI_Controller {
     $this->load->model("consultas_model"); //carregando o model das consultas 
     $this->load->model("chamado_model"); //carregando o model chamado
     $this->load->model("usuario_model"); //carregando o model usuario
-    $this->load->library("CharsetNormalizer");
+    $this->load->library("Charset_normalizer");
 
     
   }
