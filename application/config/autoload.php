@@ -58,7 +58,7 @@ $autoload['packages'] = array();
 |
 |	$autoload['libraries'] = array('user_agent' => 'ua');
 */
-$autoload['libraries'] = array('database','session','phpmailer/PHPMailer','phpmailer/smtp','phpmailer/exception');
+$autoload['libraries'] = array('database','session','phpmailer/PhpMailer','phpmailer/Smtp','phpmailer/Exception');
 
 /*
 | -------------------------------------------------------------------
