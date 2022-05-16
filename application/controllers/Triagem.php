@@ -94,7 +94,7 @@ class Triagem extends CI_Controller {
                         . $ticket_triagem . "' 
                         and status_chamado = 'ABERTO'");
 
-    $cn = new CharsetNormalizer;
+    $cn = new Charset_normalizer;
 
     header('Content-Type: text/html;');
 

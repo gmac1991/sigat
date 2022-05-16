@@ -1,6 +1,6 @@
 <?php
 
-class CharsetNormalizer {
+class Charset_normalizer {
 
   private $chars_html_utf = array(
   "Ãƒ" => "&Atilde;", //Ã
