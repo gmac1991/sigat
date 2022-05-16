@@ -57,9 +57,9 @@ class Chamado_model extends CI_Model {
                 $complementoM . "','" .
                 $resumoM . "',NULL)";
 
-                if (strlen($resumoM) > 0)
+                if (strlen($resumoM) > 6)
                     $this->db->query("insert resumo values(NULL,'" . $resumoM . "')"); // cadastrando resumos
-                if (strlen($complementoM) > 0)
+                if (strlen($complementoM) > 6)
                     $this->db->query("insert complemento values(NULL,'" . $complementoM . "')"); // cadastrando complementos
 
                 
