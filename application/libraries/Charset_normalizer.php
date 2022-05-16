@@ -7,6 +7,7 @@ class Charset_normalizer {
   "Ã£" => "&atilde;", //ã
   "Ã¡" => "&aacute;", //á
   "Ã�" => "&Aacute;",//Á
+  "Ã¢" => "&acirc;",  //â
   
   "ÃŠ" => "&Ecirc;",  //Ê
   "Ã‰" => "&Eacute;", //É
