@@ -1,7 +1,7 @@
 var listaVerificada = false;
 var timeout;
 const url = 'https://sistemas.sorocaba.sp.gov.br/acesso_equipamento/api/patrimonio/'; //API web do SIM (patrimônio)
-const patrimonio_regex = /[1-9]\d{5}\b/g
+const patrimonio_regex = /\b[1-9]\d{5}\b/g
 var toggle = 0;
 // var g_requer_patri = null;
 var fila_atual = null;
