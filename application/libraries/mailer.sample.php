@@ -1,6 +1,6 @@
 <?php
 
-include_once("phpmailer/phpmailer.php");
+include_once("phpmailer/Phpmailer.php");
 
 class Mail extends PHPMailer {
 
