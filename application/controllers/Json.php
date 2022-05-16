@@ -6,7 +6,7 @@ class Json extends CI_Controller {
 
     /*Classe para Respostas às requisições AJAX e outras do Frontend */
 
-    private $tags_permitidas = "<p><br><div><span><style><mark>";
+    
 
     function __construct() {
         parent::__construct();
