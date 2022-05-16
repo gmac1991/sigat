@@ -307,19 +307,20 @@ class Chamado_model extends CI_Model {
 
     public function devolveChamado($p_id_chamado) {
 
+        $ticket = $this->buscaTicketTriagem($p_id_chamado);
         $this->db->query("delete from triagem where id_triagem = " . $p_id_chamado);
         $this->db->query("delete from anexos_otrs where id_chamado_sigat = " . $p_id_chamado);
 
         $this->db->query("insert into alteracao_chamado ".
                          "values(NULL," . $p_id_chamado . 
                          "," . $_SESSION['id_usuario'] .
-                         ",'<b>devolveu o ticket para o OTRS</b>',NOW())");
+                         ",'<b>devolveu o ticket ".  $ticket . " para o OTRS</b>',NOW())");
 
          // ------------ LOG -------------------
 
          $log = array(
             'acao_evento' => 'DEVOLVER_TICKET',
-            'desc_evento' => 'ID CHAMADO: ' . $p_id_chamado,
+            'desc_evento' => 'ID CHAMADO: ' . $p_id_chamado . ' - TICKET: ' . $ticket,
             'id_usuario_evento' => $_SESSION['id_usuario']
         );
         
