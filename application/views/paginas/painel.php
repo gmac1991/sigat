@@ -7,7 +7,7 @@
 		 	</li>
 		<?php endif; ?>
 			<li class="nav-item">
-				<a class="nav-link active" id="painel-tab" data-toggle="tab" href="#painel" aria-controls="painel" aria-selected="true"><i class="far fa-lightbulb"></i> Chamados</a>
+				<a class="nav-link active" id="painel-tab" data-toggle="tab" href="#painel" aria-controls="painel" aria-selected="true"><i class="fas fa-headset"></i> Chamados</a>
 			</li>
 			<li class="nav-item">
 				<a class="nav-link" id="encerrados-tab" data-toggle="tab" href="#encerrados" aria-controls="encerrados" aria-selected="true"><i class="fas fa-archive"></i> Arquivo</a>

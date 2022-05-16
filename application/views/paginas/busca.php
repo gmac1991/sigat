@@ -32,7 +32,7 @@ else :
 
     if (count($result["chamado"]) > 0):
 ?>
-    <p class="h5"><i class="fas fa-info-circle"></i> Chamados</p> <!-- TABELA CHAMADOS -->
+    <p class="h5"><i class="fas fa-headset"></i> Chamados</p> <!-- TABELA CHAMADOS -->
     <table id="tblChamadosBr"class="table table-hover table-sm">
         <thead>
             <th>ID</th>
