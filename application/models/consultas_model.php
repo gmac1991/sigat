@@ -54,7 +54,7 @@ class Consultas_model extends CI_Model {
 
 
         $q = "select id_triagem, nome_solicitante_triagem, email_triagem,
-        		data_triagem, ticket_triagem from triagem where triado_triagem = 0 order by data_triagem asc";
+        		data_triagem, ticket_triagem from triagem where triagem_triado = 0 order by data_triagem asc";
    
 
         return $this->db->query($q)->result();
