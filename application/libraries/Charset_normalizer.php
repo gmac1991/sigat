@@ -8,7 +8,7 @@ class Charset_normalizer {
   "Ã¡" =>     "&aacute;", //á
   "Ã�" =>     "&Aacute;",//Á
   "Ã¢" =>     "&acirc;",  //â
-  "Ã\x20" =>  "&agrave;", //à
+  "Ã\xC2\xA0" =>  "&agrave;", //à
 
   
   "ÃŠ" => "&Ecirc;",  //Ê
