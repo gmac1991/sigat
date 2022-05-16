@@ -2788,14 +2788,22 @@ $('#frmImportarChamado').on('submit',
         }
     },
     
-    submitHandler: function(form) {
+    submitHandler: async function(form) {
         var script_url = base_url + "chamado/importar_chamado";
         var dados = new FormData(form);
         dados.append('listaEquipamentos', JSON.stringify(g_equips));
         dados.append('ticket_triagem',g_ticket_triagem);
         dados.append('email_triagem',g_email_triagem);
-        var replaced = $("#descricao_triagem").html().replace(/'/g, "\\'" );
-        dados.append('textoTriagem', replaced);
+        let response = await fetch(base_url + "triagem/descricao/" + g_id_triagem);
+        let desc = "";
+
+        if (response.ok) { 
+            desc = await response.text();
+        } else {
+            console.log("HTTP-Error: " + response.status);
+        }
+        //var replaced = $("#descricao_triagem").html().replace(/'/g, "\\'" );
+        dados.append('textoTriagem', desc);
         dados.append('g_anexos', JSON.stringify($("#tblAnexos").jsGrid("option","data")));
         dados.append('id_triagem', g_id_triagem);
         $.ajax({
