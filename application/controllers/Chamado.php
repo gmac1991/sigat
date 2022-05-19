@@ -269,7 +269,7 @@ class Chamado extends CI_Controller {
         <h2>SIGAT</h2>
         <h3><em>'.$ticket.'</em></h3>
         <p>Este ticket foi devolvido pelo SIGAT por <strong>'.utf8_decode($nome_usuario).'</strong>.<br />
-        <strong>Motivo:</strong> '.$desc_devo.'</p>
+        <strong>Motivo:</strong> '.utf8_decode($desc_devo).'</p>
         ---<br>
         <span style="font-size:11px">ID SIGAT: #'.$id_triagem.' | DEVOLUCAO_SIGAT<br />
         Esta mensagem &eacute; autom&aacute;tica, n&atilde;o responda.</span></span>';
