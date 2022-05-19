@@ -156,7 +156,7 @@ class Chamado extends CI_Controller {
           $mail->Body = '<span style="font-family:Arial,Helvetica,sans-serif">
           <h2>SIGAT</h2>
           <h3><em>'.$dados['ticket_triagem'].'</em></h3>
-          <p><strong>'.$nome_usuario.'</strong> criou o chamado #'.$novo_chamado["novo_id"].' no SIGAT.<br />
+          <p><strong>'.utf8_decode($nome_usuario).'</strong> criou o chamado #'.$novo_chamado["novo_id"].' no SIGAT.<br />
           <a href="'. base_url("chamado/" . $novo_chamado["novo_id"]) . '">Clique para acessar</a></p>
           ---<br>
           <span style="font-size: 11px">ID SIGAT: #'.$novo_chamado["novo_id"].' | IMPORTACAO_SIGAT<br />
@@ -201,7 +201,7 @@ class Chamado extends CI_Controller {
           $mail->Body = '<span style="font-family:Arial,Helvetica,sans-serif">
           <h2>SIGAT</h2>
           <h3><em>'.$ticket.'</em></h3>
-          <p><strong>'.$nome_usuario.'</strong> encerrou o chamado #'.$dados['id_chamado'].' no SIGAT.<br />
+          <p><strong>'.utf8_decode($nome_usuario).'</strong> encerrou o chamado #'.$dados['id_chamado'].' no SIGAT.<br />
           <a href="'. base_url("chamado/" . $dados['id_chamado']) . '">Clique para acessar</a></p>
           ---<br>
           <span style="font-size: 11px">ID SIGAT: #'.$dados['id_chamado'].' | ENCERRAMENTO_SIGAT<br />
@@ -268,7 +268,7 @@ class Chamado extends CI_Controller {
         '<span style="font-family:Arial,Helvetica,sans-serif">
         <h2>SIGAT</h2>
         <h3><em>'.$ticket.'</em></h3>
-        <p>Este ticket foi devolvido pelo SIGAT por <strong>'.$nome_usuario.'</strong>.<br />
+        <p>Este ticket foi devolvido pelo SIGAT por <strong>'.utf8_decode($nome_usuario).'</strong>.<br />
         <strong>Motivo:</strong> '.$desc_devo.'</p>
         ---<br>
         <span style="font-size:11px">ID SIGAT: #'.$id_triagem.' | DEVOLUCAO_SIGAT<br />
