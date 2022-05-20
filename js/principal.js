@@ -876,8 +876,9 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
                     data: {e_status: num_equip},
                 }).done(function(data) {
                     res = data;
-                });  
-                if(parseInt(res.id_chamado) !== g_id_chamado) {
+                });
+               
+                if(res !== null && parseInt(res.id_chamado) !== g_id_chamado) {
                     alert("O item " + num_equip + " já está em atendimento!\nChamado: " + res.id_chamado + "\n" + res.ticket_chamado);
                     d.reject();
                     return d.promise();

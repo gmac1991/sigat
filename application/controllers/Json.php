@@ -745,9 +745,10 @@ class Json extends CI_Controller {
 
             $this->db->query("update equipamento 
                             set descricao_equipamento = '" . $i['descricao_equipamento'] .
+                            "', num_equipamento = '"       . $i['num_equipamento'] .
                             "', tag_equipamento = '"       . $i['tag_equipamento'] .
                             "', data_alteracao_equipamento = NOW()" .
-                            " where num_equipamento = '"   . $i['num_equipamento'] . "'"
+                            " where num_equipamento = '"   . $a['num_equipamento'] . "'"
             );
             
             // ------------ LOG -------------------
