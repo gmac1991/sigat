@@ -177,7 +177,7 @@ switch (ENVIRONMENT)
  * Un-comment the $assign_to_config array below to use this feature
  */
 	$assign_to_config['versao'] = '1.0.0.3';
-	$assign_to_config['caminho_termos'] = '../../termos/';
+	$assign_to_config['caminho_termos'] = 'termos/';
 	$assign_to_config['api_sim'] = "https://sistemas.sorocaba.sp.gov.br/acesso_patrimonio/api/patrimonio/";
 
 
