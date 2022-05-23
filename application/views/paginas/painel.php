@@ -22,7 +22,7 @@
 
 				<!-- ENCERRADOS -->
 			
-				<div class="tab-pane fade show " id="encerrados" role="tabpanel" aria-labelledby="encerrados-tab">
+				<div class="tab-pane fade show mb-5" id="encerrados" role="tabpanel" aria-labelledby="encerrados-tab">
 					<div class="mb-5">
 					<table id="tblEncerrados" style="width:100%" class="display">
 						
@@ -44,7 +44,7 @@
 
 				<!-- TRIAGEM -->
 				
-				<div class="tab-pane fade show " id="triagem" role="tabpanel" aria-labelledby="triagem-tab">
+				<div class="tab-pane fade show mb-5" id="triagem" role="tabpanel" aria-labelledby="triagem-tab">
 					<div class="mb-5">
 						<table id="tblTriagem" style="width:100%" class="display">
 							<thead >
@@ -62,7 +62,7 @@
 
 				<!-- CHAMADOS -->
 
-				<div class="tab-pane fade show active" id="painel" role="tabpanel" aria-labelledby="painel-tab">
+				<div class="tab-pane fade show mb-5 active" id="painel" role="tabpanel" aria-labelledby="painel-tab">
 				
 				
 				
