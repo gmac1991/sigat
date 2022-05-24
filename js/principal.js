@@ -129,6 +129,7 @@ function painel(id_fila) {
     table_painel = $('#tblPainel').DataTable({ //  inicializacao do painel
 
         "autoWidth": true,
+        "pageLength" : 25,
 
         "columnDefs": [{
             // "orderable": false,
