@@ -43,7 +43,7 @@ class Consultas_model extends CI_Model {
             $q .= " id_fila_chamado > 0 ";
         }
 
-        $q .= ' order by data_chamado, nome_responsavel is not NULL, status_chamado <> \'ABERTO\',status_chamado <> \'FECHADO\'';
+        $q .= ' order by data_chamado, status_chamado <> \'ABERTO\',status_chamado <> \'FECHADO\'';
 
         return $this->db->query($q)->result();
     }
