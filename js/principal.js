@@ -164,7 +164,7 @@ function painel(id_fila) {
 
         "ajax": base_url + 'chamado/listar_chamados_painel/' + id_fila,
 
-        "order": [],
+        "order": [4, 'asc' ],
 
         "processing": true,
 
