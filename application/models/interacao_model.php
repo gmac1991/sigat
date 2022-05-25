@@ -581,15 +581,17 @@ class Interacao_model extends CI_Model {
 
                   // -------------- /LOG ----------------
                }
+
+               if ($chamado->entrega_chamado == '1') {
+
+                  $this->db->set('entrega_chamado', '0');
+                  $this->db->where('id_chamado', $interacao->id_chamado_interacao);
+                  $this->db->update('chamado');
             }
             
 
             
-               if ($chamado->entrega_chamado == '1') {
-
-               $this->db->set('entrega_chamado', '0');
-               $this->db->where('id_chamado', $interacao->id_chamado_interacao);
-               $this->db->update('chamado');
+               
 
                // ------------ LOG -------------------
 
