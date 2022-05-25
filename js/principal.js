@@ -289,6 +289,8 @@ function triagem() {
 
         "autoWidth": false,
 
+        "pageLength" : 50,
+
         "columnDefs": [
 
             {
@@ -1132,7 +1134,7 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
     for (var i = 0; i < status_equips.length; ++i) {
 
         if ((p_id_responsavel == g_id_usuario && 
-            (status_equips[i] == 'ABERTO' || status_equips[i] == 'ESPERA' || status_equips[i] == 'FALHA'))) {
+            (status_equips[i] == 'ABERTO' || status_equips[i] == 'ESPERA' || status_equips[i] == 'FALHA' || status_equips[i] == 'ENTREGA'))) {
 
             botoes = "<button type=\"button\" id=\"btnModalRegistro\" class=\"btn btn-primary\"" +
             " data-toggle=\"modal\" data-target=\"#modalRegistro\" data-chamado=\"" + p_id_chamado +

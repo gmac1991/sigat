@@ -62,53 +62,7 @@ class Chamado extends CI_Controller {
     }
   }
 
-  public function registrar_chamado() { //registro do chamado
-
-    
-
-    $dados = array();
-
-    // campos
-
-    $dados['id_fila'] =           $this->input->post("id_fila");
-    $dados['nome_solicitante'] =  $this->input->post("nome_solicitante");
-    $dados['nome_local'] =        $this->input->post("nome_local");
-    $dados['telefone'] =          $this->input->post("telefone");
-    $dados['descricao'] =         $this->input->post("descricao");
-    $dados['listaPatrimonios'] =  $this->input->post("listaPatrimonios");
-    $dados['id_usuario'] =        $this->input->post("id_usuario");
-
-
-    // ------ UPLOAD DO ANEXO --------- //
-
-
-    if($this->input->post("temAnexo") == 1) {
-
-    $config = array();
-
-    $config['upload_path']          = './anexos/';
-    $config['allowed_types']        = 'gif|jpg|png|pdf|doc|docx|xls|xlsx|odt|ods|jpeg|txt'; //tipos de arquivos permitidos
-    $config['max_size']             = 5000; //tamanho maximo: 5 Megabytes
-
-    $this->load->library('upload', $config);
-
-    if (! $this->upload->do_upload('anexo')) {
-
-      $dados['erros_upload'] = array('error' => $this->upload->display_errors());
-      //echo 'passei aqui';
-
-      } else {
-
-      $dados['nome_anexo'] = trim($this->upload->data('file_name'));
-      //echo 'passei aqui';
-
-      }
-
-    }
-
-    $this->chamado_model->registraChamado($dados);
-
-  }
+  
 
   public function importar_chamado() {
     
