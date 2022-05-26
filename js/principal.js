@@ -1039,7 +1039,7 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
                 tblEquipsChamado.fieldOption(4,"deleteButton",true);
                 //tblEquipsChamado.fieldOption(0,"readOnly",false);
                 tblEquipsChamado.fieldOption(1,"readOnly",false);
-                tblEquipsChamado.fieldOption(1,"editing",true);
+                tblEquipsChamado.fieldOption(0,"inserting",false);
                
                 if (data.id_fila == 3) {
 
