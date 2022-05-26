@@ -189,7 +189,7 @@ class Interacao extends CI_Controller {
         $pdf->SetFont('Arial','B',13);
         $pdf->Cell(14,10,'Local ',1);
         $pdf->SetFont('Arial','',13);
-        $pdf->Cell(0,10,$dados['chamado']->nome_local,1);
+        $pdf->Cell(0,10,utf8_decode($dados['chamado']->nome_local),1);
         $pdf->Ln();
         $pdf->SetFont('Arial','B',13);
         $pdf->Cell(25,10,'Solicitante ',1);
@@ -283,7 +283,7 @@ class Interacao extends CI_Controller {
         $pdf->SetFont('Arial','B',13);
         $pdf->Cell(14,10,'Local ',1);
         $pdf->SetFont('Arial','',13);
-        $pdf->Cell(0,10,$dados['chamado']->nome_local,1);
+        $pdf->Cell(0,10,utf8_decode($dados['chamado']->nome_local),1);
         $pdf->Ln();
         $pdf->SetFont('Arial','B',13);
         $pdf->Cell(25,10,'Solicitante ',1);
