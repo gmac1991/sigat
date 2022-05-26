@@ -587,7 +587,7 @@ class Interacao_model extends CI_Model {
                   $this->db->set('entrega_chamado', '0');
                   $this->db->where('id_chamado', $interacao->id_chamado_interacao);
                   $this->db->update('chamado');
-            }
+               }
             
 
             
