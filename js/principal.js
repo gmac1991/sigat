@@ -1146,7 +1146,7 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
        
     }
 
-    if ((entrega == 1) && status_chamado == 'ABERTO' ) {
+    if (entrega == 1 && p_id_responsavel == g_id_usuario && status_chamado == 'ABERTO' ) {
 
                
 
