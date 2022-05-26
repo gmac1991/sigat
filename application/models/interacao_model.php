@@ -559,9 +559,11 @@ class Interacao_model extends CI_Model {
       switch ($interacao->tipo_interacao) {
 
          case 'ATENDIMENTO':
+
+            var_dump($pool_equips);
 		 
 		 
-            if (count($pool_equips) >= 1) {
+            if (count($pool_equips) >= 2) {
 
                foreach ($pool_equips as $num_equip) { 
                   $this->db->query("update equipamento_chamado set status_equipamento_chamado_ant = status_equipamento_chamado, 
