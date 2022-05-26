@@ -1038,6 +1038,7 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
                 tblEquipsChamado.fieldOption(4,"editButton",true);
                 tblEquipsChamado.fieldOption(4,"deleteButton",true);
                 tblEquipsChamado.fieldOption(1,"readOnly",false);
+                tblEquipsChamado.fieldOption(0,"readOnly",false);
                 
                
                 if (data.id_fila == 3) {
@@ -1048,7 +1049,7 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
 
                 if (g_auto_usuario > 3) {
 
-                    //tblEquipsChamado.fieldOption(0,"readOnly",false);
+                   
                     tblEquipsChamado.fieldOption(1,"readOnly",false);
                     tblEquipsChamado.fieldOption(4,"deleteButton",true);
                 }
