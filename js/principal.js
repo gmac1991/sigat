@@ -1038,7 +1038,7 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
                 tblEquipsChamado.fieldOption(4,"editButton",true);
                 tblEquipsChamado.fieldOption(4,"deleteButton",true);
                 tblEquipsChamado.fieldOption(1,"readOnly",false);
-                tblEquipsChamado.fieldOption(0,"readOnly",false);
+                tblEquipsChamado.fieldOption(2,"editing",true);
                 
                
                 if (data.id_fila == 3) {
