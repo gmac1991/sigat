@@ -4,7 +4,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Triagem extends CI_Controller {
 
-  private $tags_permitidas = "<p><br><ul><ol><li><span><style><mark><pre>";
+  private $tags_permitidas = "<p><br><ul><ol><li><span><style><mark><pre><div><font><a>";
 
 
   function __construct() {
@@ -112,10 +112,15 @@ class Triagem extends CI_Controller {
         $antigo_texto = $chamado_existente->row()->descricao_chamado;
         $diff = $sd->htmlDiff($antigo_texto,$novo_texto);
 
+
+
         echo $cn->normalize(strip_tags($diff,$this->tags_permitidas));
     }
     else {
-      echo $cn->normalize(strip_tags($desc,$this->tags_permitidas));
+
+      $out = preg_replace('/\<\/html\>/i','<br /><br />', $desc);
+
+      echo $cn->normalize(strip_tags($out,$this->tags_permitidas));
     }
   }
 }
