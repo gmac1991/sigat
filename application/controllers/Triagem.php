@@ -4,7 +4,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Triagem extends CI_Controller {
 
-  private $tags_permitidas = "<p><br><ul><ol><li><span><style><mark><pre><div><font><a>";
+  private $tags_permitidas = "<table><p><br><ul><ol><li><span><style><mark><pre><div><font>";
 
 
   function __construct() {
