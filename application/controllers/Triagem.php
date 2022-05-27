@@ -120,8 +120,8 @@ class Triagem extends CI_Controller {
 
       $out = preg_replace('/\<\/html\>/i','<br /><br />', $desc);
 
-      //echo $cn->normalize(strip_tags($out,$this->tags_permitidas));
-      echo $cn->normalize($out);
+      echo $cn->normalize(strip_tags($out,$this->tags_permitidas));
+      //echo $cn->normalize($out);
     }
   }
 }
