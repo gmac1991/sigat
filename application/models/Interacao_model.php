@@ -560,7 +560,7 @@ class Interacao_model extends CI_Model {
 
          case 'ATENDIMENTO':
 
-            var_dump($pool_equips);
+            var_dump(count($pool_equips));
 		 
 		 
             if (count($pool_equips) >= 1) {
