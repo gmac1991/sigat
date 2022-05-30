@@ -563,7 +563,7 @@ class Interacao_model extends CI_Model {
             var_dump($pool_equips);
 		 
 		 
-            if (count($pool_equips) >= 2) {
+            if (count($pool_equips) >= 1) {
 
                foreach ($pool_equips as $num_equip) { 
                   $this->db->query("update equipamento_chamado set status_equipamento_chamado_ant = status_equipamento_chamado, 
