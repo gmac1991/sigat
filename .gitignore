@@ -8,5 +8,5 @@ icon/Thumbs.db
 application/config/config.php
 application/config/database.php
 sessions/*
-application/libraries/mailer.php
-application/libraries/consulta_ldap.php
+application/libraries/Mailer.php
+application/libraries/Consulta_ldap.php
