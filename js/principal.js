@@ -1038,7 +1038,10 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
                 tblEquipsChamado.fieldOption(4,"editButton",true);
                 tblEquipsChamado.fieldOption(4,"deleteButton",true);
                 tblEquipsChamado.fieldOption(1,"readOnly",false);
-                tblEquipsChamado.fieldOption(2,"editing",true);
+                tblEquipsChamado.fieldOption(0,"readOnly",false);
+                tblEquipsChamado.fieldOption(0,"editing",false);
+                tblEquipsChamado.fieldOption(0,"inserting",true);
+               // tblEquipsChamado.fieldOption(2,"editing",true);
                 
                
                 if (data.id_fila == 3) {
@@ -2732,8 +2735,10 @@ $('input[name="telefone"]').on("keyup keyup keypress blur change", function(){
 
     var out = $(this).val();
 
-    $(this).val(out.replace(/[-\s]/g,""));
+    $(this).val(out.replace(/[\.-\s]/g,""));
 } );
+
+
 
 
 $('input[name="resumo_solicitacao"]').on("keyup keyup keypress blur change", function(){
@@ -2742,6 +2747,14 @@ $('input[name="resumo_solicitacao"]').on("keyup keyup keypress blur change", fun
 
     $(this).val(out.replace(/[\"\']/g,""));
 } );
+
+$('#tblEquips input').on("keyup keyup keypress blur change", function(){
+
+    var out = $(this).val();
+
+    $(this).val(out.replace(/\s/g,""));
+} );
+
 
 
 

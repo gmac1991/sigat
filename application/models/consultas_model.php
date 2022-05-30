@@ -199,6 +199,20 @@ class Consultas_model extends CI_Model {
 
         return $result;
     }
+
+    public function temEquipEspera($id_chamado) {
+
+        $out = 0;
+
+        $this->db->select("status_equipamento_chamado");
+        $this->db->from("equipamento_chamado");
+        $this->db->where("status_equipamento_chamado =  'ESPERA'");
+        $this->db->where("id_chamado_equipamento = " . $id_chamado);
+
+        $out = $this->db->get()->num_rows();
+
+        return $out;
+    }
     
     
 }

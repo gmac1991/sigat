@@ -273,6 +273,9 @@ class Chamado extends CI_Controller {
 		if ($linha->entrega_chamado == 1)
 			$nome_local .= " <span class=\"badge badge-success\" title=\"Entrega\"><i class=\"fas fa-truck\"></i></span>"; //inserindo badge de entrega
 	
+    if ($this->consultas_model->temEquipEspera($linha->id_chamado) > 0)
+      $nome_local .= " <span class=\"badge badge-warning\" title=\"Espera\"><i class=\"fas fa-hourglass-half\"></i></span>"; //inserindo badge de espera
+
 
 		$lista_painel['data'][] = array(
                               0 => $linha->id_chamado,
