@@ -2,7 +2,7 @@
 
 include_once("phpmailer/Phpmailer.php");
 
-class Mail extends PHPMailer {
+class Mailer extends PHPMailer {
 
     public function __construct()
     {
