@@ -79,7 +79,7 @@ class Consultas_model extends CI_Model {
         $q = "SELECT id_chamado,ticket_chamado, nome_solicitante_chamado, 
         (SELECT nome_local FROM LOCAL WHERE id_local = id_local_chamado) AS nome_local, 
         DATE_FORMAT(data_chamado, \"%d/%m/%Y - %H:%i:%s\") AS data_chamado,
-        (SELECT DATE_FORMAT(data_alteracao, \"%d/%m/%Y - %H:%i:%s\") FROM alteracao_chamado WHERE id_chamado_alteracao = id_chamado ORDER BY data_alteracao desc LIMIT 1) AS data_alt_chamado,
+        DATE_FORMAT(data_encerramento_chamado, \"%d/%m/%Y - %H:%i:%s\") as data_encerramento,
         (SELECT usuario.nome_usuario FROM usuario WHERE usuario.id_usuario = chamado.id_usuario_responsavel_chamado) AS nome_responsavel, 
         (SELECT nome_fila FROM fila WHERE id_fila = chamado.id_fila_chamado) AS nome_fila 
         FROM chamado
