@@ -2526,13 +2526,14 @@ $("#btnValidaEquip").on('click', async function() {
     }
     else {
         if (agrupamento == false) {
-            alert("A lista está vazia!");   
+            alert("A lista está vazia!");
+            $(this).removeAttr("disabled");   
         }
         else {
             $(this).html('<i class="fa fa-check"></i> Confirmado!');
             $("#btnAlteraEquip").removeAttr("disabled");
             $("#btnLoteEquip").prop("disabled","true");
-            //$(this).removeAttr("disabled");
+           
         }
         
     }
@@ -2628,7 +2629,8 @@ $("#radLoteLista").on('click', function() {
 
 $("#btnInsereLote").on('click', async function() {
 
-    $(this).prop("disabled","true");
+    
+    
     if ($("#radLoteFaixa").is(':checked')) {
 
         var inicio = Number($("#txtInicioFaixaLote").val());
@@ -2637,9 +2639,11 @@ $("#btnInsereLote").on('click', async function() {
         if((fim - inicio) < 1 || isNaN(fim - inicio))  {
 
             alert("Faixa inválida");
-            $(this).removeAttr("disabled");
+            
         }
         else {
+
+            $(this).prop("disabled","true");
 
             percentage = (100*1)/(fim - inicio);
             total_percentage = 0;
@@ -2674,9 +2678,54 @@ $("#btnInsereLote").on('click', async function() {
 
             $("#modalLote").removeClass('fade').modal('hide');
             $("#modalLote").modal('dispose');
+
+            $(this).removeAttr("disabled");
             
         }
         
+    
+    }
+    
+    if ($("#radLoteLista").is(':checked')) {
+
+        var grid_atual = $("#tblEquips").jsGrid("option","data");
+
+        if ($('#txtListaLote').val() == "")
+            return;
+
+        $(this).prop("disabled","true");
+
+        var linhas = $('#txtListaLote').val().split('\n');
+
+        percentage = (100*1)/(linhas.length);
+        total_percentage = 0;
+
+        var grid_lista = [];
+
+       
+
+        for(var i = 0;i < linhas.length;i++){
+           
+            var desc = null;
+         
+            var res = await verificaDescEquip(linhas[i]);
+            if (res.descricao !== null)
+                desc = res.descricao;
+
+            grid_lista.push({"Número":linhas[i],"Descrição":desc});
+
+            total_percentage = total_percentage + percentage;
+            $("#pbLote").css("width",total_percentage+"%"); 
+        }
+
+        novo_grid = grid_atual.concat(grid_lista);
+
+        $("#tblEquips").jsGrid("option","data",novo_grid);
+
+        $("#modalLote").removeClass('fade').modal('hide');
+        $("#modalLote").modal('dispose');
+
+        $(this).removeAttr("disabled");
     
     }
 
