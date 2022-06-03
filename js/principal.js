@@ -2484,8 +2484,12 @@ $("#btnValidaEquip").on('click', async function() {
                 }
                 else {
                     var status = await verificaStatusEquip(grid_equips[i].Número);
-                    if (status !== null && status.status_equipamento_chamado !== 'ATENDIDO') {
-                        ocorrencias.push({"Número":grid_equips[i].Número,"Status":status.status_equipamento_chamado,"ID":status.id_chamado,"Ticket":status.ticket_chamado})
+                    if (status !== null) {
+                        if (status.status_equipamento_chamado === "ABERTO" || 
+                            status.status_equipamento_chamado === "ENTREGA" ||
+                            status.status_equipamento_chamado === "INSERVIVEL") {
+                            ocorrencias.push({"Número":nums_equip[i],"Status":status.status_equipamento_chamado,"ID":status.id_chamado,"Ticket":status.ticket_chamado})
+                        }
                     }
                 }
 
