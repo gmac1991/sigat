@@ -2488,7 +2488,7 @@ $("#btnValidaEquip").on('click', async function() {
                         if (status.status_equipamento_chamado === "ABERTO" || 
                             status.status_equipamento_chamado === "ENTREGA" ||
                             status.status_equipamento_chamado === "INSERVIVEL") {
-                            ocorrencias.push({"Número":nums_equip[i],"Status":status.status_equipamento_chamado,"ID":status.id_chamado,"Ticket":status.ticket_chamado})
+                            ocorrencias.push({"Número":grid_equips[i].Número,"Status":status.status_equipamento_chamado,"ID":status.id_chamado,"Ticket":status.ticket_chamado})
                         }
                     }
                 }
