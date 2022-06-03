@@ -2389,7 +2389,9 @@ async function verificaAutoEquip() {
                 var status = await verificaStatusEquip(nums_equip[i]);
     
                 if (status !== null) {
-                    if (status.status_equipamento_chamado === 'ABERTO' || status.status_equipamento_chamado === 'ENTREGUE') {
+                    if (status.status_equipamento_chamado === "ABERTO" || 
+                        status.status_equipamento_chamado === "ENTREGA" ||
+                        status.status_equipamento_chamado === "INSERVIVEL") {
                         ocorrencias.push({"Número":nums_equip[i],"Status":status.status_equipamento_chamado,"ID":status.id_chamado,"Ticket":status.ticket_chamado})
                     }
                 }
