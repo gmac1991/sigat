@@ -915,9 +915,12 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
                 });
 
                 if(res !== null){
-                    alert("O item " + num_equip + " já está em atendimento!\nChamado: " + res.id_chamado + "\n" + res.ticket_chamado);
-                    d.reject();
-                    return d.promise();
+                    if (res.status_equipamento_chamado == 'ABERTO') {
+                        alert("O item " + num_equip + " já está em atendimento!\nChamado: " + res.id_chamado + "\n" + res.ticket_chamado);
+                        d.reject();
+                        return d.promise();
+                    }
+                    
                 }
                 else {
                 
