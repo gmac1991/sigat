@@ -24,11 +24,12 @@ class Equipamento_model extends CI_Model {
         $sql = "SELECT id_chamado, ticket_chamado, status_equipamento_chamado
         FROM chamado,equipamento_chamado
         WHERE equipamento_chamado.num_equipamento_chamado = '". $num_equip.
-        "' AND equipamento_chamado.id_chamado_equipamento = chamado.id_chamado";
+        "' AND equipamento_chamado.id_chamado_equipamento = chamado.id_chamado
+        ORDER BY chamado.id_chamado DESC LIMIT 1";
 
         $busca = $this->db->query($sql);
         
-        if($busca->num_rows() == 1) {
+        if($busca->num_rows() >= 1) {
 
             return $busca->row();
 
