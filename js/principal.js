@@ -953,7 +953,7 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
                 }).done(function(data) {
                     res = data;
                 });
-                if (res.status_equipamento_chamado === 'ABERTO') {
+                if (res.status_equipamento_chamado === 'ABERTO' || res !== null) {
                     
                     return $.ajax({
                         url: base_url + "del_equip_chamado",
