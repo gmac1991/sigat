@@ -920,23 +920,25 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
                         d.reject();
                         return d.promise();
                     }
+
+                    else {
+                
+                        return $.ajax({
+                            url: base_url + "add_equip_chamado",
+                            dataType: "json",
+                            method: "post",
+                            data: {item,g_id_chamado},
+                            success: async function() {
+                                var historico = await carregaHistorico(p_id_chamado);
+                                $("#historico").html(historico);
+                                carregaChamado(p_id_chamado);
+                            }
+                        });
+        
+                    }
                     
                 }
-                else {
-                
-                    return $.ajax({
-                        url: base_url + "add_equip_chamado",
-                        dataType: "json",
-                        method: "post",
-                        data: {item,g_id_chamado},
-                        success: async function() {
-                            var historico = await carregaHistorico(p_id_chamado);
-                            $("#historico").html(historico);
-                            carregaChamado(p_id_chamado);
-                        }
-                    });
-    
-                }
+               
             },
     
             deleteItem: async function(item) {
