@@ -131,16 +131,34 @@ function painel(id_fila) {
         "autoWidth": true,
         "pageLength" : 25,
 
-        "columnDefs": [{
+        "createdRow": function( row, data, dataIndex){
+            // if( data[5] >= 00600 && data[5] <= 012400 ){
+            //     $(row).addClass('bg-warning');
+            // }
+            // if( data[5] > 0012400 ){
+            //     $(row).addClass('bg-danger');
+            // }
+        },
+
+        "columnDefs": [
+            {
             // "orderable": false,
             // "targets": [7]
 
 
         }, {
-            "width": "10%",
+            
             "targets": 4,
             "render": $.fn.dataTable.render.moment('YYYY-MM-DD HH:mm:ss', 'DD/MM/YYYY H:mm:ss')
-        }, ],
+        }, 
+
+        {
+            "width": "10%",
+            "targets": 5,
+            //"render": $.fn.dataTable.render.moment('YY-MM-DD-hh-mm', 'YY-MM-DD-hh-mm')
+            "visible": false,
+        }, 
+        ],
 
         "language": {
             "decimal": "",
@@ -165,7 +183,7 @@ function painel(id_fila) {
 
         "ajax": base_url + 'chamado/listar_chamados_painel/' + id_fila,
 
-        "order": [4, 'asc' ],
+        "order": [5, 'desc'],
 
         "processing": true,
 
@@ -221,9 +239,10 @@ setInterval(function() { //atualiza o painel de chamados
 
 
     $('#tblPainel').DataTable().ajax.reload(null, false);
+    $('#tblTriagem').DataTable().ajax.reload(null, false);
 
 
-}, 30000);
+}, 30000); //intervalo de att painel
 
 // --------------- PAINEL ENCERRADOS ---------------------------
 
@@ -913,32 +932,26 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
                     res = data;
                     
                 });
-
                 if(res !== null){
                     if (res.status_equipamento_chamado == 'ABERTO') {
                         alert("O item " + num_equip + " já está em atendimento!\nChamado: " + res.id_chamado + "\n" + res.ticket_chamado);
                         d.reject();
                         return d.promise();
                     }
-
-                    else {
-                
-                        return $.ajax({
-                            url: base_url + "add_equip_chamado",
-                            dataType: "json",
-                            method: "post",
-                            data: {item,g_id_chamado},
-                            success: async function() {
-                                var historico = await carregaHistorico(p_id_chamado);
-                                $("#historico").html(historico);
-                                carregaChamado(p_id_chamado);
-                            }
-                        });
-        
-                    }
-                    
                 }
-               
+
+                return $.ajax({
+                    url: base_url + "add_equip_chamado",
+                    dataType: "json",
+                    method: "post",
+                    data: {item,g_id_chamado},
+                    success: async function() {
+                        var historico = await carregaHistorico(p_id_chamado);
+                        $("#historico").html(historico);
+                        carregaChamado(p_id_chamado);
+                    }
+                });
+                   
             },
     
             deleteItem: async function(item) {
@@ -1034,7 +1047,16 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
 
             // -------------------- PERMISSOES ----------------------------
             
+            if (g_auto_usuario > 3) {
+                $("#divPrioridade").append(`
+                    <input class="form-check-input mt-2" type="checkbox" value="" id="chkPrioridade">
+                    <label class="form-check-label" style="font-size: 0.9rem;">
+                        Prioridade
+                    </label>`);
+
+            }
             
+    
 
             if (data.id_responsavel == g_id_usuario) {
 
@@ -1060,6 +1082,7 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
                    
                     tblEquipsChamado.fieldOption(1,"readOnly",false);
                     tblEquipsChamado.fieldOption(4,"deleteButton",true);
+
                 }
             }
            
@@ -1384,6 +1407,10 @@ $('#frmRegistroEntrega').on('submit', function(e) { //submit do registro de entr
     dados.append("opcao_entrega",opcao);
     dados.append("id_chamado",p_id_chamado);
     dados.append("erro_entrega",erro);
+
+    if ($("#rdNao").is(":checked")) {
+        dados.append("txtFalhaEntrega",$("#txtFalhaEntrega").summernote('code'));
+    }
 
     $('input[name="termo_responsabilidade"]').val() !== "" ? dados.append("termo_resp",1) : dados.append("termo_resp",0);
 
@@ -2176,7 +2203,7 @@ setInterval(function() { //atualiza o log de eventos
     $('#tblEventos').DataTable().ajax.reload(null, false);
 
 
-}, 15000);
+}, 30000); 
 
 // ----------- /LOG DE EVENTOS -------------
 
@@ -2206,14 +2233,14 @@ $("#tblAnexos").jsGrid({
     deleteConfirm: "Tem certeza?",
     fields: [
         { 
-            name: "id_anexo_otrs",
+            name: "id_arquivo",
             title: "ID",
             type: "text",
             visible: false, 
                 
         },
         { 
-            name: "nome_arquivo_otrs",
+            name: "nome_arquivo",
             title: "Nome do arquivo",
             type: "text", 
             
@@ -2225,25 +2252,22 @@ $("#tblAnexos").jsGrid({
         }
     ],
     rowClick: function(args) {
-        window.open(base_url + 'anexo_otrs/' + args.item.id_anexo_otrs,'_blank ');
+        window.open(base_url + 'anexo_otrs/' + args.item.id_arquivo,'_blank ');
     }
 });
 
 var agrupamento = false;
 var diffDesc = null
 
-async function carregaTriagem(p_id_triagem) {
+async function carregaTriagem(p_id_ticket) {
 
-    var desc_triagem = null;
-
-
+   
     //$('div[name=descricao_triagem]').html('');
 
     //traz os dados do chamado MIGRADO (OTRS)
 
-    document.title = "Triagem #" + p_id_triagem + " - SIGAT";
+    document.title = "Triagem #" + p_id_ticket + " - SIGAT";
 
-    var p_id_responsavel = null;
     var anexos = [];
 
     $("#linhaInfoTriagem").hide();
@@ -2253,7 +2277,7 @@ async function carregaTriagem(p_id_triagem) {
         dataType: 'json',
         async: true,
         data: {
-            id_triagem: p_id_triagem
+            id_ticket: p_id_ticket
         },
         success: function(data) {
 
@@ -2271,17 +2295,13 @@ async function carregaTriagem(p_id_triagem) {
 
 
             $("#linhaInfoTriagem").show();
-            //preencher os campos conforme o json
-
-            $('input[name=nome_solicitante]').val(data.triagem.nome_solicitante_triagem);
-            $('input[name=id_triagem]').val(p_id_triagem);
-            //desc_triagem = data.triagem.descricao_triagem;
+    
 
             
             if (data.anexos_otrs.length > 0) {
 
                 data.anexos_otrs.forEach(function(item){
-                    anexos.push({id_anexo_otrs:item.id_anexo_otrs,nome_arquivo_otrs:item.nome_arquivo_otrs})
+                    anexos.push({id_arquivo:item.id,nome_arquivo:item.filename})
 
                 })   
             }            
@@ -2351,37 +2371,48 @@ async function verificaAutoEquip() {
     $("#btnValidaEquip").prop("disabled","true");
     $("#pbEquips").css("width","0%");
     
-    var text = "";
+    var text = $("#accordionArticles .card .card-body").html();
 
-    let response = await fetch(base_url + "triagem/descricao/" + g_id_triagem);
+    $("#accordionArticles .card .card-body").each(function(index) {
 
-    if (response.ok) { 
-        text = await response.text();
-    } else {
-        console.log("HTTP-Error: " + response.status);
-    }
+        text = text + $(this).html();
+
+    })
+
+  
+
+    // let response = await fetch(base_url + "triagem/descricao/" + g_id_triagem);
+
+    // if (response.ok) { 
+    //     text = await response.text();
+    // } else {
+    //     console.log("HTTP-Error: " + response.status);
+    // }
     
     if (agrupamento) {
 
-        var diff_n1 = text.match(/<div class="diff">(.*?)<\/div>/g);
+        // var diff_n1 = text.match(/<div class="diff">(.*?)<\/div>/g);
 
-        var novo_texto = null
+        // var novo_texto = null
 
-        diff_n1.forEach(function (item) {
+        // diff_n1.forEach(function (item) {
 
-            novo_texto = novo_texto + item.match(/<div class="diff">(.*?)<\/div>/g);
+        //     novo_texto = novo_texto + item.match(/<div class="diff">(.*?)<\/div>/g);
 
         
-        });
+        // });
 
-        nums_equip = novo_texto.match(patrimonio_regex);
+        // nums_equip = novo_texto.match(patrimonio_regex);
 
-        confirmado = true;
+        // confirmado = true;
+
+        $("#btnValidaEquip").removeAttr("disabled");
+        $("#btnLoteEquip").removeAttr("disabled");
         
     }
-    else {
+    // else {
         nums_equip = text.match(patrimonio_regex);
-    }
+    // }
 
     if (nums_equip !== null) {
         if (nums_equip.length > 0) {
@@ -2511,7 +2542,9 @@ $("#btnValidaEquip").on('click', async function() {
             $("#pbEquips").css("width",total_percentage+"%"); 
         }
 
-        if (erros.length == 0 && g_equips.length == 0 && agrupamento == false ) {
+        console.log(erros)
+
+        if (erros.length == 0) {
             $("#tblEquips").jsGrid("option","data",grid_equips); 
             if (ocorrencias.length > 0) {
                 $('#modalOcorrencias').modal('show');
@@ -2768,7 +2801,7 @@ $("#frmDevolveChamado").on('submit',function(e) {
                 async: true,
                 method: 'post',
                 data: {
-                    id_triagem: g_id_triagem,
+                    id_ticket: g_id_ticket,
                     desc_devo: txtDescDevo
                 },
                 beforeSend: function() {
@@ -2833,13 +2866,13 @@ $('#frmImportarChamado').on('submit',
             digits: true,
             minlength: 3,
         },
-        descricao: {
-            required: true,
-            minlength: 10,
-            normalizer: function(value) {
-                return $.trim(value);
-            }
-        },
+        // descricao: {
+        //     required: true,
+        //     minlength: 10,
+        //     normalizer: function(value) {
+        //         return $.trim(value);
+        //     }
+        // },
         id_fila: {
             required: true,
         },
@@ -2855,11 +2888,11 @@ $('#frmImportarChamado').on('submit',
             digits: "Somente dígitos (0-9)!",
             minlength: "Mínimo 3 dígitos!"
         },
-        descricao: {
-            required: "Campo obrigatório!",
-            minlength: "Descrição insuficiente!",
-            maxlength: "Tamanha máximo excedido!"
-        },
+        // descricao: {
+        //     required: "Campo obrigatório!",
+        //     minlength: "Descrição insuficiente!",
+        //     maxlength: "Tamanha máximo excedido!"
+        // },
 
         resumo_solicitacao: {
             required: "Campo obrigatório!",
@@ -2870,20 +2903,20 @@ $('#frmImportarChamado').on('submit',
         var script_url = base_url + "chamado/importar_chamado";
         var dados = new FormData(form);
         dados.append('listaEquipamentos', JSON.stringify(g_equips));
-        dados.append('ticket_triagem',g_ticket_triagem);
-        dados.append('email_triagem',g_email_triagem);
-        let response = await fetch(base_url + "triagem/descricao/" + g_id_triagem);
-        let desc = "";
+        dados.append('num_ticket',g_num_ticket);
+        // dados.append('email_triagem',g_email_triagem);
+        // let response = await fetch(base_url + "triagem/descricao/" + g_id_triagem);
+        // let desc = "";
 
-        if (response.ok) { 
-            desc = await response.text();
-        } else {
-            console.log("HTTP-Error: " + response.status);
-        }
-        //var replaced = $("#descricao_triagem").html().replace(/'/g, "\\'" );
-        dados.append('textoTriagem', desc);
+        // if (response.ok) { 
+        //     desc = await response.text();
+        // } else {
+        //     console.log("HTTP-Error: " + response.status);
+        // }
+        // var replaced = $("#descricao_triagem").html().replace(/'/g, "\\'" );
+        // dados.append('textoTriagem', desc);
         dados.append('g_anexos', JSON.stringify($("#tblAnexos").jsGrid("option","data")));
-        dados.append('id_triagem', g_id_triagem);
+        dados.append('id_ticket', g_id_ticket);
         $.ajax({
 
             url: script_url,
@@ -3001,6 +3034,11 @@ $("#frmBuscaRapida").on("submit", function(e) {
     e.preventDefault();
 
 });
+
+$("#chkPrioridade").on('click', function() {
+    $("#headerChamado").prepend(`<span class="text-warning"><i class="fas fa-star"></i></span>`)
+})
+
 
 
 

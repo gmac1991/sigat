@@ -50,10 +50,10 @@
 							<thead >
 							<tr>
 								<th>#</th>
-								<th>Ticket OTRS</th>
+								<th>Ticket</th>
 								<th>Data de abertura</th>
+								<th>Assunto</th>
 								<th>Solicitante</th>
-								<th>E-mail</th>
 							</tr>
 							</thead>
 						</table>
@@ -93,7 +93,9 @@
 							<th>Solicitante</th>
 							<th>Local</th>
 							<th>Data de abertura</th>
+							<th>Horas de espera</th>
 							<th>Responsável</th>		
+			
 							<th>Status</th>
 							<!-- <th>&nbsp;</th> -->
 						</tr>

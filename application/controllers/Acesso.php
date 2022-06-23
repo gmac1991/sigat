@@ -81,18 +81,12 @@ if (!isset($_SESSION['id_usuario'])) {
       $autentica_LDAP = $ldap->validaLogin();
 
       if ($autentica_LDAP === TRUE) {
-
-        /* $this->load->library('encryption');
-        $this->encryption->initialize(array('driver' => 'openssl'));
-        
-        $_SESSION["usi"] = $this->encryption->encrypt($dados['login_usuario']);
-        $_SESSION["psi"] = $this->encryption->encrypt($dados['senha_usuario']); */
       
         $_SESSION["usi"] = $dados['login_usuario'];
         $_SESSION["psi"] = $dados['senha_usuario'];
 
         $_SESSION['id_usuario'] = $usuario['id_usuario'];
-      
+
         header('Location: ' . base_url('painel'));
         
         // ------------ LOG -------------------

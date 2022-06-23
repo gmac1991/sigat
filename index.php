@@ -53,7 +53,7 @@
  *
  * NOTE: If you change these, also change the error_reporting() code below
  */
-	define('ENVIRONMENT', isset($_SERVER['CI_ENV']) ? $_SERVER['CI_ENV'] : 'production');
+	define('ENVIRONMENT', isset($_SERVER['CI_ENV']) ? $_SERVER['CI_ENV'] : 'development');
 
 /*
  *---------------------------------------------------------------
@@ -176,9 +176,8 @@ switch (ENVIRONMENT)
  *
  * Un-comment the $assign_to_config array below to use this feature
  */
-	$assign_to_config['versao'] = '1.1.8.12';
-	$assign_to_config['caminho_termos'] = 'termos/';
-	$assign_to_config['api_sim'] = "https://sistemas.sorocaba.sp.gov.br/acesso_patrimonio/api/patrimonio/";
+	$assign_to_config['versao'] = '1.1.9.12';
+	
 
 
 

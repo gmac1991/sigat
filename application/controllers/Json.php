@@ -132,7 +132,7 @@ class Json extends CI_Controller {
                     }
                     
                     echo "<a role=\"button\" class=\"btn btn-info mt-2 float-right\" href=\"" 
-                    . base_url('chamado/gerar_laudo/' .$id_chamado) . "\" download><i class=\"fas fa-file-download\"></i> Laudo Técnico</a>";
+                    . base_url('chamado/gerar_laudo/' .$interacao['id_interacao']) . "\" download><i class=\"fas fa-file-download\"></i> Laudo Técnico</a>";
                     
                     echo $interacao['texto_interacao'];
         
@@ -203,7 +203,7 @@ class Json extends CI_Controller {
                     }
 
                     echo "<a role=\"button\" class=\"btn btn-info mt-2 float-right\" href=\"" 
-                    . base_url('chamado/gerar_laudo/' .$id_chamado) . "\" download><i class=\"fas fa-file-download\"></i> Laudo Técnico</a>";
+                    . base_url('chamado/gerar_laudo/' .$interacao['id_interacao']) . "\" download><i class=\"fas fa-file-download\"></i> Laudo Técnico</a>";
                     
                     echo $interacao['texto_interacao'];
 
@@ -361,17 +361,17 @@ class Json extends CI_Controller {
 			
 			$result = array();
             
-            $id_triagem = $this->input->get('id_triagem');
+            $id_ticket = $this->input->get('id_ticket');
 
    
-            $q_buscaTriagem = "select ticket_triagem, nome_solicitante_triagem from triagem where id_triagem = " . $id_triagem;
+            //$q_buscaTriagem = "select ticket_triagem, nome_solicitante_triagem from triagem where id_triagem = " . $id_triagem;
 
-            $ticket_triagem =  $this->db->query("select ticket_triagem from triagem 
-            where id_triagem = " . $id_triagem)->row()->ticket_triagem;
+            // $ticket_triagem =  $this->db->query("select ticket_triagem from triagem 
+            // where id_triagem = " . $id_triagem)->row()->ticket_triagem;
 
             $chamado_existente = $this->db->query("select * from chamado 
-                                where ticket_chamado = '" 
-                                . $ticket_triagem . "' 
+                                where id_ticket_chamado = " 
+                                . $id_ticket . " 
                                 and status_chamado = 'ABERTO'");
 
             
@@ -379,17 +379,15 @@ class Json extends CI_Controller {
                 $result['chamado'] = $chamado_existente->row_array();
                 $result['agrupamento'] = 1;
             }
-				
-			$q_buscaAnexosOTRS = "select id_anexo_otrs, nome_arquivo_otrs from anexos_otrs
-			where id_triagem_sigat = " . $id_triagem;
 
-            
+            $db_otrs = $this->load->database('otrs', TRUE);
 
-            $result['triagem'] = $this->db->query($q_buscaTriagem)->row_array();
-            
-            
-            $result['anexos_otrs'] = $this->db->query($q_buscaAnexosOTRS)->result_array();
+        
+            $res = $db_otrs->query("SELECT aa.id, aa.filename FROM article_data_mime_attachment aa
+            INNER JOIN article a ON (aa.article_id = a.id)
+            WHERE aa.disposition = 'attachment' AND a.ticket_id = " .$id_ticket);
 			
+            $result['anexos_otrs'] = $res->result_array();
 
 
             header("Content-Type: application/json");
@@ -403,19 +401,23 @@ class Json extends CI_Controller {
 	public function anexo_otrs($id_anexo) {
 
         if (isset($_SESSION['id_usuario'])) {
+
+            $db_otrs = $this->load->database('otrs', TRUE);
 		
 				
-			$q_buscaAnexoOTRS = "select * from anexos_otrs where id_anexo_otrs = " . $id_anexo;
+			$q_buscaAnexoOTRS = "SELECT id, filename, content FROM article_data_mime_attachment
+                                WHERE disposition = 'attachment' AND id = 
+                                " . $id_anexo;
 
-            $anexo = $this->db->query($q_buscaAnexoOTRS)->row_array();
+            $anexo = $db_otrs->query($q_buscaAnexoOTRS)->row_array();
 
             
-			header("Content-Disposition: attachment; filename=" . $anexo['nome_arquivo_otrs']);
+			header("Content-Disposition: attachment; filename=" . $anexo['filename']);
 			ob_clean();
 			flush();
 			
 			
-			echo $anexo['conteudo_anexo_otrs'];
+			echo $anexo['content'];
         }
 
         else {
@@ -424,25 +426,21 @@ class Json extends CI_Controller {
     }
 
     public function anexos_chamado() {
-
-
         $id_chamado = $this->input->post("id_chamado");
-
         if (isset($_SESSION['id_usuario'])) {
-
-		
-				
-			$q_buscaAnexoOTRSChamado = "select id_anexo_otrs,nome_arquivo_otrs from anexos_otrs where id_chamado_sigat = " . $id_chamado;
-
-            $anexos = $this->db->query($q_buscaAnexoOTRSChamado)->result_array();
-
-            //print_r($anexos);
-
+            $anexos = NULL;
+			$q_anexos_sigat = "select id_anexo_otrs from anexos_otrs where id_chamado_sigat = " . $id_chamado;
+            $q = $this->db->query($q_anexos_sigat);
+            if ($q->num_rows() == 1) {
+                $id_anexo_otrs = $q->row()->id_anexo_otrs;
+                $db_otrs = $this->load->database('otrs', TRUE);
+                $q_buscaAnexoOTRS = "SELECT id as id_anexo_otrs, filename as nome_arquivo_otrs FROM article_data_mime_attachment
+                                    WHERE disposition = 'attachment' AND id = " . $id_anexo_otrs;
+                $anexos = $db_otrs->query($q_buscaAnexoOTRS)->result_array();
+            }
             header("Content-Type: application/json");
-
             echo json_encode($anexos);
         }
-
         else {
             header('HTTP/1.0 403 Forbidden');
         }

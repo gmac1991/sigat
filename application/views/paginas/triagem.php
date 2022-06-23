@@ -100,7 +100,7 @@
 <nav aria-label="breadcrumb">
    <ol class="breadcrumb">
       <li class="breadcrumb-item active"><a href="<?= base_url('painel?v=triagem'); ?>">Painel</a></li>
-      <li class="breadcrumb-item" aria-current="page">Triagem #<?= $triagem->id_triagem; ?></li>
+      <li class="breadcrumb-item" aria-current="page">Triagem #<?= $t_info->id; ?></li>
    </ol>
 </nav>
 <div class="container py-2">
@@ -109,7 +109,7 @@
 <div id="divTriagem" class="container py-2">
    <div class="row">
       <div class="col-8">
-         <h3 ><?= $triagem->ticket_triagem; ?> <a style="font-size:medium" target="_blank" href="http://csti.sorocaba.sp.gov.br/otrs/index.pl?Action=AgentTicketZoom;TicketID=<?= $triagem->id_ticket_triagem?>"><i class="fas fa-external-link-alt"></i></a></h3>
+         <h3 >Ticket#<?= $t_info->tn; ?> <a style="font-size:medium" target="_blank" href="<?= $this->config->item('url_ticketsys') ?>index.pl?Action=AgentTicketZoom;TicketID=<?= $t_info->id ?>"><i class="fas fa-external-link-alt"></i></a></h3>
       </div>
       <div class="col-4 text-right">
          <button type="button" class="btn btn-warning" id="btnDevolveChamado" data-toggle="modal" data-target="#modalDevolucao"><i class="fas fa-file-upload"></i> Devolver ao OTRS</button>
@@ -119,9 +119,28 @@
    <form enctype="multipart/form-data" method="post" id="frmImportarChamado" class="mb-5">
       <div class="row">
          <div class="form-group col">
-            <!-- <div id="descricao_triagem" class="border rounded p-2 overflow-auto" 
-               style="max-height: 450px;"><div class="d-flex align-items-center"><strong>Carregando..</strong><div class="spinner-border ml-auto" role="status" aria-hidden="true"></div></div></div> -->
-            <iframe src="<?= base_url("triagem/descricao/" . $triagem->id_triagem) ?>" width="100%" height="500"></iframe>
+            <div class="accordion" id="accordionArticles">
+               <?php $count = count($t_articles); ?>
+               <?php for($i = 0; $i < $count; $i++): ?>
+               <div class="card">
+                  <div class="card-header">
+                     <h2 class="mb-0">
+                     <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#a_<?= $t_articles[$i]->article_id ?>">
+                     <?= preg_replace("/\s{1}<.+>/","",$t_articles[$i]->a_from,1); ?> 
+                       <?php $date = date_create($t_articles[$i]->create_time); ?>
+                       <div class="float-right"><?= date_format($date,"d/m/y - H:i:s",); ?></div>
+                     </button>
+                     </h2>
+                  </div>
+                  <div id="a_<?= $t_articles[$i]->article_id ?>" class="collapse <?php echo $i == 0 ? 'show' : '' ?>" data-parent="#accordionArticles">
+                     <div class="card-body">
+                        <pre><?= $t_articles[$i]->a_body ?></pre>
+                     
+                     </div>
+                  </div>
+               </div>
+               <?php endfor; ?>
+               </div>
          </div>
          
       </div>
@@ -156,7 +175,7 @@
             <input type="text" class="form-control col-7" name="resumo_solicitacao" id="listaResumos">
             <br />
             <label for="nome_solicitante">Solicitante</label>
-            <input type="text" class="form-control col-5" name="nome_solicitante" id="listaSolicitantes">
+            <input type="text" class="form-control col-5" name="nome_solicitante" id="listaSolicitantes" value="<?= preg_replace("/\s{1}<.+>/","",$t_info->a_from,1); ?> ">
             <br />
             <label for="telefone">Telefone</label>
             <input type="text" maxlength="15" class="form-control col-4" name="telefone" aria-describedby="" placeholder="">
@@ -176,3 +195,4 @@
       </div>
    </form>
 </div>
+

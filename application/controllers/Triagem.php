@@ -18,28 +18,28 @@ class Triagem extends CI_Controller {
     
   }
 
-  public function index($id_triagem = NULL) { //controle dos chamados
+  public function index($id_ticket = NULL) { //exibe triagem
     if (isset($_SESSION['id_usuario'])) {
     
-		$dados = NULL;
+		$triagem = NULL;
 		
-		$dados['triagem'] = $this->consultas_model->buscaTriagem($id_triagem); //traz chamado migrado
+		$triagem  = $this->consultas_model->buscaTriagem($id_ticket); //traz chamado migrado
 		
-		if (isset($dados['triagem'])) { // se o chamado existir
+		if (isset($triagem )) { // se o chamado existir
 				
       $usuario = $this->usuario_model->buscaUsuario($_SESSION['id_usuario']);
 
       $this->load->view('templates/cabecalho', $usuario);
 
       //$lista_filas = $this->consultas_model->listaFilas(); 
-      $lista_solicitantes = $this->consultas_model->listaSolicitantes();
-      $lista_locais = $this->consultas_model->listaLocais();
-      $dados = array_merge($dados,array(/*"filas" => $lista_filas,*/ "solicitantes" => $lista_solicitantes, "locais" => $lista_locais));
+      //$lista_solicitantes = $this->consultas_model->listaSolicitantes();
+      //$lista_locais = $this->consultas_model->listaLocais();
+      //$dados = array_merge($dados,array(/*"filas" => $lista_filas,*/ "solicitantes" => $lista_solicitantes, "locais" => $lista_locais));
 
       
-      $dados['usuarios'] = $this->usuario_model->buscaUsuarios(); //traz a lista de todos os usuarios
+      //$dados['usuarios'] = $this->usuario_model->buscaUsuarios(); //traz a lista de todos os usuarios
 
-      $this->load->view('paginas/triagem', $dados);
+      $this->load->view('paginas/triagem', $triagem);
 
       $this->load->view('templates/rodape');
 			
@@ -65,16 +65,29 @@ class Triagem extends CI_Controller {
     
   
 
+    // $lista_painel['data'][] = array(
+    //                           0 => $linha->id_triagem,
+    //                           1 => $linha->ticket_triagem,
+    //                           2 => $linha->data_triagem,
+    //                           3 => $linha->nome_solicitante_triagem,
+    //                           4 => $linha->email_triagem,
+    //                           // 5 => "<a href=\"" . base_url('triagem/' . $linha->id_triagem) . 
+    //                           // "\" rel=\"noopener\" role=\"button\"" .
+    //                           // " class=\"d-block btn btn-sm btn-info\"><i class=\"fas fa-search\"></i></a> "
+    //                         ); //detalhes
+
+
     $lista_painel['data'][] = array(
-                              0 => $linha->id_triagem,
-                              1 => $linha->ticket_triagem,
-                              2 => $linha->data_triagem,
-                              3 => $linha->nome_solicitante_triagem,
-                              4 => $linha->email_triagem,
-                              // 5 => "<a href=\"" . base_url('triagem/' . $linha->id_triagem) . 
-                              // "\" rel=\"noopener\" role=\"button\"" .
-                              // " class=\"d-block btn btn-sm btn-info\"><i class=\"fas fa-search\"></i></a> "
-                            ); //detalhes
+      0 => $linha->id,
+      1 => "Ticket#" . $linha->tn,
+      2 => $linha->create_time,
+      3 => $linha->title,
+      4 => $linha->a_from,
+      //4 => $linha->email_triagem,
+      // 5 => "<a href=\"" . base_url('triagem/' . $linha->id_triagem) . 
+      // "\" rel=\"noopener\" role=\"button\"" .
+      // " class=\"d-block btn btn-sm btn-info\"><i class=\"fas fa-search\"></i></a> "
+    ); //detalhes
 
     }
 

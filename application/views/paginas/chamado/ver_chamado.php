@@ -55,11 +55,28 @@
         <div class="container py-2">
             <div>
                 <div class="float-right">
+                    <div class="form-check d-inline" id="divPrioridade">
+                    <?php if($usuario->autorizacao_usuario > 3): ?>
+                    <input class="form-check-input mt-2" type="checkbox" value="" id="chkPrioridade">
+                    <label class="form-check-label" style="font-size: 0.9rem;">
+                        Prioridade
+                    </label>
+                    <?php endif;?>
+                    </div>
                     <button id="btnBloquearChamado" class="btn btn-sm btn-primary" style="display:none"><i class="fas fa-lock"></i> Bloquear</button>
-                    <button id="btnDesbloquearChamado" class="btn btn-sm btn-primary" style="display:none"><i class="fas fa-unlock"></i> Desbloquear</button>
-                </div>
+                    <button id="btnDesbloquearChamado" class="btn btn-sm btn-primary" style="display:none"><i class="fas fa-unlock"></i> Desbloquear</button>                </div>
                  
-                <h3><?= $chamado->ticket_chamado ?> <a style="font-size:medium" target="_blank" href="http://csti.sorocaba.sp.gov.br/otrs/index.pl?Action=AgentTicketZoom;TicketID=<?= $chamado->id_ticket_chamado?>"><i class="fas fa-external-link-alt"></i></a> <small>(#<?= $chamado->id_chamado ?>)&nbsp;<div class="spinner-border spinner-border-sm" role="status" id="spnStatusChamado" style="display: none;"><span class="sr-only">Loading...</span></div></small></h3>
+                <h3 id="headerChamado">
+                    
+                <?= $chamado->ticket_chamado ?> 
+                    <a style="font-size:medium" target="_blank" 
+                    href="<?= $this->config->item('url_ticketsys') ?>index.pl?Action=AgentTicketZoom;TicketID=<?= $chamado->id_ticket_chamado?>">
+                    <i class="fas fa-external-link-alt"></i></a> <small>(#<?= $chamado->id_chamado ?>)&nbsp;
+                    
+                    <div class="spinner-border spinner-border-sm" role="status" id="spnStatusChamado" style="display: none;">
+                    <span class="sr-only">Loading...</span></div></small>
+                    
+                </h3>
                 
                   
             </div>
@@ -159,7 +176,7 @@
                     </form>
                 </div>
                 <div class="tab-pane" id="equip" role="tabpanel" aria-labelledby="equip-tab">
-                    <div class="content mt-3">
+                    <div class="content mt-3 mb-5">
                         <div id="tblEquipamentosChamado" class="jsgrid"></div>   
                     </div>
                 </div>
@@ -172,7 +189,7 @@
                 <div class="tab-pane" id="descricao" role="tabpanel" aria-labelledby="descricao-tab">
                     <div class="col-0 my-3">
                         <!-- <div name="descricao" class="border rounded p-2 overflow-auto" style="max-height: 450px;"></div> -->
-                        <iframe src="<?= base_url("chamado/descricao/" . $chamado->id_chamado) ?>" width="100%" height="500"></iframe>
+                        <!-- <iframe src=" base_url("chamado/descricao/" . $chamado->id_chamado) " width="100%" height="500"></iframe> -->
                     </div>
                 </div>
                 <div class="tab-pane" id="historico" role="tabpanel" aria-labelledby="historico-tab">

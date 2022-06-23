@@ -3,6 +3,8 @@
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Chamado extends CI_Controller {
+  
+  
 
   function __construct() {
     parent::__construct();
@@ -13,6 +15,8 @@ class Chamado extends CI_Controller {
     $this->load->library("mailer");
     $this->load->library("Charset_normalizer");
 
+    
+  
     
   }
 
@@ -44,6 +48,7 @@ class Chamado extends CI_Controller {
 
         $dados = $this->chamado_model->buscaChamado($id_chamado); //traz patrimonios, info do chamado e anexos...
         $dados['usuarios'] = $this->usuario_model->buscaUsuarios(); //traz a lista de todos os usuarios
+        $dados['usuario'] = $usuario; //dados do usuário logado
 
         if (isset($dados['chamado'])) {
 
@@ -62,17 +67,12 @@ class Chamado extends CI_Controller {
     }
   }
 
-  
-
   public function importar_chamado() {
-    
-
-    
-
+  
       $dados = array();
   
       // campos
-      $dados['id_triagem'] =          $this->input->post("id_triagem");
+      $dados['id_ticket'] =          $this->input->post("id_ticket");
       $dados['nome_solicitante'] =    str_replace(array("'","\""),"",$this->input->post("nome_solicitante"));
       $dados['resumo_solicitacao'] =  str_replace(array("'","\""),"",$this->input->post("resumo_solicitacao"));
       $dados['telefone'] =            $this->input->post("telefone");
@@ -80,9 +80,7 @@ class Chamado extends CI_Controller {
       $dados['comp_local'] =          str_replace(array("'","\""),"",$this->input->post("comp_local"));
       $dados['listaEquipamentos'] =   json_decode($this->input->post("listaEquipamentos"));
       $dados['anexos'] =              json_decode($this->input->post("g_anexos"));
-      $dados['textoTriagem'] =        $this->input->post("textoTriagem");
-      $dados['ticket_triagem'] =      $this->input->post("ticket_triagem");
-      $dados['email_triagem'] =       $this->input->post("email_triagem");
+      $dados['num_ticket'] =          "Ticket#" . $this->input->post("num_ticket");
       $dados['id_usuario'] =          $_SESSION["id_usuario"];
 
       
@@ -93,35 +91,42 @@ class Chamado extends CI_Controller {
 
     echo $novo_chamado["msg"];
 
-   
+    $user = $this->config->item('ticketsys_login');
+    $pwd = $this->config->item('ticketsys_pwd');
 
-      $mail = new Mailer(true);
-  
-      try {
-  
-         
-          // //Attachments
-          // $mail->addAttachment('/var/tmp/file.tar.gz');         //Add attachments
-          // $mail->addAttachment('/tmp/image.jpg', 'new.jpg');    //Optional name
-  
-          //Content
-          $mail->isHTML(true);                                  //Set email format to HTML
-          $mail->Subject = '[SIGAT] NOVO CHAMADO - ' . $dados['ticket_triagem'];
-          $mail->Body = '<span style="font-family:Arial,Helvetica,sans-serif">
-          <h2>SIGAT</h2>
-          <h3><em>'.$dados['ticket_triagem'].'</em></h3>
-          <p><strong>'.utf8_decode($nome_usuario).'</strong> criou o chamado #'.$novo_chamado["novo_id"].' no SIGAT.<br />
-          <a href="'. base_url("chamado/" . $novo_chamado["novo_id"]) . '">Clique para acessar</a></p>
-          ---<br>
-          <span style="font-size: 11px">ID SIGAT: #'.$novo_chamado["novo_id"].' | IMPORTACAO_SIGAT<br />
-          Esta mensagem &eacute; autom&aacute;tica, n&atilde;o responda.</span></span>';
-  
-          $mail->send();
-  
-      } catch (Exception $e) {
-          echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
-      }
+    $api_url = $this->config->item('url_ticketsys_api');
+
+    $url = $api_url."Ticket/" . $dados['id_ticket'] . "?UserLogin=".$user."&Password=".$pwd;
+
+    $data_arr = array();
+
+    $body = $nome_usuario . " criou o chamado " .$novo_chamado["novo_id"]. " no SIGAT.\n\n" .
     
+    "ID SIGAT: #".$novo_chamado["novo_id"]." | IMPORTACAO_SIGAT\n" .
+    "Esta mensagem é automática, não responda.";
+
+    $data_arr = array(
+      "Ticket" => array(
+        "QueueID" => 43, # mover para fila SIGAT
+      ),        
+      "Article" => array(
+        "Subject" => "[SIGAT] Novo Chamado",
+        "Body" => $body,
+        "ContentType" => "text/plain; charset=utf8"
+      )
+    );
+
+    $data = json_encode($data_arr);
+
+    $curl = curl_init();
+    curl_setopt($curl, CURLOPT_URL, $url);
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'PATCH');
+    curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
+    curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+    curl_exec($curl);
+    curl_close($curl);
+
   }
 
   public function encerrar_chamado() { //encerrar chamado
@@ -131,42 +136,49 @@ class Chamado extends CI_Controller {
     // campos
 
     $dados['id_chamado'] =        $this->input->post("id_chamado");
-   
     $dados['id_usuario'] =        $_SESSION['id_usuario'];
 
     $this->chamado_model->encerraChamado($dados);
 
     $nome_usuario = $this->usuario_model->buscaUsuario($_SESSION["id_usuario"])->nome_usuario;
     $result =  $this->chamado_model->buscaChamado($dados['id_chamado']);
-    $ticket = $result['chamado']->ticket_chamado;
+    $id_ticket = $result['chamado']->id_ticket_chamado;
 
-    $mail = new Mailer(true);
-  
-      try {
-  
-         
-          // //Attachments
-          // $mail->addAttachment('/var/tmp/file.tar.gz');         //Add attachments
-          // $mail->addAttachment('/tmp/image.jpg', 'new.jpg');    //Optional name
-  
-          //Content
-          $mail->isHTML(true);                                  //Set email format to HTML
-          $mail->Subject = '[SIGAT] CHAMADO ENCERRADO - ' . $ticket;
-          $mail->Body = '<span style="font-family:Arial,Helvetica,sans-serif">
-          <h2>SIGAT</h2>
-          <h3><em>'.$ticket.'</em></h3>
-          <p><strong>'.utf8_decode($nome_usuario).'</strong> encerrou o chamado #'.$dados['id_chamado'].' no SIGAT.<br />
-          <a href="'. base_url("chamado/" . $dados['id_chamado']) . '">Clique para acessar</a></p>
-          ---<br>
-          <span style="font-size: 11px">ID SIGAT: #'.$dados['id_chamado'].' | ENCERRAMENTO_SIGAT<br />
-          Esta mensagem &eacute; autom&aacute;tica, n&atilde;o responda.</span></span>';
-  
-          $mail->send();
-  
-      } catch (Exception $e) {
-          echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
-      }
 
+    $api_url = $this->config->item('url_ticketsys_api');
+
+    $user = $this->config->item('ticketsys_login');
+    $pwd = $this->config->item('ticketsys_pwd');
+
+    $url = $api_url."Ticket/" . $id_ticket . "?UserLogin=".$user."&Password=".$pwd;
+
+    $data_arr = array();
+
+    $body = $nome_usuario . " encerrou o chamado #". $dados['id_chamado']. "\n\n" .
+            "ID SIGAT: #".$id_ticket." | ENCERRAMENTO_SIGAT\n" .
+            "Esta mensagem é automática, não responda.";
+
+    $data_arr = array(
+        "Ticket" => array(
+        "StateID" => 2,    // novo estado: fechado com êxito   
+      ),        
+      "Article" => array(
+        "Subject" => "[SIGAT] Encerramento",
+        "Body" => $body,
+        "ContentType" => "text/plain; charset=utf8"
+      )
+    );
+
+    $data = json_encode($data_arr);
+
+    $curl = curl_init();
+    curl_setopt($curl, CURLOPT_URL, $url);
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'PATCH');
+    curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
+    curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+    curl_exec($curl);
+    curl_close($curl);
 
   }
 
@@ -195,48 +207,45 @@ class Chamado extends CI_Controller {
 
     // campos
 
-    $id_triagem =        $this->input->post("id_triagem");
+    $id_ticket =        $this->input->post("id_ticket");
     $desc_devo =        $this->input->post("desc_devo");
-   // $dados['id_usuario'] =        $_SESSION['id_usuario'];
-
-   
-
-    $ticket = $this->chamado_model->buscaTicketTriagem($id_triagem);
 
     $nome_usuario = $this->usuario_model->buscaUsuario($_SESSION["id_usuario"])->nome_usuario;
 
-    $this->load->library("mailer");
+    $user = $this->config->item('ticketsys_login');
+    $pwd = $this->config->item('ticketsys_pwd');
 
-    $mail = new Mailer(true);
+    $api_url = $this->config->item('url_ticketsys_api');
 
-    try {
+    $url = $api_url."Ticket/" . $id_ticket . "?UserLogin=".$user."&Password=".$pwd;
 
-        // //Attachments
-        // $mail->addAttachment('/var/tmp/file.tar.gz');         //Add attachments
-        // $mail->addAttachment('/tmp/image.jpg', 'new.jpg');    //Optional name
+    $data_arr = array();
 
-        //Content
-        $mail->isHTML(true);                                  //Set email format to HTML
-        $mail->Subject = utf8_decode('[SIGAT] DEVOLUÇÃO - ') . $ticket;
-        $mail->Body    = 
-        '<span style="font-family:Arial,Helvetica,sans-serif">
-        <h2>SIGAT</h2>
-        <h3><em>'.$ticket.'</em></h3>
-        <p>Este ticket foi devolvido pelo SIGAT por <strong>'.utf8_decode($nome_usuario).'</strong>.<br />
-        <strong>Motivo:</strong> '.utf8_decode($desc_devo).'</p>
-        ---<br>
-        <span style="font-size:11px">ID SIGAT: #'.$id_triagem.' | DEVOLUCAO_SIGAT<br />
-        Esta mensagem &eacute; autom&aacute;tica, n&atilde;o responda.</span></span>';
+    $body = $nome_usuario . " devolveu este ticket. Motivo:\n\n" . $desc_devo . "\n\n" .
+            "ID SIGAT: #".$id_ticket." | DEVOLUCAO_SIGAT\n" .
+            "Esta mensagem é automática, não responda.";
 
-        $mail->send();
-        //header("Location: " . base_url('painel?v=triagem'));
+    $data_arr = array(
+      "Ticket" => array(
+        "QueueID" => 5, # mover para fila Nivel0
+      ),        
+      "Article" => array(
+        "Subject" => "[SIGAT] Devolução",
+        "Body" => $body,
+        "ContentType" => "text/plain; charset=utf8"
+      )
+    );
 
-        $this->chamado_model->devolveChamado($id_triagem);
+    $data = json_encode($data_arr);
 
-    } catch (Exception $e) {
-        echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
-    }
-
+    $curl = curl_init();
+    curl_setopt($curl, CURLOPT_URL, $url);
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'PATCH');
+    curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
+    curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+    curl_exec($curl);
+    curl_close($curl);
   }
 
   public function listar_chamados_painel($id_fila = NULL) {
@@ -268,7 +277,55 @@ class Chamado extends CI_Controller {
 		
 		$nome_local .=  "</span>";
 		
-		
+
+    $dataInicio = $linha->data_ultima_interacao == NULL ? new DateTime($linha->data_chamado) : new DateTime($linha->data_ultima_interacao);
+
+    // var_dump($dataInicio);
+
+    $dataFim = new DateTime("now");
+
+    $intervalo = date_diff($dataInicio,$dataFim);
+
+    $tempo_espera = 0;
+    $tempo_espera_display = $intervalo->format("%Y-%M-%D-%H-%M");
+
+    
+    
+    $tempo_espera_fmt = $intervalo->format('%y::%m::%d::%h');
+    $array_tempo_espera = explode("::",$tempo_espera_fmt);
+
+    if ($array_tempo_espera[0] >= 1) {
+      
+      $tempo_espera += $array_tempo_espera[0] * 12 * 30 * 24;
+
+    }
+    if ($array_tempo_espera[1] >= 1) {
+      $tempo_espera += $array_tempo_espera[1] * 30 * 24;
+
+    }
+    if ($array_tempo_espera[2] >= 1) {
+      $tempo_espera += $array_tempo_espera[2] * 24;
+    }
+
+    $tempo_espera += $array_tempo_espera[3];
+
+    $tempo_medio = $this->consultas_model->conf()->tempo_medio_atendimento;
+    $tempo_max = $this->consultas_model->conf()->tempo_max_atendimento;
+    
+
+    if($tempo_espera >= $tempo_medio && $tempo_espera < $tempo_max) {
+
+      $aviso_tempo  = " <span class=\"text-warning\"><i class=\"fas fa-clock\"></i></span>";
+
+    }
+
+    if($tempo_espera > $tempo_max) {
+
+      $aviso_tempo = " <span class=\"text-danger\"><i class=\"fas fa-clock\"></i></span>";
+
+    }
+
+
 		
 		if ($linha->entrega_chamado == 1)
 			$nome_local .= " <span class=\"badge badge-success\" title=\"Entrega\"><i class=\"fas fa-truck\"></i></span>"; //inserindo badge de entrega
@@ -276,15 +333,24 @@ class Chamado extends CI_Controller {
     if ($this->consultas_model->temEquipEspera($linha->id_chamado) > 0)
       $nome_local .= " <span class=\"badge badge-warning\" title=\"Espera\"><i class=\"fas fa-hourglass-half\"></i></span>"; //inserindo badge de espera
 
+    $percent_atend = round((100*$linha->atend_equips) / $linha->total_equips,0);
+    $percent_abert = round((100*($linha->total_equips - $linha->atend_equips) / $linha->total_equips),0);
 
 		$lista_painel['data'][] = array(
                               0 => $linha->id_chamado,
                               1 => $linha->ticket_chamado,
-                              2 => $linha->nome_solicitante_chamado,
+                              2 => $linha->nome_solicitante_chamado . $aviso_tempo,
                               3 => $nome_local,
                               4 => $linha->data_chamado,
-                              5 => $linha->nome_responsavel,
-                              6 => $linha->status_chamado,
+                              5 => $tempo_espera_display,
+                              6 => $linha->nome_responsavel,
+                              7 => "<div class=\"progress\">
+                                    <div class=\"progress-bar bg-info\" style=\"width: " . $percent_atend . 
+                                    "%;height: 100%\">" .$percent_atend  . "%</div>
+                                    <div class=\"progress-bar\" style=\"width: " 
+                                    . $percent_abert . "%;height: 100%; background: #CDFFFF\"></div>
+                                    </div>",
+                              //7 => $linha->status_chamado,
                               // 7 => "<button class=\"btn btn-secondary btn-sm btn-block PopoverPainel\"" .
                               // " data-chamado=\"" . $linha->id_chamado . "\">" .
                               // "<i class=\"far fa-clock\"></i></button>", // ultima interacao

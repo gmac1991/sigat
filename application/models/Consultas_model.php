@@ -12,12 +12,32 @@ class Consultas_model extends CI_Model {
         $nivel_usuario = $this->db->query('select autorizacao_usuario from usuario where id_usuario = ' . $id_usuario)->row()->autorizacao_usuario;
 
 
-        $q = "select id_chamado, ticket_chamado, id_fila_chamado, nome_solicitante_chamado, 
-        (select nome_local from local where id_local = id_local_chamado) as nome_local, 
-		data_chamado, 
-        (select usuario.nome_usuario 
-        from usuario where usuario.id_usuario = chamado.id_usuario_responsavel_chamado) as nome_responsavel, 
-        status_chamado, entrega_chamado from chamado where";
+        $q = "SELECT id_chamado, ticket_chamado, id_fila_chamado, nome_solicitante_chamado, data_chamado,
+        (
+       SELECT nome_local
+       FROM LOCAL
+       WHERE id_local = id_local_chamado) AS nome_local, 
+               data_chamado, 
+        (
+       SELECT usuario.nome_usuario
+       FROM usuario
+       WHERE usuario.id_usuario = c.id_usuario_responsavel_chamado) AS nome_responsavel, 
+       (
+       SELECT COUNT(*)
+       FROM equipamento_chamado
+       WHERE id_chamado_equipamento = c.id_chamado) AS total_equips,
+       (
+       SELECT COUNT(*)
+       FROM equipamento_chamado
+       WHERE id_chamado_equipamento = c.id_chamado AND status_equipamento_chamado IN('ATENDIDO','ENTREGUE','INSERVIVEL')) AS atend_equips,
+       status_chamado, entrega_chamado,
+       (
+        SELECT data_interacao FROM interacao
+        WHERE id_chamado_interacao = c.id_chamado
+        ORDER BY data_interacao DESC
+        LIMIT 1
+        ) AS data_ultima_interacao
+       FROM chamado c where";
 
         $q .= ' status_chamado <> \'ENCERRADO\' and';
 
@@ -43,32 +63,68 @@ class Consultas_model extends CI_Model {
             $q .= " id_fila_chamado > 0 ";
         }
 
-        $q .= ' order by data_chamado';
+        //$q .= ' order by data_chamado';
 
         return $this->db->query($q)->result();
     }
 	
-	public function listaTriagem() { // lista de chamados insertados pelo OTRS
-
+	public function listaTriagem() { // lista de chamados da fila Suporte Atendimento do OTRS (queue_id = 37)
         
 
+        $db_otrs = $this->load->database('otrs', TRUE);
 
-        $q = "select id_triagem, nome_solicitante_triagem, email_triagem,
-        		data_triagem, ticket_triagem from triagem where triado_triagem = 0 order by data_triagem asc";
-   
+        $db_otrs->query("SET SESSION sql_mode=''");
+        
+        $res = $db_otrs->query("SELECT t.id, t.tn, t.create_time, t.title, REPLACE(adm.a_from,'\"','') as a_from
+        FROM article_data_mime adm
+        INNER JOIN article a ON (adm.article_id = a.id)
+        INNER JOIN ticket t ON (a.ticket_id = t.id)
+        WHERE t.queue_id = 37 AND t.ticket_state_id IN(1,4)
+        GROUP BY t.tn
+        ORDER BY adm.create_time ASC");
 
-        return $this->db->query($q)->result();
+        return $res->result();
     }
 	
-	public function buscaTriagem($id_triagem) { 
+	public function buscaTriagem($id_ticket) { 
 
         
 
 
-        $q = "select * from triagem where triado_triagem = 0 and id_triagem = ". $id_triagem;
+        // $q = "select * from triagem where triado_triagem = 0 and id_triagem = ". $id_triagem;
    
 
-        return $this->db->query($q)->row();
+        // return $this->db->query($q)->row();
+
+        $dados = array(
+            "t_info" => NULL,
+            "t_articles" => NULL
+        );
+
+
+        $db_otrs = $this->load->database('otrs', TRUE);
+
+        
+        $res = $db_otrs->query("SELECT t.id, t.tn, t.create_time, t.title, REPLACE(adm.a_from,'\"','') as a_from
+        FROM article_data_mime adm
+        INNER JOIN article a ON (adm.article_id = a.id)
+        INNER JOIN ticket t ON (a.ticket_id = t.id)
+        WHERE t.queue_id = 37 AND t.ticket_state_id IN(1,4) AND t.id = " . $id_ticket .
+        " ORDER BY adm.create_time asc
+        LIMIT 1");
+
+        $dados['t_info'] = $res->row();
+
+        $res = $db_otrs->query("SELECT adm.article_id, REPLACE(adm.a_from,'\"','') as a_from, adm.a_subject, adm.a_body, adm.create_time
+        FROM article_data_mime adm
+        INNER JOIN article a ON (adm.article_id = a.id)
+        INNER JOIN ticket t ON (a.ticket_id = t.id)
+        WHERE t.queue_id = 37 AND t.ticket_state_id IN(1,4) AND t.id = " . $id_ticket . 
+        " ORDER BY adm.create_time asc");
+
+        $dados['t_articles'] = $res->result();
+
+        return $dados;
     }
     
     
@@ -85,29 +141,9 @@ class Consultas_model extends CI_Model {
         FROM chamado
         WHERE status_chamado = 'ENCERRADO'";
 
-        // if ($id_fila > 0 ) {
-
-        //     if ($id_fila == 6) {
-        //         $q .= " and id_fila_chamado = 3";
-
-        //         $q .= " and entrega_chamado = 1";
-        //     } else {
-
-        //         $q .= " and id_fila_chamado = " . $id_fila;
-        //     }
-        // }
-
-        // $q .= ' order by data_chamado';
-        
-        
-        
         return $this->db->query($q)->result();
     }
 
-    
-	
-
-    
     public function listaFilas() {
         
         $this->db->select();
@@ -126,15 +162,7 @@ class Consultas_model extends CI_Model {
         
     }
     
-    public function listaSolicitantes() {
-        
-      /*  $this->db->select();
-        $this->db->from('solicitante');
-        $this->db->where("nome_solicitante <> '-0'"); //excluindo da consulta os usuarios com nome ' -0 '
-        $this->db->order_by('nome_solicitante');
-        return $this->db->get()->result_array();*/
-        
-    }
+    
 
     public function listaLocais() {
         
@@ -180,6 +208,7 @@ class Consultas_model extends CI_Model {
             $this->db->where("ticket like '%" . $termo ."%'");
             $this->db->or_where("nome_solicitante like '%" . $termo ."%'");
             $this->db->or_where("nome_local like '%" . $termo ."%'");
+            $this->db->or_where("id like '%" . $termo ."%'");
             $this->db->limit(10); 
             $chamado = $this->db->get()->result_array();
 
@@ -212,6 +241,13 @@ class Consultas_model extends CI_Model {
         $out = $this->db->get()->num_rows();
 
         return $out;
+    }
+
+    public function conf() {
+        $this->db->select();
+        $this->db->from('configuracao');
+        
+        return $this->db->get()->row();
     }
     
     

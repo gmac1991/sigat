@@ -13,6 +13,7 @@ class Interacao extends CI_Controller {
         $this->load->model("chamado_model"); //carregando o model chamado
         $this->load->model("interacao_model"); //carregando o model interacoes
         $this->load->model("usuario_model"); //carregando o model usuario
+        $this->load->model("equipamento_model"); //carregando o model usuario
 
         
     }
@@ -141,6 +142,7 @@ class Interacao extends CI_Controller {
 
 
                 $dados['tipo'] = 'FALHA_ENTREGA';
+                $dados['txtFalhaEntrega'] = $this->input->post('txtFalhaEntrega');
 
 
             }
@@ -159,10 +161,6 @@ class Interacao extends CI_Controller {
          
     }
            
-  
-   
-  
-  
     public function gerar_termo($id_chamado) {
 
         $dados = $this->chamado_model->buscaChamado($id_chamado,'ENTREGA');
@@ -353,14 +351,16 @@ class Interacao extends CI_Controller {
     
     }
   
-    public function gerar_laudo($id_chamado) {
+    public function gerar_laudo($id_interacao) {
   
        
-        $interacao = $this->interacao_model->buscaInteracaoChamado($id_chamado,array('FECHAMENTO_INS', 'ATENDIMENTO_INS'));
+        $interacao = $this->interacao_model->buscaInteracaoChamado($id_interacao);
 
+    //    print_r($interacao);
+    //    print_r($id_chamado);
         if ($interacao !== NULL) { 
 
-            $dados = $this->chamado_model->buscaChamado($id_chamado,'INSERVIVEL');
+            //$dados = $this->chamado_model->buscaChamado($interacao->id_chamado_interacao,'INSERVIVEL');
     
             $this->load->library('pdf_html');
                 
@@ -371,24 +371,24 @@ class Interacao extends CI_Controller {
             $pdf->Cell(0,10,utf8_decode('Laudo Técnico'),0,0,'C');
             $pdf->Ln(10);
             $pdf->SetFont('Arial','',11);
-            $pdf->Cell(0,10,'Emitido em: ' . date('d/m/Y - H:i:s'),0,0,'R');
+            $pdf->Cell(0,10,'Emitido em: ' . date('d/m/Y - H:i:s') . ' | #' . $id_interacao,0,0,'R');
             $pdf->Ln(15);
             $pdf->SetFont('Arial','B',13);
-            $pdf->Cell(100,10,$dados['chamado']->ticket_chamado,1);
+            $pdf->Cell(100,10, $interacao->ticket_chamado,1);
             $pdf->SetFont('Arial','B',13);
             $pdf->Cell(12,10,'Data ',1);
             $pdf->SetFont('Arial','',13);
-            $pdf->Cell(0,10,$dados['chamado']->data_chamado,1);
+            $pdf->Cell(0,10, $interacao->data_chamado,1);
             $pdf->Ln();
             $pdf->SetFont('Arial','B',13);
             $pdf->Cell(14,10,'Local ',1);
             $pdf->SetFont('Arial','',13);
-            $pdf->Cell(0,10,utf8_decode($dados['chamado']->nome_local),1);
+            $pdf->Cell(0,10,utf8_decode($interacao->nome_local),1);
             $pdf->Ln();
             $pdf->SetFont('Arial','B',13);
             $pdf->Cell(25,10,'Solicitante ',1);
             $pdf->SetFont('Arial','',13);
-            $pdf->Cell(0,10,utf8_decode($dados['chamado']->nome_solicitante_chamado),1);
+            $pdf->Cell(0,10,utf8_decode($interacao->nome_solicitante_chamado),1);
             $pdf->Ln();
             $pdf->Ln(10);
             $pdf->SetFont('Arial','B',14);
@@ -400,12 +400,14 @@ class Interacao extends CI_Controller {
             $pdf->Cell(0,10,utf8_decode('Descrição'),1,0,'C');
             $pdf->SetFont('Arial','',12);
             $pdf->Ln();
-    
-            foreach($dados['equipamentos'] as $equip) {
-    
-            $pdf->Cell(36,10,$equip->num_equipamento,1,0,'');
-            $pdf->Cell(0,10,$equip->descricao_equipamento,1,0,'');
-            $pdf->Ln();
+            
+            $equips = explode("::",$interacao->pool_equipamentos);
+            foreach($equips as $num_equip) {
+
+                $desc = $this->equipamento_model->buscaDescEquipamento($num_equip);
+                $pdf->Cell(36,10,$num_equip,1,0,'');
+                $pdf->Cell(0,10,$desc,1,0,'');
+                $pdf->Ln();
     
     
             }
@@ -432,18 +434,18 @@ class Interacao extends CI_Controller {
             $pdf->SetFont('Arial','',12);
             $pdf->Cell(0,10,utf8_decode($interacao->nome_usuario));
             
-            //header('Content-Type: charset=utf-8');
+            header('Content-Type: charset=utf-8');
 
-            $pdf->SetTitle('LAUDO_' . date('d-m-Y') . "_" . $id_chamado);
+            $pdf->SetTitle('LAUDO_' . date('d-m-Y') . "_" . $interacao->id_chamado_interacao);
     
     
-            $pdf->Output('I','laudo_tecnico_' . $id_chamado . '.pdf');
+            $pdf->Output('I','laudo_tecnico_' . $interacao->id_chamado_interacao . '.pdf');
 
             // ------------ LOG -------------------
 
             $log = array(
                 'acao_evento' => 'GERAR_LAUDO_INSERVIVEL',
-                'desc_evento' => 'ID CHAMADO: ' . $id_chamado . ' - NOME: laudo_tecnico_' . $id_chamado . '.pdf',
+                'desc_evento' => 'ID CHAMADO: ' . $interacao->id_chamado_interacao . ' - NOME: laudo_tecnico_' . $interacao->id_chamado_interacao . '.pdf',
                 'id_usuario_evento' => $_SESSION['id_usuario']
             );
             
