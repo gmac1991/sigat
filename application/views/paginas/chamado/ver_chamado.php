@@ -3,7 +3,7 @@
 
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">Nova Interação</h5>
+                        <h5 class="modal-title"><i class="fas fa-asterisk"></i> Nova Interação</h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                         </button>
@@ -57,7 +57,7 @@
                 <div class="float-right">
                     <div class="form-check d-inline" id="divPrioridade">
                     <?php if($usuario->autorizacao_usuario > 3): ?>
-                    <input class="form-check-input mt-2" type="checkbox" value="" id="chkPrioridade">
+                    <input class="form-check-input mt-2" type="checkbox" value="" id_chamado="<?= $chamado->id_chamado ?>" id="chkPrioridade" <?= $chamado->prioridade_chamado == 1 ? 'checked' : '' ?>>
                     <label class="form-check-label" style="font-size: 0.9rem;">
                         Prioridade
                     </label>
@@ -67,12 +67,13 @@
                     <button id="btnDesbloquearChamado" class="btn btn-sm btn-primary" style="display:none"><i class="fas fa-unlock"></i> Desbloquear</button>                </div>
                  
                 <h3 id="headerChamado">
-                    
+                <i class="<?= $icone ?>"></i>
+                
                 <?= $chamado->ticket_chamado ?> 
                     <a style="font-size:medium" target="_blank" 
                     href="<?= $this->config->item('url_ticketsys') ?>index.pl?Action=AgentTicketZoom;TicketID=<?= $chamado->id_ticket_chamado?>">
                     <i class="fas fa-external-link-alt"></i></a> <small>(#<?= $chamado->id_chamado ?>)&nbsp;
-                    
+                    <span class="text-warning" id="estrela_prioridade" style="display:<?= $chamado->prioridade_chamado == 1 ? 'inline' : 'none' ?>"><i class="fas fa-star"></i></span>
                     <div class="spinner-border spinner-border-sm" role="status" id="spnStatusChamado" style="display: none;">
                     <span class="sr-only">Loading...</span></div></small>
                     
@@ -188,8 +189,29 @@
                 </div>
                 <div class="tab-pane" id="descricao" role="tabpanel" aria-labelledby="descricao-tab">
                     <div class="col-0 my-3">
-                        <!-- <div name="descricao" class="border rounded p-2 overflow-auto" style="max-height: 450px;"></div> -->
-                        <!-- <iframe src=" base_url("chamado/descricao/" . $chamado->id_chamado) " width="100%" height="500"></iframe> -->
+                        <div class="accordion" id="accordionArticles">
+                        <?php $count = count($ticket['t_articles']); ?>
+                        <?php for($i = 0; $i < $count; $i++): ?>
+                        <div class="card">
+                            <div class="card-header">
+                                <h2 class="mb-0">
+                                <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#a_<?= $ticket['t_articles'][$i]->article_id ?>">
+                                <i class="fas fa-user-circle"></i>
+                                <?= preg_replace("/\s{1}<.+>/","",$ticket['t_articles'][$i]->a_from,1); ?> 
+                                <?php $date = date_create($ticket['t_articles'][$i]->create_time); ?>
+                                <div class="float-right"><i class="fas fa-calendar-alt"></i> <?= date_format($date,"d/m/y - H:i:s",); ?></div>
+                                </button>
+                                </h2>
+                            </div>
+                            <div id="a_<?= $ticket['t_articles'][$i]->article_id ?>" class="collapse <?php echo $i == 0 ? 'show' : '' ?>" data-parent="#accordionArticles">
+                                <div class="card-body">
+                                    <pre><?= $ticket['t_articles'][$i]->a_body ?></pre>
+                                
+                                </div>
+                            </div>
+                        </div>
+                        <?php endfor; ?>
+                        </div>
                     </div>
                 </div>
                 <div class="tab-pane" id="historico" role="tabpanel" aria-labelledby="historico-tab">

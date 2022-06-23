@@ -3,7 +3,7 @@
     <head>
     	<meta charset="utf-8">
     	<meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Sigat</title>
+        <title><?= ENVIRONMENT == 'production' ? "" : "[DEV] " ?>SIGAT</title>
         <link rel="stylesheet" href="<?= base_url("css/bootstrap.min.css") ?>">
         <link rel="stylesheet" href="<?= base_url("datatables/datatables.min.css") ?>">
         <link rel="stylesheet" href="<?= base_url("css/jquery.auto-complete.css") ?>">

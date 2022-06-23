@@ -4,7 +4,6 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Triagem extends CI_Controller {
 
-  private $tags_permitidas = "<table><tr><th><td><tbody><thead><p><br><ul><ol><li><span><style><mark><pre><div><font>";
 
 
   function __construct() {
@@ -20,36 +19,34 @@ class Triagem extends CI_Controller {
 
   public function index($id_ticket = NULL) { //exibe triagem
     if (isset($_SESSION['id_usuario'])) {
-    
-		$triagem = NULL;
-		
-		$triagem  = $this->consultas_model->buscaTriagem($id_ticket); //traz chamado migrado
-		
-		if (isset($triagem )) { // se o chamado existir
-				
+
       $usuario = $this->usuario_model->buscaUsuario($_SESSION['id_usuario']);
 
-      $this->load->view('templates/cabecalho', $usuario);
+      if ($usuario->triagem_usuario == 0) {
 
-      //$lista_filas = $this->consultas_model->listaFilas(); 
-      //$lista_solicitantes = $this->consultas_model->listaSolicitantes();
-      //$lista_locais = $this->consultas_model->listaLocais();
-      //$dados = array_merge($dados,array(/*"filas" => $lista_filas,*/ "solicitantes" => $lista_solicitantes, "locais" => $lista_locais));
+        header('Location: ' . base_url());
 
-      
-      //$dados['usuarios'] = $this->usuario_model->buscaUsuarios(); //traz a lista de todos os usuarios
+      }
 
-      $this->load->view('paginas/triagem', $triagem);
+      else {
 
-      $this->load->view('templates/rodape');
+        $triagem = NULL;
+		
+		    $triagem  = $this->consultas_model->buscaTicket($id_ticket,37); //traz chamado migrado, fila Suporte Atendimento
+		
+		    if (isset($triagem )) { // se o chamado existir
+
+          $this->load->view('templates/cabecalho', $usuario);
+
+          $this->load->view('paginas/triagem', $triagem);
+
+          $this->load->view('templates/rodape');
 			
-		}
-		
-		else {
-			show_404();
-		}
-		
-
+		    }
+        else {
+          show_404();
+        }
+		  }
     } else {
       header('Location: ' . base_url(),false,403);
     }

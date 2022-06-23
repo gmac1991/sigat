@@ -12,7 +12,7 @@ class Consultas_model extends CI_Model {
         $nivel_usuario = $this->db->query('select autorizacao_usuario from usuario where id_usuario = ' . $id_usuario)->row()->autorizacao_usuario;
 
 
-        $q = "SELECT id_chamado, ticket_chamado, id_fila_chamado, nome_solicitante_chamado, data_chamado,
+        $q = "SELECT id_chamado, ticket_chamado, id_fila_chamado, nome_solicitante_chamado, data_chamado, prioridade_chamado,
         (
        SELECT nome_local
        FROM local
@@ -86,30 +86,19 @@ class Consultas_model extends CI_Model {
         return $res->result();
     }
 	
-	public function buscaTriagem($id_ticket) { 
-
-        
-
-
-        // $q = "select * from triagem where triado_triagem = 0 and id_triagem = ". $id_triagem;
-   
-
-        // return $this->db->query($q)->row();
-
+	public function buscaTicket($id_ticket,$queue_id) { 
         $dados = array(
             "t_info" => NULL,
             "t_articles" => NULL
         );
 
-
         $db_otrs = $this->load->database('otrs', TRUE);
 
-        
         $res = $db_otrs->query("SELECT t.id, t.tn, t.create_time, t.title, REPLACE(adm.a_from,'\"','') as a_from
         FROM article_data_mime adm
         INNER JOIN article a ON (adm.article_id = a.id)
         INNER JOIN ticket t ON (a.ticket_id = t.id)
-        WHERE t.queue_id = 37 AND t.ticket_state_id IN(1,4) AND t.id = " . $id_ticket .
+        WHERE t.queue_id = ". $queue_id . " AND t.ticket_state_id IN(1,4) AND t.id = " . $id_ticket .
         " ORDER BY adm.create_time asc
         LIMIT 1");
 
@@ -119,7 +108,7 @@ class Consultas_model extends CI_Model {
         FROM article_data_mime adm
         INNER JOIN article a ON (adm.article_id = a.id)
         INNER JOIN ticket t ON (a.ticket_id = t.id)
-        WHERE t.queue_id = 37 AND t.ticket_state_id IN(1,4) AND t.id = " . $id_ticket . 
+        WHERE t.queue_id = ". $queue_id . " AND t.ticket_state_id IN(1,4) AND t.id = " . $id_ticket . 
         " ORDER BY adm.create_time asc");
 
         $dados['t_articles'] = $res->result();

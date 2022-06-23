@@ -126,9 +126,11 @@
                   <div class="card-header">
                      <h2 class="mb-0">
                      <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#a_<?= $t_articles[$i]->article_id ?>">
+                     <i class="fas fa-user-circle"></i>
                      <?= preg_replace("/\s{1}<.+>/","",$t_articles[$i]->a_from,1); ?> 
                        <?php $date = date_create($t_articles[$i]->create_time); ?>
-                       <div class="float-right"><?= date_format($date,"d/m/y - H:i:s",); ?></div>
+                       
+                       <div class="float-right"><div class="float-right"><i class="fas fa-calendar-alt"></i> <?= date_format($date,"d/m/y - H:i:s",); ?></div>
                      </button>
                      </h2>
                   </div>

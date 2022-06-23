@@ -131,33 +131,38 @@ function painel(id_fila) {
         "autoWidth": true,
         "pageLength" : 25,
 
-        "createdRow": function( row, data, dataIndex){
-            // if( data[5] >= 00600 && data[5] <= 012400 ){
-            //     $(row).addClass('bg-warning');
-            // }
-            // if( data[5] > 0012400 ){
-            //     $(row).addClass('bg-danger');
-            // }
-        },
+       
 
         "columnDefs": [
             {
-            // "orderable": false,
-            // "targets": [7]
+                "targets": 1,
+                //"data": "prioridade_chamado",
+                "render": function ( data, type, row, meta ) {
+                    figura = data == "1" ? "<span class=\"text-warning\"><i class=\"fas fa-star\"></i></span>" : ""
 
+                        return figura;
+                    }
 
-        }, {
+            },
             
-            "targets": 4,
-            "render": $.fn.dataTable.render.moment('YYYY-MM-DD HH:mm:ss', 'DD/MM/YYYY H:mm:ss')
-        }, 
+            {
+                "orderable": false,
+                "targets": [0,7],
+            }, 
 
-        {
-            "width": "10%",
-            "targets": 5,
-            //"render": $.fn.dataTable.render.moment('YY-MM-DD-hh-mm', 'YY-MM-DD-hh-mm')
-            "visible": false,
-        }, 
+            {
+                "render": $.fn.dataTable.render.moment('YYYY-MM-DD HH:mm:ss', 'DD/MM/YYYY H:mm:ss'),
+                "targets": 5,
+                
+            }, 
+
+            {
+                "visible": false,
+                "targets": [6],     
+                
+            },
+        
+
         ],
 
         "language": {
@@ -183,7 +188,7 @@ function painel(id_fila) {
 
         "ajax": base_url + 'chamado/listar_chamados_painel/' + id_fila,
 
-        "order": [5, 'desc'],
+        "order":  [[ 1, "desc" ], [ 6, "desc" ]],
 
         "processing": true,
 
@@ -412,11 +417,12 @@ async function buscaEquipamentos(p_id_chamado, p_id_fila_ant, p_atendimento, ins
 
    
 
-    
+    console.log(num_equipamentos)
+    $('#divEquipamentos').empty();
 
     if (num_equipamentos.length > 0) {
 
-        $('#divEquipamentos').empty();
+        
 
         if (p_atendimento == true) {
 
@@ -513,7 +519,7 @@ function verificaTipo(fila_ant, id_chamado) { //verificar tipo da fila no modal 
             break;
 
         case 'REM_ESPERA':
-            buscaEquipamentos(id_chamado, fila_ant, false, false, true);
+            buscaEquipamentos(id_chamado, fila_ant, false, false,true,false);
             $('#divEquipamentos').show();
             $('#divFila').hide();
             $('#slctFila').attr('disabled', true);
@@ -797,26 +803,14 @@ var p_id_responsavel = null;
 
 var status_chamado = null;
 
-async function carregaChamado(p_id_chamado, sem_equipamentos) {
-
-    //atualiza os dados do chamado
-
-    document.title = "Chamado #" + p_id_chamado + " - SIGAT";
-
-    p_id_responsavel = null;
-    
-    $("#spnStatusChamado").fadeIn();
-    
-    var historico = await carregaHistorico(p_id_chamado);
-    $("#historico").html(historico);
-
-    $("#tblEquipamentosChamado").jsGrid({
+ $("#tblEquipamentosChamado").jsGrid({
 
         height: "auto",
         width: "100%",
         inserting: false,
         editing: false,
-        autoload: true,
+        autoload: false,
+        sorting: true,
         invalidMessage: "Dados inválidos inseridos!",
         loadMessage: "Aguarde...",
         deleteConfirm: "Tem certeza?",
@@ -878,6 +872,10 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
                 deleteButton: false,
             }
         ],
+
+        
+
+        rowClass: function(item) { return item.status_equipamento_chamado == 'ABERTO' ? 'bg-warning' : ''; },
     
         controller: {
             loadData: function() {
@@ -966,7 +964,7 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
                 }).done(function(data) {
                     res = data;
                 });
-                if (res.status_equipamento_chamado === 'ABERTO' || res !== null) {
+                if (res.status_equipamento_chamado === 'ABERTO') {
                     
                     return $.ajax({
                         url: base_url + "del_equip_chamado",
@@ -987,7 +985,25 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
                 }
             }       
         },
-    });
+});
+
+async function carregaChamado(p_id_chamado, sem_equipamentos) {
+
+    //atualiza os dados do chamado
+
+    $("#tblEquipamentosChamado").jsGrid("loadData");
+    //$("#tblEquipamentosChamado").jsGrid("sort","status_equipamento_chamado");
+
+    document.title = "Chamado #" + p_id_chamado + " - SIGAT";
+
+    p_id_responsavel = null;
+    
+    $("#spnStatusChamado").fadeIn();
+    
+    var historico = await carregaHistorico(p_id_chamado);
+    $("#historico").html(historico);
+
+   
 
     $('#botoesAtendimento').html("");
     $('#btnBloquearChamado').removeAttr("disabled");
@@ -1047,14 +1063,7 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
 
             // -------------------- PERMISSOES ----------------------------
             
-            if (g_auto_usuario > 3) {
-                $("#divPrioridade").append(`
-                    <input class="form-check-input mt-2" type="checkbox" value="" id="chkPrioridade">
-                    <label class="form-check-label" style="font-size: 0.9rem;">
-                        Prioridade
-                    </label>`);
-
-            }
+            
             
     
 
@@ -3035,8 +3044,28 @@ $("#frmBuscaRapida").on("submit", function(e) {
 
 });
 
-$("#chkPrioridade").on('click', function() {
-    $("#headerChamado").prepend(`<span class="text-warning"><i class="fas fa-star"></i></span>`)
+$("#chkPrioridade").on('click', async function() {
+
+    p_id_chamado = $(this).attr("id_chamado");
+
+    await $.ajax({
+
+        url: base_url + 'chamado/priorizar_chamado',
+        
+        type: 'POST',
+        async: true,
+        data: {
+            id_chamado: p_id_chamado
+        },
+        success: function(data) {
+            $("#headerChamado #estrela_prioridade").toggle()
+        },
+        error: function(error) {
+            alert(error)
+        }
+    })
+
+    
 })
 
 

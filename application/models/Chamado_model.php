@@ -342,7 +342,7 @@ class Chamado_model extends CI_Model {
 
 	   $q_buscaChamado = "select id_ticket_chamado, ticket_chamado, id_chamado, id_fila, nome_solicitante_chamado, nome_local, DATE_FORMAT(data_chamado, '%d/%m/%Y - %H:%i:%s') as data_chamado, telefone_chamado,
         (select usuario.id_usuario from usuario where usuario.id_usuario = chamado.id_usuario_responsavel_chamado) as id_responsavel, 
-        (select fila.nome_fila from fila where fila.id_fila = chamado.id_fila_chamado) as nome_fila_chamado
+        (select fila.nome_fila from fila where fila.id_fila = chamado.id_fila_chamado) as nome_fila_chamado, prioridade_chamado
         from local, fila, chamado
         where local.id_local = chamado.id_local_chamado and
         fila.id_fila = chamado.id_fila_chamado and
@@ -357,6 +357,10 @@ class Chamado_model extends CI_Model {
         $result['equipamentos'] = $this->db->query($q_buscaEquipamentos)->result();
 
         $result['chamado'] = $this->db->query($q_buscaChamado)->row();
+        $result['icone'] = $this->db->query(
+            "SELECT icone_fila from fila f 
+            INNER JOIN chamado c ON(f.id_fila = c.id_fila_chamado) 
+            WHERE id_chamado = ". $id_chamado)->row()->icone_fila;
 
         return $result;
     }
@@ -367,7 +371,18 @@ class Chamado_model extends CI_Model {
 
         return $this->db->query($q_buscaHistorico)->result();   
 
+
+       
     }
+
+    public function priorizaChamado($id_chamado) {
+        
+        $prioridade = $this->db->query("SELECT prioridade_chamado from chamado WHERE id_chamado = " . $id_chamado)->row()->prioridade_chamado;
+        $nova_prioridade = $prioridade == 1 ? 0 : 1;
+        $this->db->query("update chamado set prioridade_chamado = " . $nova_prioridade . " WHERE id_chamado = " . $id_chamado);
+    }
+
+
 }
 
 ?>

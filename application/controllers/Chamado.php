@@ -12,7 +12,7 @@ class Chamado extends CI_Controller {
     $this->load->model("consultas_model"); //carregando o model das consultas 
     $this->load->model("chamado_model"); //carregando o model chamado
     $this->load->model("usuario_model"); //carregando o model usuario
-    $this->load->library("mailer");
+    //$this->load->library("mailer");
     $this->load->library("Charset_normalizer");
 
     
@@ -33,21 +33,14 @@ class Chamado extends CI_Controller {
       $this->load->view('templates/cabecalho', $usuario);
 
 
-      if ($pagina == 'abrir_chamado') {
-
-        $lista_filas = $this->consultas_model->listaFilas(); 
-        $lista_solicitantes = $this->consultas_model->listaSolicitantes();
-        $lista_locais = $this->consultas_model->listaLocais();
-        $dados = array("filas" => $lista_filas, "solicitantes" => $lista_solicitantes, "locais" => $lista_locais);
-
-        $this->load->view('paginas/chamado/'.$pagina, $dados);
-
-      }
-
-      elseif ($pagina == 'ver_chamado') {
+      if ($pagina == 'ver_chamado') {
 
         $dados = $this->chamado_model->buscaChamado($id_chamado); //traz patrimonios, info do chamado e anexos...
         $dados['usuarios'] = $this->usuario_model->buscaUsuarios(); //traz a lista de todos os usuarios
+
+        //var_dump($dados['chamado']->id_ticket_chamado);
+
+        $dados['ticket']  = $this->consultas_model->buscaTicket($dados['chamado']->id_ticket_chamado,43); // fila SIGAT
         $dados['usuario'] = $usuario; //dados do usuário logado
 
         if (isset($dados['chamado'])) {
@@ -165,7 +158,8 @@ class Chamado extends CI_Controller {
       "Article" => array(
         "Subject" => "[SIGAT] Encerramento",
         "Body" => $body,
-        "ContentType" => "text/plain; charset=utf8"
+        "ContentType" => "text/plain; charset=utf8",
+        "IsVisibleForCustomer" => 1,
       )
     );
 
@@ -286,21 +280,47 @@ class Chamado extends CI_Controller {
 
     $intervalo = date_diff($dataInicio,$dataFim);
 
-    $tempo_espera = 0;
-    $tempo_espera_display = $intervalo->format("%Y-%M-%D-%H-%M");
+    $tempo_espera_oculto = $intervalo->format("%Y-%M-%D-%H-%M"); // para ordernação do DataTables
+    
+    $tempo_espera_display = ""; // exibição amigável
+    
+    $tempo_espera = 0; // para calculo do tempo de espera
 
-    
-    
-    $tempo_espera_fmt = $intervalo->format('%y::%m::%d::%h');
+    $tempo_espera_fmt = $intervalo->format('%y::%m::%d::%h::%i');
     $array_tempo_espera = explode("::",$tempo_espera_fmt);
 
-    if ($array_tempo_espera[0] >= 1) {
-      
-      $tempo_espera += $array_tempo_espera[0] * 12 * 30 * 24;
 
+    // Exibição do tempo de espera
+
+    if ($array_tempo_espera[0] >= 1) {
+      $tempo_espera_display .= $array_tempo_espera[0]."a ";
     }
     if ($array_tempo_espera[1] >= 1) {
-      $tempo_espera += $array_tempo_espera[1] * 30 * 24;
+      $tempo_espera_display .= $array_tempo_espera[1]."m ";
+    }
+    if ($array_tempo_espera[2] >= 1) {
+      if($array_tempo_espera[0] == 0)
+        $tempo_espera_display .= $array_tempo_espera[2]."d ";
+    }
+    if ($array_tempo_espera[3] >= 1) {
+      if($array_tempo_espera[1] == 0)
+        $tempo_espera_display .= $array_tempo_espera[3]."h ";
+
+    }
+    if ($array_tempo_espera[4] >= 1) {
+      if($array_tempo_espera[2] == 0)
+        $tempo_espera_display .= $array_tempo_espera[4]."m";
+
+    }
+
+    // Calculo do tempo de espera em horas
+
+
+    if ($array_tempo_espera[0] >= 1) {
+      $tempo_espera += $array_tempo_espera[0] * 12 * 30 * 24; //ano
+    }
+    if ($array_tempo_espera[1] >= 1) {
+      $tempo_espera += $array_tempo_espera[1] * 30 * 24; //mes
 
     }
     if ($array_tempo_espera[2] >= 1) {
@@ -309,8 +329,11 @@ class Chamado extends CI_Controller {
 
     $tempo_espera += $array_tempo_espera[3];
 
+  
     $tempo_medio = $this->consultas_model->conf()->tempo_medio_atendimento;
     $tempo_max = $this->consultas_model->conf()->tempo_max_atendimento;
+
+    $aviso_tempo = "";
     
 
     if($tempo_espera >= $tempo_medio && $tempo_espera < $tempo_max) {
@@ -338,25 +361,20 @@ class Chamado extends CI_Controller {
 
 		$lista_painel['data'][] = array(
                               0 => $linha->id_chamado,
-                              1 => $linha->ticket_chamado,
-                              2 => $linha->nome_solicitante_chamado . $aviso_tempo,
-                              3 => $nome_local,
-                              4 => $linha->data_chamado,
-                              5 => $tempo_espera_display,
-                              6 => $linha->nome_responsavel,
-                              7 => "<div class=\"progress\">
+                              1 => $linha->prioridade_chamado,
+                              2 => $linha->ticket_chamado,
+                              3 => $linha->nome_solicitante_chamado . $aviso_tempo,
+                              4 => $nome_local,
+                              5 => $linha->data_chamado,
+                              6 => $tempo_espera_oculto,
+                              7 => $tempo_espera_display,
+                              8 => $linha->nome_responsavel,
+                              9 => "<div class=\"progress\">
                                     <div class=\"progress-bar bg-info\" style=\"width: " . $percent_atend . 
                                     "%;height: 100%\">" .$percent_atend  . "%</div>
                                     <div class=\"progress-bar\" style=\"width: " 
                                     . $percent_abert . "%;height: 100%; background: #CDFFFF\"></div>
                                     </div>",
-                              //7 => $linha->status_chamado,
-                              // 7 => "<button class=\"btn btn-secondary btn-sm btn-block PopoverPainel\"" .
-                              // " data-chamado=\"" . $linha->id_chamado . "\">" .
-                              // "<i class=\"far fa-clock\"></i></button>", // ultima interacao
-                              // 7 => "<a href=\"" . base_url('chamado/' . $linha->id_chamado) . 
-                              // "\" role=\"button\"" .
-                              // " class=\"d-block btn btn-sm btn-info\"><i class=\"fas fa-search\"></i></a> "
                             ); //detalhes
 
     }
@@ -367,8 +385,6 @@ class Chamado extends CI_Controller {
 
   }
   
-  
-
   public function listar_encerrados_painel() {
 
     $result_banco = $this->consultas_model->listaEncerrados();
@@ -393,20 +409,29 @@ class Chamado extends CI_Controller {
 
   }
   
-  public function gerar_descricao_iframe($id_chamado) {
 
-    $desc = $this->db->query("select descricao_chamado from chamado where id_chamado = " . $id_chamado)->row()->descricao_chamado;
+  public function priorizar_chamado() {
 
-    header('Content-Type: text/html');
+    
 
-    $cn = new Charset_normalizer;
+    if (isset($_SESSION['id_usuario'])) {
+      $usuario = $this->usuario_model->buscaUsuario($_SESSION['id_usuario']);
+      $id_chamado = $this->input->post("id_chamado");
 
-    header('Content-Type: text/html;');
+      if ($usuario->autorizacao_usuario > 3) {
+        $this->chamado_model->priorizaChamado($id_chamado);
+       
+      }
 
-    echo $cn->normalize($desc);
-
+      else {
+        header("HTTP/1.1 406 Not Acceptable");
+      }
+    }
+    else {
+      header("HTTP/1.1 403 Forbidden");
+    }
+    
   }
- 
 }
 
 ?>

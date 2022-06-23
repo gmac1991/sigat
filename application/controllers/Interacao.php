@@ -178,7 +178,11 @@ class Interacao extends CI_Controller {
         $pdf->Cell(0,10,"Emitido em " . date('d/m/Y - H:i:s'),0,0,'R');
         $pdf->Ln(15);
         $pdf->SetFont('Arial','B',13);
-        $pdf->Cell(100,10,$dados['chamado']->ticket_chamado,1);
+        $pdf->Cell(60,10,$dados['chamado']->ticket_chamado,1);
+        $pdf->SetFont('Arial','B',13);
+        $pdf->Cell(24,10,"Chamado",1);
+        $pdf->SetFont('Arial','',13);
+        $pdf->Cell(45,10,"#".$dados['chamado']->id_chamado,1);
         $pdf->SetFont('Arial','B',13);
         $pdf->Cell(12,10,'Data ',1);
         $pdf->SetFont('Arial','',13);
@@ -272,7 +276,11 @@ class Interacao extends CI_Controller {
         $pdf->Cell(0,10,"Emitido em " . date('d/m/Y - H:i:s'),0,0,'R');
         $pdf->Ln(15);
         $pdf->SetFont('Arial','B',13);
-        $pdf->Cell(100,10,$dados['chamado']->ticket_chamado,1);
+        $pdf->Cell(60,10,$dados['chamado']->ticket_chamado,1);
+        $pdf->SetFont('Arial','B',13);
+        $pdf->Cell(24,10,"Chamado",1);
+        $pdf->SetFont('Arial','',13);
+        $pdf->Cell(45,10,"#".$dados['chamado']->id_chamado,1);
         $pdf->SetFont('Arial','B',13);
         $pdf->Cell(12,10,'Data ',1);
         $pdf->SetFont('Arial','',13);
@@ -374,7 +382,11 @@ class Interacao extends CI_Controller {
             $pdf->Cell(0,10,'Emitido em: ' . date('d/m/Y - H:i:s') . ' | #' . $id_interacao,0,0,'R');
             $pdf->Ln(15);
             $pdf->SetFont('Arial','B',13);
-            $pdf->Cell(100,10, $interacao->ticket_chamado,1);
+            $pdf->Cell(60,10, $interacao->ticket_chamado,1);
+            $pdf->SetFont('Arial','B',13);
+            $pdf->Cell(24,10,"Chamado",1);
+            $pdf->SetFont('Arial','',13);
+            $pdf->Cell(45,10,"#".$interacao->id_chamado_interacao,1);
             $pdf->SetFont('Arial','B',13);
             $pdf->Cell(12,10,'Data ',1);
             $pdf->SetFont('Arial','',13);

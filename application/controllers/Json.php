@@ -598,7 +598,7 @@ class Json extends CI_Controller {
             $dados['filas'] = $result;
 
 
-            if ($espera == 'false') {
+            if ($espera == "false") {
 
                 $busca = $this->db->query("select num_equipamento_chamado from equipamento_chamado where id_chamado_equipamento = " . $id_chamado . 
                 " and (status_equipamento_chamado = 'ABERTO' or status_equipamento_chamado = 'FALHA')");
@@ -626,7 +626,8 @@ class Json extends CI_Controller {
         if (isset($_SESSION['id_usuario'])) {
             
             $q_buscaEquipamentos = "select num_equipamento, descricao_equipamento, status_equipamento_chamado, tag_equipamento
-            from equipamento, equipamento_chamado where equipamento_chamado.id_chamado_equipamento = " . $id_chamado ." and equipamento_chamado.num_equipamento_chamado = equipamento.num_equipamento";
+            from equipamento, equipamento_chamado where equipamento_chamado.id_chamado_equipamento = " . $id_chamado .
+            " and equipamento_chamado.num_equipamento_chamado = equipamento.num_equipamento order by status_equipamento_chamado";
           
             $linhas = $this->db->query($q_buscaEquipamentos)->result();
             

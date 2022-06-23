@@ -53,3 +53,7 @@ div.diff {
     font-size: 0.80rem;
 }
 
+.bg-warning td {
+    background-color:#ffff99 !important;
+}
+
