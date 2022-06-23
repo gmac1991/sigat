@@ -15,7 +15,7 @@ class Consultas_model extends CI_Model {
         $q = "SELECT id_chamado, ticket_chamado, id_fila_chamado, nome_solicitante_chamado, data_chamado,
         (
        SELECT nome_local
-       FROM LOCAL
+       FROM local
        WHERE id_local = id_local_chamado) AS nome_local, 
                data_chamado, 
         (
