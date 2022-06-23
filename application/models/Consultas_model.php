@@ -133,7 +133,7 @@ class Consultas_model extends CI_Model {
     public function listaEncerrados() {
 
         $q = "SELECT id_chamado,ticket_chamado, nome_solicitante_chamado, 
-        (SELECT nome_local FROM LOCAL WHERE id_local = id_local_chamado) AS nome_local, 
+        (SELECT nome_local FROM local WHERE id_local = id_local_chamado) AS nome_local, 
         DATE_FORMAT(data_chamado, \"%d/%m/%Y - %H:%i:%s\") AS data_chamado,
         DATE_FORMAT(data_encerramento_chamado, \"%d/%m/%Y - %H:%i:%s\") as data_encerramento,
         (SELECT usuario.nome_usuario FROM usuario WHERE usuario.id_usuario = chamado.id_usuario_responsavel_chamado) AS nome_responsavel, 
