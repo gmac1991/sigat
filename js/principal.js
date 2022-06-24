@@ -815,7 +815,7 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
         width: "100%",
         inserting: false,
         editing: false,
-        autoload: false,
+        autoload: true,
         sorting: true,
         invalidMessage: "Dados inválidos inseridos!",
         loadMessage: "Aguarde...",
