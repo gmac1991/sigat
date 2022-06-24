@@ -47,7 +47,7 @@ class Chamado_model extends CI_Model {
                 $q_insereChamado = 
                 "insert into chamado values(NULL," . 
                 $id_local . ",'" .
-                $dados['nome_solicitante'] . "','" .
+                $dados['nome_solicitante'] . "',NULL,'" .
                 $dados['telefone'] . "'," .
                 $dados['id_usuario'] . ", NULL, 'ABERTO', 1, NOW(), 0, '" .
                 $dados['num_ticket'] . "'," .
