@@ -53,7 +53,7 @@ class Chamado_model extends CI_Model {
                 $dados['num_ticket'] . "'," .
                 $dados['id_ticket'] . ",NULL,'" .
                 $complementoM . "','" .
-                $resumoM . "',NULL)";
+                $resumoM . "',NULL,0)";
 
                 if (strlen($resumoM) > 6)
                     $this->db->query("insert resumo values(NULL,'" . $resumoM . "')"); // cadastrando resumos
