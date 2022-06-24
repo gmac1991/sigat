@@ -803,7 +803,13 @@ var p_id_responsavel = null;
 
 var status_chamado = null;
 
- $("#tblEquipamentosChamado").jsGrid({
+
+
+async function carregaChamado(p_id_chamado, sem_equipamentos) {
+
+    //atualiza os dados do chamado
+
+    $("#tblEquipamentosChamado").jsGrid({
 
         height: "auto",
         width: "100%",
@@ -986,13 +992,6 @@ var status_chamado = null;
             }       
         },
 });
-
-async function carregaChamado(p_id_chamado, sem_equipamentos) {
-
-    //atualiza os dados do chamado
-
-    $("#tblEquipamentosChamado").jsGrid("loadData");
-    //$("#tblEquipamentosChamado").jsGrid("sort","status_equipamento_chamado");
 
     document.title = "Chamado #" + p_id_chamado + " - SIGAT";
 
