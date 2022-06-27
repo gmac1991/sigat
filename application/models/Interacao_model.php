@@ -195,7 +195,7 @@ class Interacao_model extends CI_Model {
 
                foreach ($dados['equip_atendidos'] as $num_equip) {
                   $this->db->query("update equipamento_chamado set status_equipamento_chamado = 'INSERVIVEL', status_equipamento_chamado_ant = 'ABERTO'
-                  where num_equipamento_chamado = " . $num_equip . " and id_chamado_equipamento = " . $dados['id_chamado']);
+                  where num_equipamento_chamado = '" . $num_equip . "' and id_chamado_equipamento = " . $dados['id_chamado']);
 
                   // ------------ LOG -------------------
 
