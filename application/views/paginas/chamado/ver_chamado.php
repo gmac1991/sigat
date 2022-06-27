@@ -188,7 +188,7 @@
                     </div>
                 </div>
                 <div class="tab-pane" id="descricao" role="tabpanel" aria-labelledby="descricao-tab">
-                    <div class="col-0 my-3">
+                    <div class="col-0 my-3 mb-5">
                         <div class="accordion" id="accordionArticles">
                         <?php $count = count($ticket['t_articles']); ?>
                         <?php for($i = 0; $i < $count; $i++): ?>
@@ -215,7 +215,7 @@
                     </div>
                 </div>
                 <div class="tab-pane" id="historico" role="tabpanel" aria-labelledby="historico-tab">
-                    <div class="col-0 my-3" id="historico">
+                    <div class="col-0 my-3 mb-5" id="historico">
                         
                         
                     </div>
