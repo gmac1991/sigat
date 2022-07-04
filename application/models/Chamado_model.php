@@ -17,10 +17,13 @@ class Chamado_model extends CI_Model {
 
             $id_novo_chamado = FALSE;
 
-            $inst->db->query($sql_insert); //registrando o chamado
+            $inst->db->trans_start();
 
+            $inst->db->query($sql_insert); //registrando o chamado
             $query = $inst->db->query('SELECT LAST_INSERT_ID()');
             $row = $query->row_array();
+            
+            $inst->db->trans_complete();
              
             $id_novo_chamado = $row['LAST_INSERT_ID()'];
             
