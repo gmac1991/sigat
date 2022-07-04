@@ -19,7 +19,12 @@ class Chamado_model extends CI_Model {
 
             $inst->db->query($sql_insert); //registrando o chamado
 
-            $id_novo_chamado = $inst->db->insert_id(); // buscando o ID do chamado recem aberto
+            $query = $inst->db->query('SELECT LAST_INSERT_ID()');
+            $row = $query->row_array();
+             
+            $id_novo_chamado = $row['LAST_INSERT_ID()'];
+            
+            //$id_novo_chamado = $inst->db->insert_id(); // buscando o ID do chamado recem aberto
 
             $inst->db->query("insert into alteracao_chamado values(NULL," . $id_novo_chamado  . "," . //criando historico de alteracao
             $p_id_usuario .", ' abriu o chamado na fila <b>" . 
@@ -51,9 +56,9 @@ class Chamado_model extends CI_Model {
                 $dados['telefone'] . "'," .
                 $dados['id_usuario'] . ", NULL, 'ABERTO', 1, NOW(), 0, '" .
                 $dados['num_ticket'] . "'," .
-                $dados['id_ticket'] . ",NULL,'" .
+                $dados['id_ticket'] . ",0,NULL,'" .
                 $complementoM . "','" .
-                $resumoM . "',NULL,0)";
+                $resumoM . "',NULL)";
 
                 if (strlen($resumoM) > 6)
                     $this->db->query("insert resumo values(NULL,'" . $resumoM . "')"); // cadastrando resumos

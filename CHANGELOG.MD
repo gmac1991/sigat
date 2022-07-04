@@ -1,5 +1,19 @@
 # SIGAT Changelog
 
+## [1.2.2] - 2022-07-04
+
+### Corrigido
+- [Chamado]
+Retornado valor 0 para ID do chamado após a importação.
+- [Interação]
+Registro duplicado de interações do tipo Entrega
+
+## [1.2.1] - 2022-06-27
+
+### Corrigido
+- [Chamado] 
+Remoção indevida de equipamentos
+
 ## [1.2.0] - 2022-06-24
 
 ### Corrigido

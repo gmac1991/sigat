@@ -528,11 +528,11 @@ class Interacao_model extends CI_Model {
          }
 
          else {
-            die();
+            $this->db->insert('interacao',$nova_interacao);
          }
       }
 
-      $this->db->insert('interacao',$nova_interacao);
+      
 
       // ------------ LOG -------------------
 
