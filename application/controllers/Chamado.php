@@ -40,12 +40,20 @@ class Chamado extends CI_Controller {
 
         //var_dump($dados['chamado']->id_ticket_chamado);
 
-        $dados['ticket']  = $this->consultas_model->buscaTicket($dados['chamado']->id_ticket_chamado,43); // fila SIGAT
+        
         $dados['usuario'] = $usuario; //dados do usuário logado
+
+        //print_r($dados);
 
         if (isset($dados['chamado'])) {
 
+          //
+
+          $dados['ticket']  = $this->consultas_model->buscaTicket($dados['chamado']->id_ticket_chamado,43); // fila SIGAT
+
           $this->load->view('paginas/chamado/'.$pagina, $dados);
+
+         //
 
         } else {
 

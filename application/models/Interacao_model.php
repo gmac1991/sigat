@@ -527,11 +527,23 @@ class Interacao_model extends CI_Model {
 
          }
 
-         else {
-            $this->db->insert('interacao',$nova_interacao);
-         }
+        
       }
 
+      else {
+         $this->db->insert('interacao',$nova_interacao);
+         // ------------ LOG -------------------
+
+         $log = array(
+            'acao_evento' => 'REGISTRAR_INTERACAO',
+            'desc_evento' => 'ID CHAMADO: ' . $dados['id_chamado'] . " - TIPO: " . $dados['tipo'],
+            'id_usuario_evento' => $_SESSION['id_usuario']
+            );
+
+            $this->db->insert('evento', $log);
+
+            // -------------- /LOG ----------------
+      }
       
 
       // ------------ LOG -------------------

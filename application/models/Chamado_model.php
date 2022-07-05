@@ -370,10 +370,14 @@ class Chamado_model extends CI_Model {
         $result['equipamentos'] = $this->db->query($q_buscaEquipamentos)->result();
 
         $result['chamado'] = $this->db->query($q_buscaChamado)->row();
-        $result['icone'] = $this->db->query(
-            "SELECT icone_fila from fila f 
-            INNER JOIN chamado c ON(f.id_fila = c.id_fila_chamado) 
-            WHERE id_chamado = ". $id_chamado)->row()->icone_fila;
+        
+        if (isset($result['chamado'])) {
+            $result['icone'] = $this->db->query(
+                "SELECT icone_fila from fila f 
+                INNER JOIN chamado c ON(f.id_fila = c.id_fila_chamado) 
+                WHERE id_chamado = ". $id_chamado)->row()->icone_fila;
+        }
+        
 
         return $result;
     }
