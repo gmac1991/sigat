@@ -93,7 +93,7 @@ class Chamado extends CI_Controller {
 
     $data_arr = array();
 
-    $body = $nome_usuario . " criou o chamado " .$novo_chamado["novo_id"]. " no SIGAT.\n\n" .
+    $body = $nome_usuario . " criou o chamado #" .$novo_chamado["novo_id"]. " no SIGAT.\n\n" .
     
     "ID SIGAT: #".$novo_chamado["novo_id"]." | IMPORTACAO_SIGAT\n" .
     "Esta mensagem é automática, não responda.";
@@ -216,7 +216,7 @@ class Chamado extends CI_Controller {
     $data_arr = array();
 
     $body = $nome_usuario . " devolveu este ticket. Motivo:\n\n" . $desc_devo . "\n\n" .
-            "ID SIGAT: #".$id_ticket." | DEVOLUCAO_SIGAT\n" .
+            "ID TICKET: #".$id_ticket." | DEVOLUCAO_SIGAT\n" .
             "Esta mensagem é automática, não responda.";
 
     $data_arr = array(

@@ -20,12 +20,15 @@ class Chamado_model extends CI_Model {
             $inst->db->trans_start();
 
             $inst->db->query($sql_insert); //registrando o chamado
-            $query = $inst->db->query('SELECT LAST_INSERT_ID()');
-            $row = $query->row_array();
+            
+            $query = $inst->db->query('SELECT id_chamado from chamado order by data_chamado desc LIMIT 1');
+            $linha = $query->row_array();
+
+            $id_novo_chamado = $linha['id_chamado'];
             
             $inst->db->trans_complete();
              
-            $id_novo_chamado = $row['LAST_INSERT_ID()'];
+           
             
             //$id_novo_chamado = $inst->db->insert_id(); // buscando o ID do chamado recem aberto
 
@@ -53,13 +56,15 @@ class Chamado_model extends CI_Model {
                 //$id_ticket_otrs = $this->db->query("select id_ticket_triagem from triagem where id_triagem = " .$dados['id_triagem'])->row()->id_ticket_triagem;
 
                 $q_insereChamado = 
-                "insert into chamado values(NULL," . 
+                "INSERT INTO `db_sigat`.`chamado` (`id_local_chamado`, `nome_solicitante_chamado`, `telefone_chamado`, 
+                `id_usuario_abertura_chamado`, `status_chamado`, `id_fila_chamado`, `data_chamado`, `ticket_chamado`, 
+                `id_ticket_chamado`,`complemento_chamado`, `resumo_chamado`, `data_encerramento_chamado`) values(" . 
                 $id_local . ",'" .
-                $dados['nome_solicitante'] . "',NULL,'" .
+                $dados['nome_solicitante'] . "','" .
                 $dados['telefone'] . "'," .
-                $dados['id_usuario'] . ", NULL, 'ABERTO', 1, NOW(), 0, '" .
+                $dados['id_usuario'] . ", 'ABERTO', 1, NOW(),'" .
                 $dados['num_ticket'] . "'," .
-                $dados['id_ticket'] . ",0,NULL,'" .
+                $dados['id_ticket'] . ",'" .
                 $complementoM . "','" .
                 $resumoM . "',NULL)";
 
