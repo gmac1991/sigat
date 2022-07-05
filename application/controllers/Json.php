@@ -406,8 +406,7 @@ class Json extends CI_Controller {
 		
 				
 			$q_buscaAnexoOTRS = "SELECT id, filename, content FROM article_data_mime_attachment
-                                WHERE disposition = 'attachment' AND id = 
-                                " . $id_anexo;
+                                WHERE id = " . $id_anexo;
 
             $anexo = $db_otrs->query($q_buscaAnexoOTRS)->row_array();
 
