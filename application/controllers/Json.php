@@ -385,7 +385,7 @@ class Json extends CI_Controller {
         
             $res = $db_otrs->query("SELECT aa.id, aa.filename FROM article_data_mime_attachment aa
             INNER JOIN article a ON (aa.article_id = a.id)
-            WHERE aa.disposition = 'attachment' AND a.ticket_id = " .$id_ticket);
+            WHERE(aa.disposition = 'attachment' OR aa.content_type LIKE 'image%') AND a.ticket_id = " .$id_ticket);
 			
             $result['anexos_otrs'] = $res->result_array();
 
