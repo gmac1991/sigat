@@ -1,5 +1,15 @@
 # SIGAT Changelog
 
+## [1.2.3] - 2022-09-04
+
+### Corrigido
+- [Busca]
+Erro ao usar a busca rápida
+
+### Adicionado
+- [Painel]
+A última fila visitada agora é gravada em cookie para melhorar a navegação
+
 ## [1.2.2] - 2022-07-04
 
 ### Corrigido
