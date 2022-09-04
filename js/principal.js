@@ -93,13 +93,15 @@ window.addEventListener('load', function(){
   });
 
 
-
+var fila_painel = getCookie("fila_painel") !=  "" ? getCookie("fila_painel") : g_fila_painel
 
 $(function() {
 
     // PAINEL
 
-    painel(g_fila_painel); //incializa o painel na fila preferencial do usuario
+    
+
+    painel(fila_painel); //incializa o painel na fila preferencial do usuario
     
 
    
