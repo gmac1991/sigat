@@ -1,15 +1,5 @@
-var listaVerificada = false;
-var timeout;
-const url = 'https://sistemas.sorocaba.sp.gov.br/acesso_equipamento/api/patrimonio/'; //API web do SIM (patrimônio)
 const patrimonio_regex = /\b[1-9]\d{5}\b/g
-var toggle = 0;
-// var g_requer_patri = null;
 var fila_atual = null;
-var p_equips = [, ];
-
-
-
-
 
 // --- PLUGIN DATETIME.JS
 
@@ -71,12 +61,50 @@ var p_equips = [, ];
 
     }));
 
+function getCookie(cname) {
+    let name = cname + "=";
+    let decodedCookie = decodeURIComponent(document.cookie);
+    let ca = decodedCookie.split(';');
+    for(let i = 0; i <ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) == ' ') {
+        c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+        return c.substring(name.length, c.length);
+        }
+    }
+    return "";
+}
+
+
+window.addEventListener('load', function(){
+    $("#btnFilas").children('label').each(function() {
+        
+        if($(this).attr("data-fila") == getCookie("fila_painel")) {
+            $(this).addClass("active");
+            return false;
+        }
+
+        if($(this).attr("data-fila") == g_fila_painel) {
+            $(this).addClass("active");
+        }    
+    })
+  });
+
+
+
+
 $(function() {
 
     // PAINEL
 
-    painel(g_fila_usuario); //incializa o painel na fila preferencial do usuario
-    $('#slctFila').val(g_fila_usuario); //seleciona a fila preferencial do usuario
+    painel(g_fila_painel); //incializa o painel na fila preferencial do usuario
+    
+
+   
+
+   
 
     // TRIAGEM
     triagem(); //incializa o painel de triagem
@@ -121,6 +149,9 @@ $(function() {
 // --------------- PAINEL CHAMADOS ---------------------------
 
 var table_painel = null;
+
+
+
 
 function painel(id_fila) {
 
@@ -234,9 +265,14 @@ $('#tblPainel').on('click', 'tbody tr', function () {
   });
 
 
+
 function mudaFila(p_id_fila) { //troca de fila no painel => destroi o painel e reconstroi no onChange do $('#slctFila')
   
+  
+    document.cookie = "fila_painel=" + p_id_fila
+
     $('#tblPainel').DataTable().ajax.url(base_url + 'chamado/listar_chamados_painel/' + p_id_fila).load();
+
     
 }
 
