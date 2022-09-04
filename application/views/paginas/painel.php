@@ -68,17 +68,17 @@
 				
 				<div class="mb-5">
 					<div class="d-flex p-2 justify-content-center">	
-						<div class="btn-group btn-group-toggle" role="group" data-toggle="buttons">
+						<div class="btn-group btn-group-toggle" role="group" data-toggle="buttons" id="btnFilas">
 						<?php foreach ($filas as $fila) : ?>
-							<label class="btn btn-primary btn-sm mr-1 <?php if($fila_usuario== $fila['id_fila']): echo " active"; endif; ?>">
-								<input type="radio" onclick="mudaFila(<?= $fila['id_fila'] ?>)"<?php if($fila_usuario == $fila['id_fila']): echo " checked"; endif; ?>><i class="<?= $fila['icone_fila'] ?>"></i> <?= $fila['nome_fila'] ?>
+							<label data-fila="<?= $fila['id_fila'] ?>" class="btn btn-primary btn-sm mr-1">
+								<input type="radio" onclick="mudaFila(<?= $fila['id_fila'] ?>)"><i class="<?= $fila['icone_fila'] ?>"></i> <?= $fila['nome_fila'] ?>
 							</label>
 						<?php endforeach; ?>
-							<label class="btn btn-success btn-sm mr-1">
+							<label data-fila="7" class="btn btn-success btn-sm mr-1">
 								<input type="radio" onclick="mudaFila(7)"><i class="fas fa-truck"></i> Entrega
 							</label>
-							<label class="btn btn-info btn-sm mr-1<?php if($fila_usuario == 0): echo " active"; endif; ?>">
-								<input type="radio" onclick="mudaFila(0)"<?php if($fila_usuario == 0): echo " checked"; endif; ?>><i class="fas fa-search"></i> Todos
+							<label data-fila="0" class="btn btn-info btn-sm mr-1">
+								<input type="radio" onclick="mudaFila(0)"><i class="fas fa-search"></i> Todos
 							</label>
 						</div>	
 					</div>
