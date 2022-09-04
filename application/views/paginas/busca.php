@@ -1,6 +1,6 @@
 <?php
 
-$n = count($result["equip"]) + count($result["chamado"]) + count($result["triagem"]);
+$n = count($result["equip"]) + count($result["chamado"]);
 
 if ($n < 1): echo "Sem resultados." ;
 else :
@@ -58,31 +58,6 @@ else :
         </tbody>
     </table>
 <?php
-    endif;
-    if (count($result["triagem"]) > 0):
-        ?>
-            <p class="h5"><i class="fas fa-filter"></i> Triagem</p> <!-- TABELA TRIAGEM -->
-            <table id="tblTriagemBr" class="table table-hover table-sm">
-                <thead>
-                    <th>ID</th>
-                    <th>Ticket</th>
-                    <th>Solicitante</th>
-                    <th>Data</th>
-                </thead>
-                <tbody>
-                <?php
-                        foreach($result["triagem"] as $triagem): 
-                ?>
-                    <tr>
-                        <td><?= $triagem["id"] ?></td>
-                        <td><?= $triagem["ticket"] ?></td>
-                        <td><?= $triagem["nome_solicitante"] ?></td>
-                        <td><?= $triagem["data"] ?></td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        <?php
     endif;
 endif;
 

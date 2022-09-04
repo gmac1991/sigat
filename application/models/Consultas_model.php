@@ -204,14 +204,6 @@ class Consultas_model extends CI_Model {
             $result["chamado"] = count($chamado) > 0 ?  $chamado : array();
                
 
-            $this->db->select();
-            $this->db->from("v_triagem");
-            $this->db->where("ticket like '%" . $termo ."%'");
-            $this->db->or_where("nome_solicitante like '%" . $termo ."%'");
-            $this->db->limit(10); 
-            $triagem = $this->db->get()->result_array();
-            
-            $result["triagem"] = count($triagem) > 0 ? $triagem : array();
 
         }
 
