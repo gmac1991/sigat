@@ -7,7 +7,7 @@ class Usuario_model extends CI_Model {
     public function validaUsuario($dados) {
 
 
-        $busca = $this->db->query("SELECT id_usuario, nome_usuario FROM usuario WHERE login_usuario = '" . $dados['login_usuario'] . "' and status_usuario = 'ATIVO'");
+        $busca = $this->db->query("SELECT id_usuario, nome_usuario, fila_usuario FROM usuario WHERE login_usuario = '" . $dados['login_usuario'] . "' and status_usuario = 'ATIVO'");
 
         if ($busca->num_rows() == 1) {
 
