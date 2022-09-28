@@ -427,15 +427,22 @@ class Json extends CI_Controller {
     public function anexos_chamado() {
         $id_chamado = $this->input->post("id_chamado");
         if (isset($_SESSION['id_usuario'])) {
-            $anexos = NULL;
+            $anexos = array();
 			$q_anexos_sigat = "select id_anexo_otrs from anexos_otrs where id_chamado_sigat = " . $id_chamado;
             $q = $this->db->query($q_anexos_sigat);
-            if ($q->num_rows() == 1) {
-                $id_anexo_otrs = $q->row()->id_anexo_otrs;
+            if ($q->num_rows() >= 1) {
                 $db_otrs = $this->load->database('otrs', TRUE);
-                $q_buscaAnexoOTRS = "SELECT id as id_anexo_otrs, filename as nome_arquivo_otrs FROM article_data_mime_attachment
-                                    WHERE disposition = 'attachment' AND id = " . $id_anexo_otrs;
-                $anexos = $db_otrs->query($q_buscaAnexoOTRS)->result_array();
+
+                    foreach ($q->result() as $l) {
+                        $q_buscaAnexoOTRS = "SELECT id as id_anexo_otrs, filename as nome_arquivo_otrs FROM article_data_mime_attachment
+                                    WHERE disposition = 'attachment' AND id = " . $l->id_anexo_otrs;
+                        array_push($anexos,$db_otrs->query($q_buscaAnexoOTRS)->row());
+                    }
+                
+               
+                    
+
+                
             }
             header("Content-Type: application/json");
             echo json_encode($anexos);

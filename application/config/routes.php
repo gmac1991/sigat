@@ -71,5 +71,4 @@ $route['add_equip_chamado'] = 'json/inserir_equipamento_chamado';
 $route['del_equip_chamado'] = 'json/remover_equipamento_chamado';
 $route['desc_equipamento/(:any)'] = 'json/desc_equipamento/$1';
 $route['anexos_chamado/(:num)'] = 'json/anexos_chamado/$1';
-$route['chamado/descricao/(:num)'] = 'chamado/gerar_descricao_iframe/$1';
-$route['triagem/descricao/(:num)'] = 'triagem/gerar_descricao_iframe/$1';
+
