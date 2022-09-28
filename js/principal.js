@@ -278,14 +278,14 @@ function mudaFila(p_id_fila) { //troca de fila no painel => destroi o painel e r
     
 }
 
-setInterval(function() { //atualiza o painel de chamados
+// setInterval(function() { //atualiza o painel de chamados
 
 
-    $('#tblPainel').DataTable().ajax.reload(null, false);
-    $('#tblTriagem').DataTable().ajax.reload(null, false);
+//     $('#tblPainel').DataTable().ajax.reload(null, false);
+//     $('#tblTriagem').DataTable().ajax.reload(null, false);
 
 
-}, 30000); //intervalo de att painel
+// }, 30000); //intervalo de att painel
 
 // --------------- PAINEL ENCERRADOS ---------------------------
 
