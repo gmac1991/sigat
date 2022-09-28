@@ -334,7 +334,7 @@ class Interacao_model extends CI_Model {
             " and status_equipamento_chamado = 'ENTREGA'")->result_array();
 
             $equip_restantes = $this->db->query("select num_equipamento_chamado from equipamento_chamado where id_chamado_equipamento = " . $dados['id_chamado'] .
-                  " and status_equipamento_chamado = 'ABERTO'")->num_rows();
+                  " and (status_equipamento_chamado = 'ABERTO' or status_equipamento_chamado = 'ESPERA' or status_equipamento_chamado = 'ENTREGA')")->num_rows();
 
 
             if(!empty($equip_entregues)) { // verificando se existem equipamentos sem patrimonio que foram entregues
@@ -390,6 +390,8 @@ class Interacao_model extends CI_Model {
                // -------------- /LOG ----------------
             
             }
+
+           
 
             $this->db->query("update chamado set entrega_chamado = 0 where id_chamado = " . $dados['id_chamado']); // tirando o flag de Entrega 
 

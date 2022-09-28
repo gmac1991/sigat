@@ -435,7 +435,7 @@ class Json extends CI_Controller {
 
                     foreach ($q->result() as $l) {
                         $q_buscaAnexoOTRS = "SELECT id as id_anexo_otrs, filename as nome_arquivo_otrs FROM article_data_mime_attachment
-                                    WHERE disposition = 'attachment' AND id = " . $l->id_anexo_otrs;
+                                    WHERE disposition in ('attachment','inline') AND id = " . $l->id_anexo_otrs;
                         array_push($anexos,$db_otrs->query($q_buscaAnexoOTRS)->row());
                     }
                 
