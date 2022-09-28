@@ -42,7 +42,8 @@ class Interacao_model extends CI_Model {
                   
                  if ($dados['id_fila'] == 3) { //se estiver na fila Manutenção de Hardware / id = 3
                      
-                     $this->db->query("update equipamento_chamado set status_equipamento_chamado = 'ENTREGA', status_equipamento_chamado_ant = 'ABERTO'
+                     $this->db->query("update equipamento_chamado set status_equipamento_chamado = 'ENTREGA', status_equipamento_chamado_ant = 'ABERTO',
+                     ultima_alteracao_equipamento_chamado = NOW()
                      where num_equipamento_chamado = '" . $num_equip . "'");
                      
                      // ------------ LOG -------------------
@@ -59,7 +60,8 @@ class Interacao_model extends CI_Model {
                   
                   } else { // se nao, marcar o equipamento como atendido
 
-                     $this->db->query("update equipamento_chamado set status_equipamento_chamado = 'ATENDIDO', status_equipamento_chamado_ant = 'ABERTO'
+                     $this->db->query("update equipamento_chamado set status_equipamento_chamado = 'ATENDIDO', status_equipamento_chamado_ant = 'ABERTO',
+                     ultima_alteracao_equipamento_chamado = NOW()
                      where num_equipamento_chamado = '" . $num_equip . "'");
 
                      // ------------ LOG -------------------
@@ -134,7 +136,8 @@ class Interacao_model extends CI_Model {
                $dados['texto'] .= "<hr class=\"m-0\" /><p class=\"m-0\">Foram deixados em espera os equipamentos:<br /><ul>";
 
                foreach ($dados['equip_atendidos'] as $num_equip) { //marcando os patrimonios escolhidos como ESPERA
-                  $this->db->query("update equipamento_chamado set status_equipamento_chamado = 'ESPERA'" .
+                  $this->db->query("update equipamento_chamado set status_equipamento_chamado = 'ESPERA',
+                  ultima_alteracao_equipamento_chamado = NOW()" .
                   " where num_equipamento_chamado = " . $num_equip . 
                   " and (status_equipamento_chamado = 'ABERTO' or status_equipamento_chamado = 'FALHA')" .
                   " and id_chamado_equipamento = " . $dados['id_chamado']);
@@ -163,7 +166,8 @@ class Interacao_model extends CI_Model {
                $dados['texto'] .= "<hr class=\"m-0\" /><p class=\"m-0\">Foram removidos da espera os equipamentos:<br /><ul>";
 
                foreach ($dados['equip_atendidos'] as $num_equip) { //marcando os patrimonios escolhidos como ABERTO
-                  $this->db->query("update equipamento_chamado set status_equipamento_chamado = 'ABERTO'" .
+                  $this->db->query("update equipamento_chamado set status_equipamento_chamado = 'ABERTO',
+                  ultima_alteracao_equipamento_chamado = NOW()" .
                   " where num_equipamento_chamado = " . $num_equip . 
                   " and status_equipamento_chamado = 'ESPERA'" .
                   " and id_chamado_equipamento = " . $dados['id_chamado']);
@@ -194,7 +198,8 @@ class Interacao_model extends CI_Model {
                $dados['texto'] .= "<hr class=\"m-0\" /><p class=\"m-0\">Foram classificados como <span class=\"text-danger font-weight-bold\">INSERVÍVEL</span> os equipamentos:<br /><ul>";
 
                foreach ($dados['equip_atendidos'] as $num_equip) {
-                  $this->db->query("update equipamento_chamado set status_equipamento_chamado = 'INSERVIVEL', status_equipamento_chamado_ant = 'ABERTO'
+                  $this->db->query("update equipamento_chamado set status_equipamento_chamado = 'INSERVIVEL', status_equipamento_chamado_ant = 'ABERTO',
+                  ultima_alteracao_equipamento_chamado = NOW()
                   where num_equipamento_chamado = '" . $num_equip . "' and id_chamado_equipamento = " . $dados['id_chamado']);
 
                   // ------------ LOG -------------------
@@ -417,7 +422,8 @@ class Interacao_model extends CI_Model {
                            
          if(!empty($equip_entrega)) {
             foreach ($equip_entrega as $equip) {
-               $this->db->query("update equipamento_chamado set status_equipamento_chamado = 'FALHA', status_equipamento_chamado_ant = 'ENTREGA'
+               $this->db->query("update equipamento_chamado set status_equipamento_chamado = 'FALHA', status_equipamento_chamado_ant = 'ENTREGA',
+               ultima_alteracao_equipamento_chamado = NOW()
                   where num_equipamento_chamado = " . $equip['num_equipamento_chamado'] . " and id_chamado_equipamento = " . $dados['id_chamado']);
                
                   $dados['texto'] .= '<li>' . $equip['num_equipamento_chamado'] . '</li>';
@@ -586,7 +592,8 @@ class Interacao_model extends CI_Model {
 
                foreach ($pool_equips as $num_equip) { 
                   $this->db->query("update equipamento_chamado set status_equipamento_chamado_ant = status_equipamento_chamado, 
-                  status_equipamento_chamado = 'ABERTO'
+                  status_equipamento_chamado = 'ABERTO',
+                  ultima_alteracao_equipamento_chamado = NOW()
                   where id_chamado_equipamento = " . $interacao->id_chamado_interacao . " and
                   num_equipamento_chamado = '" . $num_equip . "'");
 
@@ -633,7 +640,8 @@ class Interacao_model extends CI_Model {
          case 'ATENDIMENTO_INS':
 
             $this->db->query("update equipamento_chamado set status_equipamento_chamado = status_equipamento_chamado_ant,
-            status_equipamento_chamado_ant = status_equipamento_chamado 
+            status_equipamento_chamado_ant = status_equipamento_chamado,
+            ultima_alteracao_equipamento_chamado = NOW() 
             where id_chamado_equipamento = " . $interacao->id_chamado_interacao . " and
             status_equipamento_chamado = 'INSERVIVEL'");
 
@@ -693,7 +701,8 @@ class Interacao_model extends CI_Model {
 
             foreach ($pool_equips as $num_equip) { 
                $this->db->query("update equipamento_chamado set status_equipamento_chamado_ant = status_equipamento_chamado, 
-               status_equipamento_chamado = 'ABERTO'
+               status_equipamento_chamado = 'ABERTO',
+               ultima_alteracao_equipamento_chamado = NOW()
                where id_chamado_equipamento = " . $interacao->id_chamado_interacao . " and
                num_equipamento_chamado = '" . $num_equip . "'");
 
@@ -732,7 +741,8 @@ class Interacao_model extends CI_Model {
          case 'FECHAMENTO_INS':
 
             $this->db->query("update equipamento_chamado set status_equipamento_chamado = status_equipamento_chamado_ant,
-            status_equipamento_chamado_ant = status_equipamento_chamado 
+            status_equipamento_chamado_ant = status_equipamento_chamado,
+            ultima_alteracao_equipamento_chamado = NOW() 
             where id_chamado_equipamento = " . $interacao->id_chamado_interacao . " and
             status_equipamento_chamado = 'INSERVIVEL'");
             
@@ -790,7 +800,8 @@ class Interacao_model extends CI_Model {
 
             if (!empty($pool_equips)) {
                foreach ($pool_equips as $num_equip) { //patrimonios[0] é o vetor com a lista de patrimonios da interacao
-                  $this->db->query("update equipamento_chamado set status_equipamento_chamado = 'ENTREGA'" .
+                  $this->db->query("update equipamento_chamado set status_equipamento_chamado = 'ENTREGA',
+                  ultima_alteracao_equipamento_chamado = NOW()" .
                   " where num_equipamento_chamado = '" . $num_equip . 
                   "' and status_equipamento_chamado = 'ENTREGUE'" .
                   " and id_chamado_equipamento = " . $interacao->id_chamado_interacao);
@@ -903,7 +914,8 @@ class Interacao_model extends CI_Model {
             if (!empty($pool_equips)) {
                foreach ($pool_equips as $num_equip) { //patrimonios[0] é o vetor com a lista de patrimonios da interacao
                   $this->db->query("update equipamento_chamado set status_equipamento_chamado = 'ENTREGA', " .
-                  "status_equipamento_chamado_ant = 'FALHA'" .
+                  "status_equipamento_chamado_ant = 'FALHA',
+                  ultima_alteracao_equipamento_chamado = NOW()" .
                   " where num_equipamento_chamado = " . $num_equip . 
                   " and status_equipamento_chamado = 'FALHA'" .
                   " and id_chamado_equipamento = " . $interacao->id_chamado_interacao);
@@ -981,7 +993,8 @@ class Interacao_model extends CI_Model {
          case 'ESPERA':
 
             foreach ($pool_equips as $num_equip) { //patrimonios[0] é o vetor com a lista de patrimonios da interacao
-               $this->db->query("update equipamento_chamado set status_equipamento_chamado = 'ABERTO'" .
+               $this->db->query("update equipamento_chamado set status_equipamento_chamado = 'ABERTO',
+               ultima_alteracao_equipamento_chamado = NOW()" .
                " where num_equipamento_chamado = " . $num_equip . 
                " and status_equipamento_chamado = 'ESPERA'" .
                " and id_chamado_equipamento = " . $interacao->id_chamado_interacao);
@@ -1004,7 +1017,8 @@ class Interacao_model extends CI_Model {
             case 'REM_ESPERA':
 
             foreach ($pool_equips as $num_equip) { //patrimonios[0] é o vetor com a lista de patrimonios da interacao
-               $this->db->query("update equipamento_chamado set status_equipamento_chamado = 'ESPERA'" .
+               $this->db->query("update equipamento_chamado set status_equipamento_chamado = 'ESPERA',
+               ultima_alteracao_equipamento_chamado = NOW()" .
                " where num_equipamento_chamado = " . $num_equip . 
                " and status_equipamento_chamado = 'ABERTO'" .
                " and id_chamado_equipamento = " . $interacao->id_chamado_interacao);
