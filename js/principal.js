@@ -1411,7 +1411,7 @@ function verificaEntrega() { //confirmando se a entrega foi realizada
                 ['para', ['ul', 'ol', 'paragraph']],
                 ['insert', ['link', 'picture', 'video']],
             ],
-            height: 200,
+            height: 150,
             lang: 'pt-BR',
             dialogsInBody: true,
             disableDragAndDrop: true,
