@@ -631,7 +631,7 @@ $('#modalRegistro').on('shown.bs.modal', function(event) {
             ['height', ['height']],
             ['insert', ['link', 'picture']],
         ],
-        height: 200,
+        height: 150,
         lang: 'pt-BR',
         dialogsInBody: true,
         disableDragAndDrop: false,
