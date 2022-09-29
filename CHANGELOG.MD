@@ -1,4 +1,10 @@
 # SIGAT Changelog
+## [1.3.5] - 2022-09-29
+
+### Corrigido
+
+- [Interação]
+Contagem incorreta de equipamentos pendentes
 
 ## [1.3.4] - 2022-09-28
 
