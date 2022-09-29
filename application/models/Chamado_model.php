@@ -435,6 +435,14 @@ class Chamado_model extends CI_Model {
         // -------------- /LOG ----------------
     }
 
+    public function buscarEnderecoChamado($id_chamado) {
+    
+    
+        $endereco = $this->db->query("select endereco_local as end from local l 
+        inner join chamado c on l.id_local = c.id_local_chamado where c.id_chamado = " . $id_chamado)->row()->end;
+        
+        return $endereco;
+    }
 
 }
 

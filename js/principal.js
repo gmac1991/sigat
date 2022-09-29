@@ -1078,6 +1078,7 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
             data.telefone_chamado.length > 4 ? telefone = "0" + data.telefone_chamado : telefone = data.telefone_chamado;
 
             $("#sipLink").attr("href","sip:"+telefone);
+            $("#btnVerEndereco").attr("data-chamado",p_id_chamado);
 
             if (data.id_responsavel == null) {
                 $('select[name=id_responsavel]').empty();
@@ -3105,6 +3106,22 @@ $("#chkPrioridade").on('click', async function() {
     
 })
 
+
+$('#modalEndereco').on('show.bs.modal', async function (e) {
+   var id_chamado = $(e.relatedTarget).attr("data-chamado");
+   var endereco = null
+   await $.ajax({
+        url: base_url + "endereco_local/" + id_chamado,
+        type: 'POST',
+        success: function(res) {
+            endereco = res
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            alert(thrownError);
+        }
+    });
+   $(this).find(".modal-body").html("<h5>" + $("input[name=nome_local]").val() + "</h5><p>" + endereco + "</p>")
+})
 
 
 

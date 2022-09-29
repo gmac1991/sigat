@@ -987,6 +987,18 @@ class Json extends CI_Controller {
             header('HTTP/1.0 403 Forbidden');
         }
     }
+
+    public function endereco_local($id_chamado) {
+        if (isset($_SESSION['id_usuario'])) {
+            
+
+            $endereco = $this->chamado_model->buscarEnderecoChamado($id_chamado);
+            echo $endereco;
+        } else {
+            header('HTTP/1.0 403 Forbidden');
+        }
+    }
+
 }
 
 
