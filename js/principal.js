@@ -455,7 +455,7 @@ async function buscaEquipamentos(p_id_chamado, p_id_fila_ant, p_atendimento, ins
 
    
 
-    console.log(num_equipamentos)
+   
     $('#divEquipamentos').empty();
 
     if (num_equipamentos.length > 0) {
@@ -2589,7 +2589,7 @@ $("#btnValidaEquip").on('click', async function() {
             $("#pbEquips").css("width",total_percentage+"%"); 
         }
 
-        console.log(erros)
+        //console.log(erros)
 
         if (erros.length == 0) {
             $("#tblEquips").jsGrid("option","data",grid_equips); 
