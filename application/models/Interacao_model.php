@@ -104,7 +104,8 @@ class Interacao_model extends CI_Model {
                }
 
                $equip_restantes = $this->db->query("select num_equipamento_chamado from equipamento_chamado where id_chamado_equipamento = " . $dados['id_chamado'] .
-               " and (status_equipamento_chamado = 'ABERTO' or status_equipamento_chamado = 'ESPERA' or status_equipamento_chamado = 'ENTREGA')")->num_rows();
+               " and (status_equipamento_chamado = 'ABERTO' or status_equipamento_chamado = 'ESPERA' 
+               or status_equipamento_chamado = 'ENTREGA' or status_equipamento_chamado = 'FALHA')")->num_rows();
             
                if ($equip_restantes == 0) { //se todos os patrimonios tiverem sido atendidos/entregues
                   
@@ -220,7 +221,7 @@ class Interacao_model extends CI_Model {
                $dados['texto'] .= "</ul></p>";
 
                $patri_restantes = $this->db->query("select num_equipamento_chamado from equipamento_chamado where id_chamado_equipamento = " . $dados['id_chamado'] .
-               " and status_equipamento_chamado = 'ABERTO'")->num_rows();
+               " and (status_equipamento_chamado = 'ABERTO' or status_equipamento_chamado = 'ESPERA' or status_equipamento_chamado = 'FALHA')")->num_rows();
 
                $equip_entrega = $this->db->query("select num_equipamento_chamado from equipamento_chamado where id_chamado_equipamento = " . $dados['id_chamado'] .
                " and status_equipamento_chamado = 'ENTREGA'")->num_rows();
@@ -334,8 +335,9 @@ class Interacao_model extends CI_Model {
             " and status_equipamento_chamado = 'ENTREGA'")->result_array();
 
             $equip_restantes = $this->db->query("select num_equipamento_chamado from equipamento_chamado where id_chamado_equipamento = " . $dados['id_chamado'] .
-                  " and (status_equipamento_chamado = 'ABERTO' or status_equipamento_chamado = 'ESPERA' or status_equipamento_chamado = 'ENTREGA')")->num_rows();
+                  " and (status_equipamento_chamado = 'ABERTO' or status_equipamento_chamado = 'ESPERA' or status_equipamento_chamado = 'FALHA')")->num_rows();
 
+                  //var_dump($equip_restantes);
 
             if(!empty($equip_entregues)) { // verificando se existem equipamentos sem patrimonio que foram entregues
 
