@@ -397,6 +397,42 @@ class Chamado_model extends CI_Model {
         $prioridade = $this->db->query("SELECT prioridade_chamado from chamado WHERE id_chamado = " . $id_chamado)->row()->prioridade_chamado;
         $nova_prioridade = $prioridade == 1 ? 0 : 1;
         $this->db->query("update chamado set prioridade_chamado = " . $nova_prioridade . " WHERE id_chamado = " . $id_chamado);
+
+        
+
+        switch($nova_prioridade) {
+            case 1:
+                $texto_alteracao .= "posicionou o chamado como <b>prioridade</b>.";
+                break;
+            case 0:
+                $texto_alteracao .= "</b> removeu a prioridade do chamado.";
+                break;
+        }
+
+        
+        
+        $nova_alteracao = array (
+            'id_alteracao' => NULL,
+            'data_alteracao' => date('Y-m-d H:i:s'),
+            'texto_alteracao' => $texto_alteracao,
+            'id_chamado_alteracao' => $id_chamado,
+            'id_usuario_alteracao' => $_SESSION['id_usuario'],
+   
+         ); 
+         
+         $this->db->insert('alteracao_chamado',$nova_alteracao);
+
+         // ------------ LOG -------------------
+
+         $log = array(
+            'acao_evento' => 'PRIORIDADE_CHAMADO',
+            'desc_evento' => 'ID CHAMADO: ' . $id_chamado . " - PRIORIDADE = " . $nova_prioridade,
+            'id_usuario_evento' => $_SESSION['id_usuario']
+        );
+        
+        $this->db->insert('evento', $log);
+
+        // -------------- /LOG ----------------
     }
 
 

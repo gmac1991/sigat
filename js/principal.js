@@ -481,7 +481,7 @@ async function buscaEquipamentos(p_id_chamado, p_id_fila_ant, p_atendimento, ins
                 $('#divEquipamentos').prepend("<p>Marque os equipamentos que sairão da espera:</p>");
             }
         }
-        $('#divEquipamentos').append("<input id=\"chkTudo\" type=\"checkbox\" value=\"#\" onclick=\"$('input:checkbox').not(this).prop('checked', this.checked)\">" +
+        $('#divEquipamentos').append("<input id=\"chkTudo\" type=\"checkbox\" value=\"#\" onclick=\"$('#divEquipamentos input:checkbox').not(this).prop('checked', this.checked)\">" +
             "<label class=\"mr-2\" for=\"chkTudo\">&nbsp;Todos</label>");
 
         num_equipamentos.forEach(function(num) { //criando os checkbox com os patrimonios
