@@ -1,5 +1,23 @@
 # SIGAT Changelog
 
+## [1.3.3] - 2022-09-28
+
+### Corrigido
+- [Interação]
+Timestamps de alteracões de equipamentos no chamado não eram registrados
+Finalização não esperada do chamado quando havia equipamentos em espera
+- [Chamado]
+Exibição de quantidade incorreta de anexos buscados do OTRS
+
+### Adicionado
+- [Chamado]
+Novo botão para exibir o endereço do local do chamado
+Alteração de prioridade é registrada no log de eventos e no histórico do chamado
+
+### Removido
+- [Painel]
+Atualização automática dos painéis removida
+
 ## [1.2.3] - 2022-09-04
 
 ### Corrigido
