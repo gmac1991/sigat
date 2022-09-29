@@ -1,5 +1,15 @@
 # SIGAT Changelog
 
+## [1.3.4] - 2022-09-28
+
+### Modificado
+- [Busca]
+Os resultados da busca rápida agora busca os dez últimos registros
+- [Arquivo]
+O arquivo agora traz os últimos 500 registros
+- [Interação]
+A tela de registro de interação foi ligeiramente diminuída para caber em telas menores
+
 ## [1.3.3] - 2022-09-28
 
 ### Corrigido

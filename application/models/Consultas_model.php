@@ -128,7 +128,7 @@ class Consultas_model extends CI_Model {
         (SELECT usuario.nome_usuario FROM usuario WHERE usuario.id_usuario = chamado.id_usuario_responsavel_chamado) AS nome_responsavel, 
         (SELECT nome_fila FROM fila WHERE id_fila = chamado.id_fila_chamado) AS nome_fila 
         FROM chamado
-        WHERE status_chamado = 'ENCERRADO'";
+        WHERE status_chamado = 'ENCERRADO' order by id_chamado desc limit 500";
 
         return $this->db->query($q)->result();
     }
@@ -198,6 +198,7 @@ class Consultas_model extends CI_Model {
             $this->db->or_where("nome_solicitante like '%" . $termo ."%'");
             $this->db->or_where("nome_local like '%" . $termo ."%'");
             $this->db->or_where("id like '%" . $termo ."%'");
+            $this->db->order_by('id', 'DESC');
             $this->db->limit(10); 
             $chamado = $this->db->get()->result_array();
 
