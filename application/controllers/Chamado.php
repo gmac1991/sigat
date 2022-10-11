@@ -253,11 +253,12 @@ class Chamado extends CI_Controller {
   public function listar_chamados_painel($id_fila = NULL) {
 
     $result_banco = $this->consultas_model->listaChamados($id_fila,$_SESSION['id_usuario']);
+ 
     $lista_painel['data'] = array();
 
     foreach ($result_banco as $linha) {
 		
-	
+
 		$nome_local = $linha->nome_local;
 		
 		$nome_local .=  " <span class=\"badge badge-secondary\">";
@@ -367,17 +368,27 @@ class Chamado extends CI_Controller {
     $percent_atend = round((100*$linha->atend_equips) / $linha->total_equips,0);
     $percent_abert = round((100*($linha->total_equips - $linha->atend_equips) / $linha->total_equips),0);
 
+    $tam = strlen($linha->resumo_chamado);
+    //var_dump($tam);
+    $resumo = mb_strimwidth($linha->resumo_chamado,0,30,"...");
+    //var_dump($resumo);
+    //$resumo = $linha->resumo_chamado;
+
 		$lista_painel['data'][] = array(
                               0 => $linha->id_chamado,
                               1 => $linha->prioridade_chamado,
                               2 => $linha->ticket_chamado,
                               3 => $linha->nome_solicitante_chamado . $aviso_tempo,
-                              4 => $nome_local,
-                              5 => $linha->data_chamado,
-                              6 => $tempo_espera_oculto,
-                              7 => $tempo_espera_display,
-                              8 => $linha->nome_responsavel,
-                              9 => "<div class=\"progress\">
+                              4 => "<span title=\"".
+                                    $linha->resumo_chamado .
+                                    "\">" .
+                                    $resumo . "</span>",
+                              5 => $nome_local,
+                              6 => $linha->data_chamado,
+                              7 => $tempo_espera_oculto,
+                              8 => $tempo_espera_display,
+                              9 => $linha->nome_responsavel,
+                              10 => "<div class=\"progress\">
                                     <div class=\"progress-bar bg-info\" style=\"width: " . $percent_atend . 
                                     "%;height: 100%\">" .$percent_atend  . "%</div>
                                     <div class=\"progress-bar\" style=\"width: " 

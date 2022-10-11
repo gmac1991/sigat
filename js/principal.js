@@ -180,18 +180,18 @@ function painel(id_fila) {
             
             {
                 "orderable": false,
-                "targets": [0,7],
+                "targets": [0,8],
             }, 
 
             {
-                "render": $.fn.dataTable.render.moment('YYYY-MM-DD HH:mm:ss', 'DD/MM/YYYY H:mm:ss'),
-                "targets": 5,
+                "render": $.fn.dataTable.render.moment('YYYY-MM-DD HH:mm:ss', 'DD/MM/YYYY'),
+                "targets": 6,
                 
             }, 
 
             {
                 "visible": false,
-                "targets": [6],     
+                "targets": [7],     
                 
             },
         
@@ -227,35 +227,17 @@ function painel(id_fila) {
 
         "drawCallback": function(settings) {
 
+            var api = this.api()
 
+            var fila = getCookie("fila_painel") === "" ? g_fila_painel : getCookie("fila_painel")    
+           
+            $("label[data-fila] span").remove()
+            $("label[data-fila=" + fila + "]")
+            .append(
+                "<span class=\"badge badge-light\">" + api.rows().count() +
+                "</span>"
+            )
 
-            var p_id_chamado = null;
-
-            $('.PopoverPainel').each(function() {
-
-
-                p_id_chamado = $(this).attr('data-chamado');
-
-                $.ajax({
-
-                    type: 'post',
-                    url: base_url + 'json/texto_ultima_interacao',
-                    data: {
-                        id_chamado: p_id_chamado
-                    },
-                    dataType: 'json',
-                    success: interacao => {
-
-                        $(this).popover({
-                            content: interacao.nome_usuario + interacao.texto_interacao,
-                            trigger: 'focus',
-                            placement: "left",
-                            html: true
-                        });
-
-                    }
-                })
-            })
         }
     });
 }
@@ -268,11 +250,14 @@ $('#tblPainel').on('click', 'tbody tr', function () {
 
 
 
+
 function mudaFila(p_id_fila) { //troca de fila no painel => destroi o painel e reconstroi no onChange do $('#slctFila')
   
   
     document.cookie = "fila_painel=" + p_id_fila
 
+ 
+    
     $('#tblPainel').DataTable().ajax.url(base_url + 'chamado/listar_chamados_painel/' + p_id_fila).load();
 
     

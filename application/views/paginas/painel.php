@@ -92,10 +92,11 @@
 							<th>&nbsp;</th>
 							<th>Ticket</th>
 							<th>Solicitante</th>
+							<th>Solicitação</th>
 							<th>Local</th>
-							<th>Data de abertura</th>
+							<th>Data</th>
 							<th>Horas de espera (oculto)</th>
-							<th>Tempo de espera</th>
+							<th title="Última interação"><i class="far fa-clock"></i></th>
 							<th>Responsável</th>		
 							<th>Status</th>
 							<!-- <th>&nbsp;</th> -->

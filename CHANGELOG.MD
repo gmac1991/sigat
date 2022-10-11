@@ -1,4 +1,17 @@
 # SIGAT Changelog
+
+## [1.3.6] - 2022-10-11
+
+### Adicionado
+
+- [Painel]
+O botão de cada fila exibe o total de chamados
+
+### Modificado
+
+- [Painel]
+Data de abertura não exibe mais a hora, minuto e segundo da criação do chamado
+
 ## [1.3.5] - 2022-09-29
 
 ### Corrigido
