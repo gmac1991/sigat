@@ -95,11 +95,11 @@ Remoção indevida de equipamentos
 - [Chamado]\
 Falha ao inserir novo equipamento\
 Remoção indevida de equipamentos\
-Rodapé sobrepondo a tabela de equipamentos\
+Rodapé sobrepondo a tabela de equipamentos
 
 - [Interação]\
-Texto do registro de falha de entrega não é persistido
-Renderização do laudo técnico com dados inconsistentes
+Texto do registro de falha de entrega não é persistido\
+Renderização do laudo técnico com dados inconsistentes\
 Criação de interação inválida após erros no envio de arquivos
 
 - [Triagem]\
@@ -117,7 +117,7 @@ Descrição do ticket separado por artigo na tela de triagem\
 Download dos anexos diretamente da base de dados do OTRS
 
 - [Chamado] \
-Descrição do ticket separado por artigo na tela de chamado
+Descrição do ticket separado por artigo na tela de chamado\
 Sinalização de prioridade no chamado\
 Download dos anexos diretamente da base de dados do OTRS
 
@@ -131,5 +131,5 @@ Pesquisa pelo número do chamado na busca rápida
 ### Removido
 - [Triagem]\
 Removido armazenamento de tickets para triagem\
-Removido armazenamento do conteúdo dos anexos\
+Removido armazenamento do conteúdo dos anexos
 
