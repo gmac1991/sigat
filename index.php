@@ -53,7 +53,7 @@
  *
  * NOTE: If you change these, also change the error_reporting() code below
  */
-	define('ENVIRONMENT', isset($_SERVER['CI_ENV']) ? $_SERVER['CI_ENV'] : 'development');
+	define('ENVIRONMENT', isset($_SERVER['CI_ENV']) ? $_SERVER['CI_ENV'] : 'production');
 
 /*
  *---------------------------------------------------------------
@@ -176,7 +176,7 @@ switch (ENVIRONMENT)
  *
  * Un-comment the $assign_to_config array below to use this feature
  */
-	$assign_to_config['versao'] = '1.3.6';
+	$assign_to_config['versao'] = '1.3.7';
 	
 
 
