@@ -162,9 +162,14 @@ function painel(id_fila) {
     table_painel = $('#tblPainel').DataTable({ //  inicializacao do painel
 
         "autoWidth": true,
-        "pageLength" : 25,
+        "pageLength" : 15,
 
-       
+        stateSave: true,
+
+        lengthMenu: [
+            [15, 25, 50, 100],
+            [15, 25, 50, 100],
+        ],
 
         "columnDefs": [
             {
@@ -175,6 +180,12 @@ function painel(id_fila) {
 
                         return figura;
                     }
+
+            },
+
+            {
+                "targets": 9,
+                "className": "text-center"
 
             },
             
@@ -221,7 +232,7 @@ function painel(id_fila) {
 
         "ajax": base_url + 'chamado/listar_chamados_painel/' + id_fila,
 
-        "order":  [[ 1, "desc" ], [ 6, "desc" ]],
+        "order":  [[ 1, "desc" ], [ 7, "desc" ]],
 
         "processing": true,
 
@@ -243,9 +254,28 @@ function painel(id_fila) {
 }
 
 
-$('#tblPainel').on('click', 'tbody tr', function () {
+$('#tblPainel').on('mousedown','tbody tr', function (e) {
+    
+    
     var row = table_painel.row($(this)).data();
-    document.location.href = base_url + 'chamado/' + row[0];
+    var url = base_url + 'chamado/' + row[0];
+    
+    
+    if (e.button === 1) {
+        
+        window.open(url); 
+     }
+
+     else if (e.button === 2) {
+
+        e.preventDefault();
+
+     }
+
+     else {
+        document.location.href = url
+     }
+    
   });
 
 

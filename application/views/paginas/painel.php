@@ -84,7 +84,7 @@
 					</div>
 				</div>
 					
-					<table id="tblPainel" style="width:100%" class="display">
+					<table id="tblPainel" style="width:100%" class="display nowrap">
 					
 						<thead >
 						<tr>
@@ -96,7 +96,7 @@
 							<th>Local</th>
 							<th>Data</th>
 							<th>Horas de espera (oculto)</th>
-							<th title="Última interação"><i class="far fa-clock"></i></th>
+							<th class="text-center" title="Última interação"><i class="far fa-clock"></i></th>
 							<th>Responsável</th>		
 							<th>Status</th>
 							<!-- <th>&nbsp;</th> -->

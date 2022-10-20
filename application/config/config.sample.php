@@ -530,3 +530,4 @@ $config['url_ticketsys_api'] = "";
 $config['url_ticketsys'] = "";
 $config['ticketsys_login'] = "";
 $config['ticketsys_pwd'] = "";
+$config['changelog_url'] = "";

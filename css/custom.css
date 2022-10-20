@@ -5,6 +5,10 @@
     font-weight: bold;*/
 }
 
+#tblPainel_wrapper {
+    margin-top: -45px;
+}
+
 #tblPainel td, th {
 	font-size: 0.80rem;
 }
