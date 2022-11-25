@@ -753,7 +753,8 @@ class Json extends CI_Controller {
                             "', num_equipamento = '"       . $i['num_equipamento'] .
                             "', tag_equipamento = '"       . $i['tag_equipamento'] .
                             "', data_alteracao_equipamento = NOW()" .
-                            " where num_equipamento = '"   . $a['num_equipamento'] . "'"
+                            " where num_equipamento = '"   . $a['num_equipamento'] . "' 
+                            and id_chamado_equipamento = " . $dados['g_id_chamado']
             );
             
             // ------------ LOG -------------------
@@ -795,7 +796,8 @@ class Json extends CI_Controller {
             $dados = $this->input->post();
             $i = $dados['item'];
 
-            $this->db->query("delete from equipamento_chamado where num_equipamento_chamado = '" . $i['num_equipamento'] . "'");
+            $this->db->query("delete from equipamento_chamado where num_equipamento_chamado = '" . $i['num_equipamento'] . "' 
+            and id_chamado_equipamento = " . $dados['g_id_chamado']);
             
             // ------------ LOG -------------------
             
