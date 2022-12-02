@@ -25,7 +25,9 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 | a PHP script and you can easily do that on your own.
 |
 */
-$config['base_url'] = 'http://localhost/sigat/';
+# $config['base_url'] = 'http://localhost/sigat/';
+# Configure SIGAT with 02 DNS - one in LAN and another in WAN/Internet using a proxy server
+$config['base_url'] = strpos($_SERVER['HTTP_HOST'], 'http://sigat-your-main-deploy.mydomain.com/') !== FALSE ? 'http://sigat-your-main-deploy.mydomain.com/' : 'http://sigat-another-domain-proxy.mydomain.com/';
 
 /*
 |--------------------------------------------------------------------------
