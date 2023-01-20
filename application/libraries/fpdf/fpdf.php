@@ -1252,8 +1252,15 @@ protected function _parsejpg($file)
 
 protected function _parsepng($file)
 {
+	// Patch para SSL
+	$arrContextOptions=array(
+		"ssl"=>array(
+			"verify_peer"=>false,
+			"verify_peer_name"=>false,
+		),
+	);  
 	// Extract info from a PNG file
-	$f = fopen($file,'rb');
+	$f = fopen($file,'rb',false,stream_context_create($arrContextOptions));
 	if(!$f)
 		$this->Error('Can\'t open image file: '.$file);
 	$info = $this->_parsepngstream($f,$file);
