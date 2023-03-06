@@ -311,6 +311,8 @@ function painelEncerrados() {
 
     table_encerrados = $('#tblEncerrados').DataTable({ //  inicializacao do painel
 
+        "pageLength" : 25,
+
         "autoWidth": true,
 
         "language": {
@@ -339,6 +341,16 @@ function painelEncerrados() {
         "order": [],
 
         "processing": true,
+
+        "columnDefs": [ 
+        
+            {
+                "render": $.fn.dataTable.render.moment('YYYY-MM-DD HH:mm:ss','DD/MM/YYYY - HH:mm:ss'),
+                "targets": [4,5]
+                
+            }, 
+
+        ]
 
     });
 }

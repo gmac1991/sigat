@@ -44,7 +44,7 @@ class Interacao_model extends CI_Model {
                      
                      $this->db->query("update equipamento_chamado set status_equipamento_chamado = 'ENTREGA', status_equipamento_chamado_ant = 'ABERTO',
                      ultima_alteracao_equipamento_chamado = NOW()
-                     where num_equipamento_chamado = '" . $num_equip . "'");
+                     where num_equipamento_chamado = '" . $num_equip . "' and id_chamado_equipamento = " . $dados['id_chamado']);
                      
                      // ------------ LOG -------------------
 
@@ -62,7 +62,7 @@ class Interacao_model extends CI_Model {
 
                      $this->db->query("update equipamento_chamado set status_equipamento_chamado = 'ATENDIDO', status_equipamento_chamado_ant = 'ABERTO',
                      ultima_alteracao_equipamento_chamado = NOW()
-                     where num_equipamento_chamado = '" . $num_equip . "'");
+                     where num_equipamento_chamado = '" . $num_equip . "' and id_chamado_equipamento = " . $dados['id_chamado']);
 
                      // ------------ LOG -------------------
 
@@ -321,13 +321,13 @@ class Interacao_model extends CI_Model {
 
                // -------------- /LOG ----------------
 
-               $dados['texto'] .= "<a role=\"button\" class=\"btn btn-sm btn-primary float-right mt-2 ml-2\" href=\"" . base_url('termos/' .
-               $dados['nome_termo_responsabilidade']) . "\" download><i class=\"fas fa-file-download\"></i> Termo de Responsabilidade</a>";
+               $dados['texto'] .= "<a role=\"button\" class=\"btn btn-sm btn-primary float-right mt-2 ml-2\" href=\"/termos/" .
+               $dados['nome_termo_responsabilidade'] . "\" download><i class=\"fas fa-file-download\"></i> Termo de Responsabilidade</a>";
             }
             
             
-            $dados['texto'] .= "<a role=\"button\" class=\"btn btn-sm btn-primary float-right mt-2\" href=\"" . base_url('termos/' . 
-            $dados['nome_termo_entrega']) . "\" download><i class=\"fas fa-file-download\"></i> Termo de Entrega</a>";
+            $dados['texto'] .= "<a role=\"button\" class=\"btn btn-sm btn-primary float-right mt-2\" href=\"/termos/" . 
+            $dados['nome_termo_entrega'] . "\" download><i class=\"fas fa-file-download\"></i> Termo de Entrega</a>";
 
             
 
@@ -337,14 +337,13 @@ class Interacao_model extends CI_Model {
             $equip_restantes = $this->db->query("select num_equipamento_chamado from equipamento_chamado where id_chamado_equipamento = " . $dados['id_chamado'] .
                   " and (status_equipamento_chamado = 'ABERTO' or status_equipamento_chamado = 'ESPERA' or status_equipamento_chamado = 'FALHA')")->num_rows();
 
-                  //var_dump($equip_restantes);
+            
 
             if(!empty($equip_entregues)) { // verificando se existem equipamentos sem patrimonio que foram entregues
 
                $dados['texto'] .= "Os equipamentos foram entregues:<ul>";
 
-               //var_dump($equip_entregues);
-
+         
 
             for ($i = 0; $i < count($equip_entregues); $i++) {
 
@@ -589,7 +588,7 @@ class Interacao_model extends CI_Model {
 
          case 'ATENDIMENTO':
 
-            var_dump(count($pool_equips));
+            //var_dump(count($pool_equips));
 		 
 		 
             if (count($pool_equips) >= 1) {
@@ -614,7 +613,11 @@ class Interacao_model extends CI_Model {
                   // -------------- /LOG ----------------
                }
 
-               if ($chamado->entrega_chamado == '1') {
+               $entregas_pendentes = $this->db->query("select * from equipamento_chamado
+                  where id_chamado_equipamento = " . $interacao->id_chamado_interacao . " and
+                  status_equipamento_chamado = 'ENTREGA'")->num_rows();
+
+               if ($chamado->entrega_chamado == '1' && $entregas_pendentes == 0) {
 
                   $this->db->set('entrega_chamado', '0');
                   $this->db->where('id_chamado', $interacao->id_chamado_interacao);
@@ -803,7 +806,7 @@ class Interacao_model extends CI_Model {
          case 'ENTREGA':
 
             if (!empty($pool_equips)) {
-               foreach ($pool_equips as $num_equip) { //patrimonios[0] é o vetor com a lista de patrimonios da interacao
+               foreach ($pool_equips as $num_equip) { 
                   $this->db->query("update equipamento_chamado set status_equipamento_chamado = 'ENTREGA',
                   ultima_alteracao_equipamento_chamado = NOW()" .
                   " where num_equipamento_chamado = '" . $num_equip . 

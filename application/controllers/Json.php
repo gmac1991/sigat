@@ -731,6 +731,7 @@ class Json extends CI_Controller {
     public function atualizar_equipamento_chamado() {
         if (isset($_SESSION['id_usuario'])) {
             $dados = $this->input->post();
+            
             $a = $dados['item_antigo'];
             $i = $dados['item'];
             
@@ -753,8 +754,8 @@ class Json extends CI_Controller {
                             "', num_equipamento = '"       . $i['num_equipamento'] .
                             "', tag_equipamento = '"       . $i['tag_equipamento'] .
                             "', data_alteracao_equipamento = NOW()" .
-                            " where num_equipamento = '"   . $a['num_equipamento'] . "' 
-                            and id_chamado_equipamento = " . $dados['g_id_chamado']
+                            " where num_equipamento = '"   . $a['num_equipamento'] . "'"
+                        
             );
             
             // ------------ LOG -------------------

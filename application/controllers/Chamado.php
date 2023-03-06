@@ -416,9 +416,9 @@ class Chamado extends CI_Controller {
                               2 => $linha->nome_solicitante_chamado,
                               3 => $linha->nome_local,
                               4 => $linha->data_chamado,
-                              5 => $linha->data_encerramento,
-                              6 => $linha->nome_responsavel,
-                              7 => $linha->nome_fila,
+                              5 => $linha->data_encerramento_chamado,
+                              // 6 => $linha->nome_responsavel,
+                              // 7 => $linha->nome_fila,
                             );
     }
 

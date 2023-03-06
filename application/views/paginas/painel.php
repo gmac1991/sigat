@@ -24,7 +24,7 @@
 			
 				<div class="tab-pane fade show mb-5" id="encerrados" role="tabpanel" aria-labelledby="encerrados-tab">
 					<div class="mb-5">
-					<table id="tblEncerrados" style="width:100%" class="display">
+					<table id="tblEncerrados" style="width:100%" class="display nowrap">
 						
 						<thead >
 						<tr>
@@ -34,8 +34,8 @@
 							<th>Local</th>
 							<th>Abertura</th>
 							<th>Encerramento</th>
-							<th>Responsável</th>
-							<th>Fila</th>	
+							<!-- <th>Responsável</th>
+							<th>Fila</th>	 -->
 						</tr>
 						</thead>
 					</table>
@@ -46,7 +46,7 @@
 				
 				<div class="tab-pane fade show mb-5" id="triagem" role="tabpanel" aria-labelledby="triagem-tab">
 					<div class="mb-5">
-						<table id="tblTriagem" style="width:100%" class="display">
+						<table id="tblTriagem" style="width:100%" class="display nowrap">
 							<thead >
 							<tr>
 								<th>#</th>
