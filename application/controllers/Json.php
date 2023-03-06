@@ -269,13 +269,18 @@ class Json extends CI_Controller {
                     echo "</div>";
                 break;
 
-                case 'ADC_EQUIP':
-                    echo "<div class=\"mb-3 p-1 table-secondary rounded\">";
+                case 'FECHAMENTO_MAN':
+                    echo "<div class=\"mb-3 p-1 table-success rounded\">";
                     echo "<span class=\"float-right\">" . $interacao['data_interacao'] . "</span>";
-                    echo "<strong>" . $interacao['nome_usuario'] . "</strong> adicionou equipamentos à solicitação<hr class=\"m-0\" />";
+                    echo "<strong>" . $interacao['nome_usuario'] . "</strong> finalizou o chamado<hr class=\"m-0\" />";
+                    if ($r_ult_interacao['id_interacao'] == $interacao['id_interacao']) 
+                        echo $btn_desfazer;
                     echo $interacao['texto_interacao'];
+
                     echo "</div>";
                 break;
+
+
 
                 }
 
@@ -799,6 +804,10 @@ class Json extends CI_Controller {
 
             $this->db->query("delete from equipamento_chamado where num_equipamento_chamado = '" . $i['num_equipamento'] . "' 
             and id_chamado_equipamento = " . $dados['g_id_chamado']);
+
+           
+
+
             
             // ------------ LOG -------------------
             

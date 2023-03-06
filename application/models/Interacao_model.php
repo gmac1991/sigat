@@ -505,6 +505,38 @@ class Interacao_model extends CI_Model {
 
       }
 
+      if ($dados['tipo'] == 'FECHAMENTO_MAN') {
+
+       
+
+         $dados['texto'] = "O chamado foi finalizado de forma manual.<br><br>";
+        
+
+         // ------------ LOG -------------------
+
+         $log = array(
+            'acao_evento' => 'FINALIZAR_CHAMADO_MANUAL',
+            'desc_evento' => 'ID CHAMADO: ' . $dados['id_chamado'],
+            'id_usuario_evento' => $_SESSION['id_usuario']
+            );
+
+         $this->db->insert('evento', $log);
+
+         // -------------- /LOG ----------------
+
+
+      }
+
+      $equips = NULL;
+    
+
+      if ($dados['tipo'] != 'FECHAMENTO_MAN') {
+
+         $equips = implode("::",$dados['equip_atendidos']);
+      }
+
+      
+
       $nova_interacao = array (
          'id_interacao' => NULL,
          'tipo_interacao' => $dados['tipo'],
@@ -512,9 +544,11 @@ class Interacao_model extends CI_Model {
          'id_chamado_interacao' => $dados['id_chamado'],
          'id_usuario_interacao' => $dados['id_usuario'],
          'id_fila_ant_interacao' => $fila_ant_int,
-         'pool_equipamentos' => implode("::",$dados['equip_atendidos']),
+         'pool_equipamentos' => $equips,
 
       ); 
+
+      var_dump($nova_interacao);
 
       if ($dados['tipo'] == 'ENTREGA') { // checando se foi enviado o arquivo PDF do termo de entrega
 
@@ -541,17 +575,6 @@ class Interacao_model extends CI_Model {
 
       else {
          $this->db->insert('interacao',$nova_interacao);
-         // ------------ LOG -------------------
-
-         $log = array(
-            'acao_evento' => 'REGISTRAR_INTERACAO',
-            'desc_evento' => 'ID CHAMADO: ' . $dados['id_chamado'] . " - TIPO: " . $dados['tipo'],
-            'id_usuario_evento' => $_SESSION['id_usuario']
-            );
-
-            $this->db->insert('evento', $log);
-
-            // -------------- /LOG ----------------
       }
       
 
@@ -1021,27 +1044,47 @@ class Interacao_model extends CI_Model {
 
          break;
 
-            case 'REM_ESPERA':
+         case 'REM_ESPERA':
 
-            foreach ($pool_equips as $num_equip) { //patrimonios[0] é o vetor com a lista de patrimonios da interacao
-               $this->db->query("update equipamento_chamado set status_equipamento_chamado = 'ESPERA',
-               ultima_alteracao_equipamento_chamado = NOW()" .
-               " where num_equipamento_chamado = " . $num_equip . 
-               " and status_equipamento_chamado = 'ABERTO'" .
-               " and id_chamado_equipamento = " . $interacao->id_chamado_interacao);
+         foreach ($pool_equips as $num_equip) { //patrimonios[0] é o vetor com a lista de patrimonios da interacao
+            $this->db->query("update equipamento_chamado set status_equipamento_chamado = 'ESPERA',
+            ultima_alteracao_equipamento_chamado = NOW()" .
+            " where num_equipamento_chamado = " . $num_equip . 
+            " and status_equipamento_chamado = 'ABERTO'" .
+            " and id_chamado_equipamento = " . $interacao->id_chamado_interacao);
 
-               // ------------ LOG -------------------
+            // ------------ LOG -------------------
 
-               $log = array(
-                  'acao_evento' => 'DESFAZER_REM_ESPERA_PATRI',
-                  'desc_evento' => 'ID CHAMADO: ' . $interacao->id_chamado_interacao . " - NUM: " . $num_equip . " - NOVO STATUS: ESPERA",
-                  'id_usuario_evento' => $_SESSION['id_usuario']
-                  );
+            $log = array(
+               'acao_evento' => 'DESFAZER_REM_ESPERA_PATRI',
+               'desc_evento' => 'ID CHAMADO: ' . $interacao->id_chamado_interacao . " - NUM: " . $num_equip . " - NOVO STATUS: ESPERA",
+               'id_usuario_evento' => $_SESSION['id_usuario']
+               );
 
-               $this->db->insert('evento', $log);
+            $this->db->insert('evento', $log);
 
-               // -------------- /LOG ----------------
-            }
+            // -------------- /LOG ----------------
+         }
+
+         break;
+
+         case 'FECHAMENTO_MAN':
+
+            $this->db->set('status_chamado', 'ABERTO');
+            $this->db->where('id_chamado', $interacao->id_chamado_interacao);
+            $this->db->update('chamado');
+
+            // ------------ LOG -------------------
+
+            $log = array(
+               'acao_evento' => 'ALTERAR_STATUS_CHAMADO',
+               'desc_evento' => 'ID CHAMADO: ' . $interacao->id_chamado_interacao . " - NOVO STATUS: ABERTO",
+               'id_usuario_evento' => $_SESSION['id_usuario']
+               );
+
+            $this->db->insert('evento', $log);
+
+            // -------------- /LOG ----------------
 
          break;
       }

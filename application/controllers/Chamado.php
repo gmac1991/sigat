@@ -12,8 +12,11 @@ class Chamado extends CI_Controller {
     $this->load->model("consultas_model"); //carregando o model das consultas 
     $this->load->model("chamado_model"); //carregando o model chamado
     $this->load->model("usuario_model"); //carregando o model usuario
+    $this->load->model("interacao_model"); //carregando o model interacao
+
+    
     //$this->load->library("mailer");
-    $this->load->library("Charset_normalizer");
+    //$this->load->library("Charset_normalizer");
 
     
   
@@ -248,6 +251,25 @@ class Chamado extends CI_Controller {
     curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
     curl_exec($curl);
     curl_close($curl);
+  }
+
+  public function finalizar_manual_chamado() {
+
+    $id_chamado =  $this->input->post("id_chamado");
+    
+    $dados = array (
+      'tipo' => 'FECHAMENTO_MAN',
+      'id_chamado' => $id_chamado,
+      'id_usuario' => $_SESSION['id_usuario'],
+
+   ); 
+   
+
+    $this->chamado_model->finalizaManualChamado($id_chamado);
+
+    $this->interacao_model->registraInteracao($dados);
+
+
   }
 
   public function listar_chamados_painel($id_fila = NULL) {

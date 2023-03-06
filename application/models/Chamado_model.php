@@ -344,6 +344,26 @@ class Chamado_model extends CI_Model {
 
     }
 
+    public function finalizaManualChamado($p_id_chamado) {
+
+        $this->db->query("update chamado set status_chamado = 'FECHADO' where id_chamado = " . $p_id_chamado);
+        
+
+         // ------------ LOG -------------------
+
+         $log = array(
+            'acao_evento' => 'FECHAMENTO_MANUAL',
+            'desc_evento' => 'ID CHAMADO: ' . $p_id_chamado,
+            'id_usuario_evento' => $_SESSION['id_usuario']
+        );
+        
+        $this->db->insert('evento', $log);
+
+        // -------------- /LOG ----------------
+
+
+    }
+
     public function buscaTicketTriagem($id_triagem) {
 
         $result = $this->db->query("select ticket_triagem from triagem where id_triagem = " . $id_triagem);

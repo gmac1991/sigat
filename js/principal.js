@@ -672,6 +672,7 @@ $('#modalRegistro').on('shown.bs.modal', function(event) {
     $('#slctTipo').append('<option value=\"ESPERA\">Deixar em espera</option>');
     $('#slctTipo').append('<option value=\"REM_ESPERA\">Remover da espera</option>');
     $('#slctTipo').append('<option value=\"INSERVIVEL\">Classificar como inservível</option>');
+    
 
 
     // } else {
@@ -901,7 +902,7 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
         fields: [
             {
                 name: "num_equipamento",
-                title: "ID",
+                title: "Núm. de identificação",
                 type: "text",
                 readOnly: true,
                 validate: [
@@ -926,7 +927,7 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
                 align: "center",
                 inserting: false,
                 editing: false,
-                title: "Tag",
+                title: "Lacre",
                 validate: [
                     { validator: "pattern", param: /^[a-zA-Z0-9]+$/, message: "Atenção!\nCaracteres permitidos:\nA-Z, a-z e 0-1" },
                 ],
@@ -1249,7 +1250,31 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
             break;
         }
 
+        
+
        
+    }
+
+    var pendentes = 0;
+    
+    for (var i = 0; i < status_equips.length; ++i) {
+
+        
+
+        if (status_equips[i] == 'ABERTO' || status_equips[i] == 'ESPERA' || status_equips[i] == 'FALHA' || status_equips[i] == 'ENTREGA') {
+
+            pendentes++;
+
+        }
+
+       
+    }
+
+    if (p_id_responsavel == g_id_usuario && pendentes == 0 && status_chamado == 'ABERTO') {
+
+        botoes = "<button type=\"button\" id=\"btnFechamentoManual\" class=\"btn btn-warning\"" +
+        " onclick=\"finalizaManual(" + p_id_chamado + ")\"><i class=\"fas fa-pen-alt\"></i> Fechamento manual</button> ";
+
     }
 
     if (entrega == 1 && p_id_responsavel == g_id_usuario && status_chamado == 'ABERTO' ) {
@@ -1268,7 +1293,32 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
     }
     $('#botoesAtendimento').html(botoes);
     $("#spnStatusChamado").fadeOut();
+
+
+    
 }
+
+
+
+
+function finalizaManual(p_id_chamado) {
+
+
+
+    $.ajax({
+        url: base_url + "chamado/finalizar_manual_chamado",
+        type: 'POST',
+        data: {id_chamado: p_id_chamado},
+        beforeSend: function() {
+            $('#btnFechamentoManual').prop('disabled','true');
+        },
+        success: function() {
+            atualizaInteracoes(p_id_chamado);
+            carregaChamado(p_id_chamado);
+        }
+    })
+}
+
 
 // ---------------- INTERACOES --------------------
 
