@@ -1,4 +1,6 @@
-       <div class="modal fade" id="modalRegistro" tabindex="-1" role="dialog">
+
+      
+      <div class="modal fade" id="modalRegistro" tabindex="-1" role="dialog">
             <div class="modal-dialog modal-lg" role="document">
 
                 <div class="modal-content">
@@ -217,8 +219,14 @@
                                 <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#a_<?= $ticket['t_articles'][$i]->article_id ?>">
                                 <i class="fas fa-user-circle"></i>
                                 <?= preg_replace("/\s{1}<.+>/","",$ticket['t_articles'][$i]->a_from,1); ?> 
-                                <?php $date = date_create($ticket['t_articles'][$i]->create_time); ?>
-                                <div class="float-right"><i class="fas fa-calendar-alt"></i> <?= date_format($date,"d/m/y - H:i:s",); ?></div>
+                                <?php
+                                
+                                
+                                $date = date_create($ticket['t_articles'][$i]->create_time); 
+                                $interval = DateInterval::createFromDateString('3 hours');
+                                
+                                ?>
+                                <div class="float-right"><i class="fas fa-calendar-alt"></i> <?= date_format(date_sub($date,$interval),"d/m/y - H:i:s"); ?></div>
                                 </button>
                                 </h2>
                             </div>

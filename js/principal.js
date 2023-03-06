@@ -3043,6 +3043,15 @@ $('#frmImportarChamado').on('submit',
 
 // --------- BUSCA RAPIDA ----------
 
+
+$('#tblEquipsBr').on('click', 'tbody tr', function () {
+
+    alert('pasiodkpsoadksopadkosa');
+ 
+   // window.open(base_url + 'chamado/' + $("td:nth-child(3)").value());
+  });
+
+
 var result_br = [];
 
 $("#frmBuscaRapida button").on("click", async function(e) {
@@ -3095,6 +3104,12 @@ $("#modalBuscaRapida").on("shown.bs.modal", function() {
     $("#tblTriagemBr tbody tr").on("click", function() {
  
         window.open(base_url + "triagem/" + $(this).find("td").first().text());
+     });
+
+
+     $("#tblEquipsBr tbody tr td:nth-child(4)").on("click", function() {
+ 
+        window.open(base_url + "chamado/" + $(this).text());
      });
 
 

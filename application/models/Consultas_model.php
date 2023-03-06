@@ -184,6 +184,7 @@ class Consultas_model extends CI_Model {
             $this->db->from("v_equipamento");
             $this->db->where("num_equip like '%" . $termo ."%'");
             $this->db->or_where("desc_equip like '%" . $termo ."%'");
+            $this->db->or_where("tag_equip like '%" . $termo ."%'");
             $this->db->limit(10);
             $equip = $this->db->get()->result_array();
 

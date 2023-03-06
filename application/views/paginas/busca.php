@@ -11,6 +11,7 @@ else :
     <thead>
         <th>ID</th>
         <th>Descrição</th>
+        <th>Último lacre</th>
         <th>Núm. chamado</th>
         <th>Status</th>
     </thead>
@@ -21,7 +22,8 @@ else :
         <tr>
             <td><?= $equip["num_equip"] ?></td>
             <td><?= $equip["desc_equip"] ?></td>
-            <td><?= $equip["chamado_equip"] ?></td>
+            <td><?= $equip["tag_equip"] ?></td>
+            <td><?= $equip["chamado_equip"] ?> <i class="fas fa-external-link-alt"></i></td>
             <td><?= $equip["status_equip"] ?></td>
         </tr>
         <?php endforeach; ?>
