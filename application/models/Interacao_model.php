@@ -1134,11 +1134,11 @@ class Interacao_model extends CI_Model {
 
    public function buscaUltimaInteracao($id_chamado) {
 
-      $query = $this->db->query("SELECT DATE_FORMAT(data_interacao, '%d/%m/%Y - %H:%i:%s') AS data_interacao, 
-      id_interacao, texto_interacao, nome_usuario
+      $query = $this->db->query("SELECT data_interacao, DATE_FORMAT(data_interacao, '%d/%m/%Y - %H:%i:%s') AS data_interacao_br, id_interacao, texto_interacao, nome_usuario,
+      tipo_interacao
       FROM interacao i
       INNER JOIN usuario u ON(u.id_usuario = i.id_usuario_interacao)
-      WHERE i.id_chamado_interacao = " . $id_chamado . " ORDER BY data_interacao DESC");
+      WHERE i.id_chamado_interacao = " . $id_chamado . " ORDER BY data_interacao desc");
       
       $result = $query->row();
       return $result;

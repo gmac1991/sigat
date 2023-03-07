@@ -495,13 +495,14 @@ class Chamado extends CI_Controller {
       $entrada = $this->input->get("chamados");
       $chamados = explode(",", $entrada);
 
-      $this->load->library('pdf');
+      //$this->load->library('pdf');
+      $this->load->library('pdf_html');
                 
-        $pdf = new PDF();
+        $pdf = new PDF_HTML();
         $pdf->AliasNbPages();
         $pdf->AddPage();
         $pdf->SetFont('Arial','B',16);
-        $pdf->Cell(0,10,'LISTA DE CHAMADOS',0,0,'C');
+        $pdf->Cell(0,10,'CHAMADOS',0,0,'C');
         $pdf->Ln(10);
         $pdf->SetFont('Arial','',11);
         $pdf->Cell(0,10,"Emitido em " . date('d/m/Y - H:i:s'),0,0,'R');
@@ -519,6 +520,8 @@ class Chamado extends CI_Controller {
         
 
         $ult_interacao = $this->interacao_model->buscaUltimaInteracao($id);
+
+        preg_match("/(.*)(?=<hr)/",$ult_interacao->texto_interacao, $texto); //fazendo o parse para pegar o texto antes do <hr>
 
         //var_dump($ult_interacao);
        
@@ -584,25 +587,40 @@ class Chamado extends CI_Controller {
         $pdf->SetFont('Arial','',9);
         $pdf->MultiCell(0,8,$str_equips,1,'L');
         $pdf->SetFont('Arial','B',11);
-        $pdf->Cell(33,8,utf8_decode("Última interação"),1);
+        $pdf->Cell(33,8,utf8_decode("Última interação"),0);
         $pdf->SetFont('Arial','',11);
 
         
         if ($ult_interacao != NULL) {
-          $pdf->Cell(0,8,utf8_decode($ult_interacao->data_interacao . " - " . $ult_interacao->nome_usuario),1);
-          $pdf->Ln();
-        }
-        else {
-          $pdf->MultiCell(0,8,"N/A",1,'L');
-          
-        }
-        if ($ult_interacao != NULL) {
-          $pdf->MultiCell(0,8,utf8_decode(strip_tags($ult_interacao->texto_interacao)),1,'L');
+          $pdf->Cell(0,8,utf8_decode($ult_interacao->data_interacao_br . " - " . $ult_interacao->nome_usuario),0,0,'R');
           
         }
         else {
-          $pdf->MultiCell(0,8,utf8_decode("Sem interações."),1,'L');
+          $pdf->Cell(0,8,"N/A",1,'L');
+          
         }
+        $pdf->Ln();
+        if ($ult_interacao != NULL && isset($texto[0])) {
+          
+          $pdf->WriteHTML(utf8_decode(html_entity_decode($texto[0])));
+          
+        }
+        else {
+          
+          if ($ult_interacao->tipo_interacao == 'ENC'){
+
+            $pdf->MultiCell(0,8,utf8_decode("Chamado encerrado."),1,'L');
+
+          }
+          else{
+
+            $pdf->MultiCell(0,8,utf8_decode("Sem interações."),1,'L');
+
+          }
+          
+        }
+        $pdf->Ln();
+        $pdf->Cell(0,8,"","T",0,0);
         $pdf->Ln(7);
        
       }

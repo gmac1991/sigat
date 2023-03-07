@@ -568,7 +568,7 @@ async function buscaEquipamentos(p_id_chamado, p_id_fila_ant, p_atendimento, ins
 
     if (num_equipamentos.length > 0) {
 
-        
+        num_equipamentos.sort();
 
         if (p_atendimento == true) {
 
@@ -1353,7 +1353,7 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
 
     if (p_id_responsavel == g_id_usuario && pendentes == 0 && status_chamado == 'ABERTO') {
 
-        botoes = "<button type=\"button\" id=\"btnFechamentoManual\" class=\"btn btn-warning\"" +
+        botoes = "<button type=\"button\" id=\"btnFechamentoManual\" class=\"btn btn-primary\"" +
         " onclick=\"finalizaManual(" + p_id_chamado + ")\"><i class=\"fas fa-pen-alt\"></i> Fechamento manual</button> ";
 
     }

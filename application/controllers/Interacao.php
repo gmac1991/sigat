@@ -434,7 +434,7 @@ class Interacao extends CI_Controller {
             $pdf->Ln(10);
             $pdf->SetFont('Arial','',12);
             $pdf->Ln(5);
-            $pdf->WriteHTML(utf8_decode($texto));
+            $pdf->WriteHTML(utf8_decode(html_entity_decode(($texto))));
             $pdf->Ln(10);
             $pdf->SetFont('Arial','B',12);
             $pdf->Cell(120,10,'Data: ',0,0,'R');

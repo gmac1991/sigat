@@ -130,7 +130,7 @@ class Consultas_model extends CI_Model {
         (SELECT nome_local FROM local WHERE id_local = id_local_chamado) AS nome_local, 
         data_chamado, data_encerramento_chamado
         FROM chamado
-        WHERE status_chamado = 'ENCERRADO' order by id_chamado desc limit 500";
+        WHERE status_chamado = 'ENCERRADO' order by data_encerramento_chamado desc limit 500";
 
         return $this->db->query($q)->result();
     }
