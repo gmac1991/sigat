@@ -94,12 +94,17 @@
                     <a style="font-size:medium" target="_blank" 
                     href="<?= $this->config->item('url_ticketsys') ?>index.pl?Action=AgentTicketZoom;TicketID=<?= $chamado->id_ticket_chamado?>">
                     <i class="fas fa-external-link-alt"></i></a> <small>(#<?= $chamado->id_chamado ?>)&nbsp;
+                    <button class="btn btn-secondary btn-sm d-inline" id="btnImprimirChamado" data-chamado="<?= $chamado->id_chamado ?>"><i class="fas fa-print"></i></button>
                     <span class="text-warning" id="estrela_prioridade" style="display:<?= $chamado->prioridade_chamado == 1 ? 'inline' : 'none' ?>"><i class="fas fa-star"></i></span>
                     <div class="spinner-border spinner-border-sm" role="status" id="spnStatusChamado" style="display: none;">
                     <span class="sr-only">Loading...</span></div></small>
                     
+                    
+                    
                 </h3>
-                
+              
+			   
+					
                   
             </div>
             

@@ -163,7 +163,7 @@ class Interacao extends CI_Controller {
            
     public function gerar_termo($id_chamado) {
 
-        $dados = $this->chamado_model->buscaChamado($id_chamado,'ENTREGA');
+        $dados = $this->chamado_model->buscaChamado($id_chamado,"'ENTREGA'");
         $nome_usuario_atual = $this->usuario_model->buscaUsuario($_SESSION['id_usuario'])->nome_usuario;
 
         $this->load->library('pdf');
@@ -262,7 +262,7 @@ class Interacao extends CI_Controller {
 
     public function gerar_termo_resp($id_chamado) {
 
-        $dados = $this->chamado_model->buscaChamado($id_chamado,'ENTREGA');
+        $dados = $this->chamado_model->buscaChamado($id_chamado,"'ENTREGA'");
 
         $this->load->library('pdf');
                 

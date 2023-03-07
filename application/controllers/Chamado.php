@@ -16,7 +16,7 @@ class Chamado extends CI_Controller {
 
     
     //$this->load->library("mailer");
-    //$this->load->library("Charset_normalizer");
+    $this->load->library("Charset_normalizer");
 
     
   
@@ -421,10 +421,11 @@ class Chamado extends CI_Controller {
                                     $resumo . "</span>",
                               5 => $nome_local,
                               6 => $linha->regiao_local,
-                              7 => $linha->data_chamado,
-                              8 => $tempo_espera_oculto,
-                              9 => $tempo_espera_display,
-                              10 => $linha->nome_responsavel,
+                              7 => "<input class=\"chkExpo\" type=\"checkbox\" value=\"" . $linha->id_chamado . "\">",
+                              8 => $linha->data_chamado,
+                              9 => $tempo_espera_oculto,
+                              10 => $tempo_espera_display,
+                              11 => $linha->nome_responsavel,
                 
                             ); //detalhes
 
@@ -477,6 +478,152 @@ class Chamado extends CI_Controller {
       else {
         header("HTTP/1.1 406 Not Acceptable");
       }
+    }
+    else {
+      header("HTTP/1.1 403 Forbidden");
+    }
+    
+  }
+
+  public function imprimir_chamados() {
+
+    
+
+    if (isset($_SESSION['id_usuario'])) {
+     
+      
+      $entrada = $this->input->get("chamados");
+      $chamados = explode(",", $entrada);
+
+      $this->load->library('pdf');
+                
+        $pdf = new PDF();
+        $pdf->AliasNbPages();
+        $pdf->AddPage();
+        $pdf->SetFont('Arial','B',16);
+        $pdf->Cell(0,10,'LISTA DE CHAMADOS',0,0,'C');
+        $pdf->Ln(10);
+        $pdf->SetFont('Arial','',11);
+        $pdf->Cell(0,10,"Emitido em " . date('d/m/Y - H:i:s'),0,0,'R');
+        $pdf->Ln(15);
+
+      foreach ($chamados as $id) {
+
+      
+
+        $dados = $this->chamado_model->buscaChamado($id,"'ABERTO','ENTREGA'");
+
+        $chamado = $dados['chamado'];
+        $equips = $dados['equipamentos'];
+
+        
+
+        $ult_interacao = $this->interacao_model->buscaUltimaInteracao($id);
+
+        //var_dump($ult_interacao);
+       
+        
+        $str_equips = NULL;
+
+        foreach ($equips as $e) {
+
+          $str_equips .= $e->num_equipamento . " - " . utf8_decode($e->descricao_equipamento) . "\n";
+      
+        }
+      
+
+        $pdf->SetFont('Arial','B',11);
+        $pdf->Cell(0,8,$chamado->ticket_chamado . " - Chamado #" . $id,'B',0,'R');
+        $pdf->Ln(10);
+        $pdf->SetFont('Arial','B',11);
+        $pdf->Cell(22,8,"Data",1,0,"R");
+        $pdf->SetFont('Arial','',11);
+        $pdf->Cell(80,8,$chamado->data_chamado,1);
+        $pdf->SetFont('Arial','B',11);
+        $pdf->Cell(22,8,"Fila",1,0,"R");
+        $pdf->SetFont('Arial','',11);
+        $pdf->Cell(0,8,utf8_decode($chamado->nome_fila_chamado),1);
+        $pdf->Ln();
+
+        $pdf->SetFont('Arial','B',11);
+        $pdf->Cell(22,8,"Solicitante",1,0,"R");
+        $pdf->SetFont('Arial','',11);
+        $pdf->Cell(80,8,utf8_decode($chamado->nome_solicitante_chamado),1);
+        $pdf->SetFont('Arial','B',11);
+        $pdf->Cell(22,8,"Telefone",1,0,'R');
+        $pdf->SetFont('Arial','',11);
+        $pdf->Cell(0,8,$chamado->telefone_chamado,1);
+        $pdf->Ln();
+
+        $pdf->SetFont('Arial','B',11);
+        $pdf->Cell(22,8,"Local",1,0,'R');
+        $pdf->SetFont('Arial','',);
+        $pdf->Cell(0,8,utf8_decode($chamado->nome_local),1);
+        $pdf->Ln();
+
+        $pdf->SetFont('Arial','B',11);
+        $pdf->Cell(22,8,utf8_decode("Endereço"),1,0,"R");
+        $pdf->SetFont('Arial','',11);
+        $pdf->Cell(130,8,utf8_decode($chamado->endereco_local),1);
+        $pdf->SetFont('Arial','B',11);
+        $pdf->Cell(15,8,utf8_decode("Região"),1,0,'R');
+        $pdf->SetFont('Arial','',11);
+        $pdf->Cell(0,8,$chamado->regiao_local,1);
+        $pdf->Ln();
+
+        $pdf->SetFont('Arial','B',11);
+        $pdf->Cell(0,8,"Resumo",1);
+        $pdf->Ln();
+
+        $pdf->SetFont('Arial','',10);
+        $pdf->MultiCell(0,8,utf8_decode($chamado->resumo_chamado),1,'L');
+        $pdf->SetFont('Arial','B',11);
+        $pdf->Cell(0,8,"Equipamentos pendentes",1);
+        $pdf->Ln();
+
+        $pdf->SetFont('Arial','',9);
+        $pdf->MultiCell(0,8,$str_equips,1,'L');
+        $pdf->SetFont('Arial','B',11);
+        $pdf->Cell(33,8,utf8_decode("Última interação"),1);
+        $pdf->SetFont('Arial','',11);
+
+        
+        if ($ult_interacao != NULL) {
+          $pdf->Cell(0,8,utf8_decode($ult_interacao->data_interacao . " - " . $ult_interacao->nome_usuario),1);
+          $pdf->Ln();
+        }
+        else {
+          $pdf->MultiCell(0,8,"N/A",1,'L');
+          
+        }
+        if ($ult_interacao != NULL) {
+          $pdf->MultiCell(0,8,utf8_decode(strip_tags($ult_interacao->texto_interacao)),1,'L');
+          
+        }
+        else {
+          $pdf->MultiCell(0,8,utf8_decode("Sem interações."),1,'L');
+        }
+        $pdf->Ln(7);
+       
+      }
+
+       
+
+        $pdf->SetTitle('LC_' . date('d-m-Y'));
+
+        $pdf->Output('I','impressao_chamado.pdf',FALSE);
+
+        // ------------ LOG -------------------
+
+        // $log = array(
+        //     'acao_evento' => 'GERAR_TERMO_RESP',
+        //     'desc_evento' => 'ID CHAMADO: ' . $id_chamado . ' - NOME: termo_resp_' . $id_chamado . '.pdf',
+        //     'id_usuario_evento' => $_SESSION['id_usuario']
+        // );
+        
+        // $this->db->insert('evento', $log);
+
+        // -------------- /LOG ----------------
     }
     else {
       header("HTTP/1.1 403 Forbidden");

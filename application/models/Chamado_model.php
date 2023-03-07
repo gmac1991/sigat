@@ -371,11 +371,11 @@ class Chamado_model extends CI_Model {
         return $result->row()->ticket_triagem;
     }
 
-    public function buscaChamado($id_chamado, $status = '') {
+    public function buscaChamado($id_chamado, $status = "") {
 
-	   $q_buscaChamado = "select id_ticket_chamado, ticket_chamado, id_chamado, id_fila, nome_solicitante_chamado, nome_local, DATE_FORMAT(data_chamado, '%d/%m/%Y - %H:%i:%s') as data_chamado, telefone_chamado,
+	   $q_buscaChamado = "select id_ticket_chamado, ticket_chamado, id_chamado, id_fila, nome_solicitante_chamado, endereco_local, nome_local, regiao_local, DATE_FORMAT(data_chamado, '%d/%m/%Y - %H:%i:%s') as data_chamado, telefone_chamado,
         (select usuario.id_usuario from usuario where usuario.id_usuario = chamado.id_usuario_responsavel_chamado) as id_responsavel, 
-        (select fila.nome_fila from fila where fila.id_fila = chamado.id_fila_chamado) as nome_fila_chamado, prioridade_chamado
+        (select fila.nome_fila from fila where fila.id_fila = chamado.id_fila_chamado) as nome_fila_chamado, prioridade_chamado, resumo_chamado
         from local, fila, chamado
         where local.id_local = chamado.id_local_chamado and
         fila.id_fila = chamado.id_fila_chamado and
@@ -383,9 +383,13 @@ class Chamado_model extends CI_Model {
 
         $q_buscaEquipamentos = "SELECT e.num_equipamento, e.descricao_equipamento
         FROM equipamento AS e, equipamento_chamado
-        WHERE equipamento_chamado.id_chamado_equipamento = " . $id_chamado . 
-        " AND status_equipamento_chamado = '" .$status .
-        "' AND equipamento_chamado.num_equipamento_chamado = e.num_equipamento";
+        WHERE equipamento_chamado.id_chamado_equipamento = " . $id_chamado .
+        " AND equipamento_chamado.num_equipamento_chamado = e.num_equipamento";
+        
+        if ($status !== "") {
+            $q_buscaEquipamentos .= " AND status_equipamento_chamado in (" . $status . ")";
+        }
+        
         
         $result['equipamentos'] = $this->db->query($q_buscaEquipamentos)->result();
 

@@ -199,25 +199,25 @@ function painel(id_fila) {
             },
 
             {
-                "targets": 9,
+                "targets": [7,9],
                 "className": "text-center"
 
             },
             
             {
                 "orderable": false,
-                "targets": [9],
+                "targets": [7,10],
             }, 
 
             {
                 "render": $.fn.dataTable.render.moment('YYYY-MM-DD HH:mm:ss', 'DD/MM/YYYY'),
-                "targets": 7,
+                "targets": 8,
                 
             }, 
 
             {
                 "visible": false,
-                "targets": 8,     
+                "targets": [9],     
                 
             },
         
@@ -247,7 +247,7 @@ function painel(id_fila) {
 
         "ajax": base_url + 'chamado/listar_chamados_painel/' + id_fila,
 
-        "order":  [[ 1, "asc" ], [ 8, "desc" ]],
+        "order":  [[ 1, "asc" ], [ 9, "desc" ]],
 
         "processing": true,
 
@@ -263,33 +263,50 @@ function painel(id_fila) {
                 "<span class=\"badge badge-light\">" + api.rows().count() +
                 "</span>"
             )
+          
+            $('.chkExpo').on('click', function(e) {
+                
+                $(this).is(":checked") ? cont_imp++ : cont_imp--
+                
+                cont_imp > 0 ? $("#contImp").text(cont_imp) : $("#contImp").text("")
+
+            })
 
         }
     });
 }
 
 
-$('#tblPainel').on('mousedown','tbody tr', function (e) {
+$('#tblPainel').on('mousedown','tbody tr td', function (e) {
+
+    e.preventDefault();
     
-    
+    if ($(this)[0].cellIndex == 7)
+
+       return false;
+
     var row = table_painel.row($(this)).data();
     var url = base_url + 'chamado/' + row[0];
-    
-    
-    if (e.button === 1) {
-        
-        window.open(url); 
-     }
 
-     else if (e.button === 2) {
+
+    if (e.button === 1) {
+    
+        window.open(url); 
+    }
+
+    else if (e.button === 2) {
 
         e.preventDefault();
 
-     }
+    }
 
-     else {
+    else {
         document.location.href = url
-     }
+    }
+
+    
+
+    
     
   });
 
@@ -309,12 +326,7 @@ function mudaFila(p_id_fila) { //troca de fila no painel => destroi o painel e r
 }
 
 function resetPainelChamados() { 
-  
-  
-  
 
- 
-    
     $('#tblPainel').DataTable().state.clear();
     $('#tblPainel').empty();
     $('#tblPainel').DataTable().destroy();
@@ -323,15 +335,53 @@ function resetPainelChamados() {
 
     
 }
+var chamados_expo = []
+var cont_imp = 0;
 
-// setInterval(function() { //atualiza o painel de chamados
+$('#btnImprimirChamado').on('click', function(e) {
+
+    e.preventDefault();
 
 
-//     $('#tblPainel').DataTable().ajax.reload(null, false);
-//     $('#tblTriagem').DataTable().ajax.reload(null, false);
+    var out = window.open(base_url + 'chamado/imprimir_chamados?chamados=' + $(this).attr("data-chamado"))
+    out.print();
+  
+})
 
 
-// }, 30000); //intervalo de att painel
+$('#btnImprimir').on('click', function(e) {
+
+    e.preventDefault();
+
+    chamados_expo = []
+
+    if (cont_imp == 0) {
+        alert ("Sem chamados selecionados!")
+        return false
+    }
+
+    $('.chkExpo').each(function() {
+
+        if ($(this).is(":checked")) {
+           
+            chamados_expo.push($(this).attr('value'))
+            
+            cont_imp--;
+            
+            
+        }
+
+        $(this).prop("checked",false);
+    })
+
+ 
+    $("#contImp").text("");
+
+    var out = window.open(base_url + 'chamado/imprimir_chamados?chamados=' + chamados_expo)
+    out.print();
+  
+})
+
 
 // --------------- PAINEL ENCERRADOS ---------------------------
 
