@@ -80,7 +80,12 @@
 							<label data-fila="0" class="btn btn-info btn-sm mr-1">
 								<input type="radio" onclick="mudaFila(0)"><i class="fas fa-search"></i> Todos
 							</label>
-						</div>	
+							<label class="btn btn-warning btn-sm mr-1">
+							<input type="radio" onclick="resetPainelChamados()"><i class="fas fa-broom"></i>
+						</label>
+							
+						</div>
+							
 					</div>
 				</div>
 					
@@ -89,17 +94,16 @@
 						<thead >
 						<tr>
 							<th>#</th>
-							<th>&nbsp;</th>
+							<th>Status</th>
 							<th>Ticket</th>
 							<th>Solicitante</th>
 							<th>Solicitação</th>
 							<th>Local</th>
+							<th>Região</th>
 							<th>Data</th>
 							<th>Horas de espera (oculto)</th>
 							<th class="text-center" title="Última interação"><i class="far fa-clock"></i></th>
-							<th>Responsável</th>		
-							<th>Status</th>
-							<!-- <th>&nbsp;</th> -->
+							<th>Responsável</th>
 						</tr>
 						</thead>
 					</table>

@@ -176,10 +176,25 @@ function painel(id_fila) {
                 "targets": 1,
                 //"data": "prioridade_chamado",
                 "render": function ( data, type, row, meta ) {
-                    figura = data == "1" ? "<span class=\"text-warning\"><i class=\"fas fa-star\"></i></span>" : ""
 
-                        return figura;
+                    var display;
+
+                    switch(data) {
+
+                        case "1":
+                            display = "1 - PRIOR <span class=\"text-warning\"><i class=\"fas fa-star\"></i></span>";
+                            break;
+                        case "ABERTO":
+                            display = "2 - ABERTO <span class=\"text-warning\"><i class=\"fas fa-circle\"></i></span>";
+                            break;
+                        case "FECHADO":
+                            display = "3 - FECHADO <span class=\"text-success\"><i class=\"fas fa-circle\"></i></span>";
+                            break;
                     }
+                    
+
+                    return display;
+                }
 
             },
 
@@ -191,18 +206,18 @@ function painel(id_fila) {
             
             {
                 "orderable": false,
-                "targets": [0,8],
+                "targets": [9],
             }, 
 
             {
                 "render": $.fn.dataTable.render.moment('YYYY-MM-DD HH:mm:ss', 'DD/MM/YYYY'),
-                "targets": 6,
+                "targets": 7,
                 
             }, 
 
             {
                 "visible": false,
-                "targets": [7],     
+                "targets": 8,     
                 
             },
         
@@ -232,7 +247,7 @@ function painel(id_fila) {
 
         "ajax": base_url + 'chamado/listar_chamados_painel/' + id_fila,
 
-        "order":  [[ 1, "desc" ], [ 7, "desc" ]],
+        "order":  [[ 1, "asc" ], [ 8, "desc" ]],
 
         "processing": true,
 
@@ -289,6 +304,22 @@ function mudaFila(p_id_fila) { //troca de fila no painel => destroi o painel e r
  
     
     $('#tblPainel').DataTable().ajax.url(base_url + 'chamado/listar_chamados_painel/' + p_id_fila).load();
+
+    
+}
+
+function resetPainelChamados() { 
+  
+  
+  
+
+ 
+    
+    $('#tblPainel').DataTable().state.clear();
+    $('#tblPainel').empty();
+    $('#tblPainel').DataTable().destroy();
+    document.location.reload(true);
+   // $('#tblPainel').DataTable().ajax.reload(null, false);
 
     
 }
@@ -1348,6 +1379,9 @@ function removeInteracao(p_id_interacao, p_id_chamado) {
         },
         error: function() {
             $('#btnDesfazer').removeAttr('disabled');
+            atualizaInteracoes(p_id_chamado);
+            carregaChamado(p_id_chamado);
+            tblEquipsChamado.loadData();
             alert('Operação não permitida!');
         }
     });
@@ -2748,7 +2782,7 @@ $('#modalOcorrencias').on('shown.bs.modal', function (e) {
             },
         ],
         rowClick: function(args) {
-            window.open(base_url + '/chamado/' + args.item.ID,'_blank ');
+            window.open(base_url + 'chamado/' + args.item.ID,'_blank ');
         }
     });
 })

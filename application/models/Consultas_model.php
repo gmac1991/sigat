@@ -17,19 +17,24 @@ class Consultas_model extends CI_Model {
        SELECT nome_local
        FROM local
        WHERE id_local = id_local_chamado) AS nome_local, 
+
+       (
+       SELECT regiao_local
+       FROM local
+       WHERE id_local = id_local_chamado) AS regiao_local, 
                data_chamado, 
         (
        SELECT usuario.nome_usuario
        FROM usuario
        WHERE usuario.id_usuario = c.id_usuario_responsavel_chamado) AS nome_responsavel, 
-       (
-       SELECT COUNT(*)
-       FROM equipamento_chamado
-       WHERE id_chamado_equipamento = c.id_chamado) AS total_equips,
-       (
-       SELECT COUNT(*)
-       FROM equipamento_chamado
-       WHERE id_chamado_equipamento = c.id_chamado AND status_equipamento_chamado IN('ATENDIDO','ENTREGUE','INSERVIVEL')) AS atend_equips,
+    --    (
+    --    SELECT COUNT(*)
+    --    FROM equipamento_chamado
+    --    WHERE id_chamado_equipamento = c.id_chamado) AS total_equips,
+    --    (
+    --    SELECT COUNT(*)
+    --    FROM equipamento_chamado
+    --    WHERE id_chamado_equipamento = c.id_chamado AND status_equipamento_chamado IN('ATENDIDO','ENTREGUE','INSERVIVEL')) AS atend_equips,
        status_chamado, entrega_chamado,
        (
         SELECT data_interacao FROM interacao
@@ -42,10 +47,10 @@ class Consultas_model extends CI_Model {
         $q .= ' status_chamado <> \'ENCERRADO\' and';
 
 
-        if ($nivel_usuario <= 2 ) { 
-            $q .= ' (id_usuario_responsavel_chamado = ' . $id_usuario;
-            $q .= " or id_usuario_responsavel_chamado is NULL) and";
-        }
+        // if ($nivel_usuario <= 2 ) { 
+        //     $q .= ' (id_usuario_responsavel_chamado = ' . $id_usuario;
+        //     $q .= " or id_usuario_responsavel_chamado is NULL) and";
+        // }
 
         if ($id_fila > 0) {
 

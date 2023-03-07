@@ -387,18 +387,32 @@ class Chamado extends CI_Controller {
     if ($this->consultas_model->temEquipEspera($linha->id_chamado) > 0)
       $nome_local .= " <span class=\"badge badge-warning\" title=\"Espera\"><i class=\"fas fa-hourglass-half\"></i></span>"; //inserindo badge de espera
 
-    $percent_atend = round((100*$linha->atend_equips) / $linha->total_equips,0);
-    $percent_abert = round((100*($linha->total_equips - $linha->atend_equips) / $linha->total_equips),0);
+    // $percent_atend = round((100*$linha->atend_equips) / $linha->total_equips,0);
+    // $percent_abert = round((100*($linha->total_equips - $linha->atend_equips) / $linha->total_equips),0);
 
     $tam = strlen($linha->resumo_chamado);
-    //var_dump($tam);
+
+    $status = $linha->prioridade_chamado;
+
+    if ($status == 1 && $linha->status_chamado == 'FECHADO') {
+
+      $status = 'FECHADO';
+    }
+
+    if ($status == 0) {
+
+      $status = $linha->status_chamado;
+    }
+
+ 
+   
+  
     $resumo = mb_strimwidth($linha->resumo_chamado,0,30,"...");
-    //var_dump($resumo);
-    //$resumo = $linha->resumo_chamado;
+
 
 		$lista_painel['data'][] = array(
                               0 => $linha->id_chamado,
-                              1 => $linha->prioridade_chamado,
+                              1 => $status,
                               2 => $linha->ticket_chamado,
                               3 => $linha->nome_solicitante_chamado . $aviso_tempo,
                               4 => "<span title=\"".
@@ -406,16 +420,12 @@ class Chamado extends CI_Controller {
                                     "\">" .
                                     $resumo . "</span>",
                               5 => $nome_local,
-                              6 => $linha->data_chamado,
-                              7 => $tempo_espera_oculto,
-                              8 => $tempo_espera_display,
-                              9 => $linha->nome_responsavel,
-                              10 => "<div class=\"progress\">
-                                    <div class=\"progress-bar bg-info\" style=\"width: " . $percent_atend . 
-                                    "%;height: 100%\">" .$percent_atend  . "%</div>
-                                    <div class=\"progress-bar\" style=\"width: " 
-                                    . $percent_abert . "%;height: 100%; background: #CDFFFF\"></div>
-                                    </div>",
+                              6 => $linha->regiao_local,
+                              7 => $linha->data_chamado,
+                              8 => $tempo_espera_oculto,
+                              9 => $tempo_espera_display,
+                              10 => $linha->nome_responsavel,
+                
                             ); //detalhes
 
     }

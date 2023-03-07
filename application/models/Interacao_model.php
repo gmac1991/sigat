@@ -548,7 +548,7 @@ class Interacao_model extends CI_Model {
 
       ); 
 
-      var_dump($nova_interacao);
+     
 
       if ($dados['tipo'] == 'ENTREGA') { // checando se foi enviado o arquivo PDF do termo de entrega
 
@@ -1111,7 +1111,7 @@ class Interacao_model extends CI_Model {
 
       $query = $this->db->query("SELECT DATE_FORMAT(data_interacao, '%d/%m/%Y - %H:%i:%s') AS data_interacao, 
       id_interacao, texto_interacao, nome_usuario, id_chamado_interacao, pool_equipamentos, ticket_chamado, 
-      data_chamado, nome_local, nome_solicitante_chamado
+      DATE_FORMAT(data_chamado, '%d/%m/%Y - %H:%i:%s') AS data_chamado, nome_local, nome_solicitante_chamado
       FROM interacao i
       INNER JOIN usuario u ON(u.id_usuario = i.id_usuario_interacao)
       INNER JOIN chamado c ON(i.id_chamado_interacao = c.id_chamado)
