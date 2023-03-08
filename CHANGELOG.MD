@@ -15,7 +15,8 @@ Botão para resetar os filtros do painel
 
 - [Chamado]\
 Botão para impressão do chamado\
-Fechamento manual do chamado para casos excepcionais
+Fechamento manual do chamado para casos excepcionais\
+Limitação de 3 bloqueios por usuário na fila Atendimento Remoto
 
 ### Modificado
 
