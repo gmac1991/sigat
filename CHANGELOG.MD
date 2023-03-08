@@ -32,7 +32,7 @@ Os equipamentos agora são ordenados na tela de registro de interação
 Alterações nos equipamentos do chamado não eram persistidas\
 Atribuição incorreta de status para todos os chamados de um equipamento\
 Horário dos artigos do Otobo com exibição incorreta (+3h)\
-Impossibilidadede finalizar o chamado após remover um equipamento
+Impossibilidade de finalizar o chamado após remover um equipamento
 
 - [Interação]\
 Sinalização de entrega removida incorretamente
@@ -42,6 +42,13 @@ Erro de ordenação no painel do arquivo
 
 - [Outros]\
 Pequenos ajustes visuais
+
+## [1.3.7a] - 2023-01-20
+
+### Corrigido
+
+- [Chamado]\
+Patch para permitir parse de imagens PNG pela biblioteca FPDF via HTTPS
 
 ## [1.3.7] - 2022-10-20
 
