@@ -1,5 +1,48 @@
 # SIGAT Changelog
 
+## [1.4.0] - 2023-03-07
+
+### Adicionado
+
+- [Busca]\
+Busca por número de lacre\
+Número do chamado clicável na busca rápida
+
+- [Painel]\
+Coluna 'Região', referente ao local do chamado\
+Impressão dos chamados pelo painel\
+Botão para resetar os filtros do painel
+
+- [Chamado]\
+Botão para impressão do chamado\
+Fechamento manual do chamado para casos excepcionais
+
+### Modificado
+
+- [Painel]\
+Permite a visualização dos chamados sem restrição do responsável atual\
+As colunas 'Prioridade' e 'Status' foram agrupadas
+
+- [Interação]\
+Os equipamentos agora são ordenados na tela de registro de interação
+
+### Corrigido
+
+- [Chamado]\
+Alterações nos equipamentos do chamado não eram persistidas\
+Atribuição incorreta de status para todos os chamados de um equipamento\
+Horário dos artigos do Otobo com exibição incorreta (+3h)\
+Impossibilidadede finalizar o chamado após remover um equipamento
+
+- [Interação]\
+Sinalização de entrega removida incorretamente
+
+- [Arquivo]\
+Erro de ordenação no painel do arquivo
+
+- [Outros]\
+Pequenos ajustes visuais
+
 ## [1.3.7] - 2022-10-20
 
 ### Corrigido
