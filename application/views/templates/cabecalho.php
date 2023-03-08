@@ -60,8 +60,10 @@
         <nav class="navbar navbar-dark bg-dark">
         <a class="navbar-brand" href="<?= base_url() ?>">
         <img id="img-logo" src="<?= base_url("img/logo_pms.png") ?>" width="40" height="40" class="d-inline-block align-top" alt="">
-       <h3 class="d-inline">SIGAT <?= ENVIRONMENT == 'development' ? "<small><span style=\"color:orange\">DEV</span></small>" : "" ?></h3>
+       <h3 class="d-inline">SIGAT <?= ENVIRONMENT == 'development' ? "<small><span style=\"color:orange\">DEV</span></small>" : "" ?>
+       </h3>
         </a>
+        <span class="d-flex my-0" style="color:orange; margin-left: 200px">O sistema foi atualizado para a versão <?= $this->config->item('versao') ?><br>Favor excluir cookies e cache do site!</span>
         <form class="form-inline" id="frmBuscaRapida">
         <div class="input-group">
             <input type="text" class="form-control" placeholder="Busca rápida..." id="txtBuscaRapida" value="<?php if($this->input->get("t") !== NULL) echo $this->input->get("t"); ?>">

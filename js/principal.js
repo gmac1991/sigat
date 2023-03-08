@@ -1786,6 +1786,7 @@ $('#btnBloquearChamado').on('click', function(e) {
         data: {
             id_chamado: g_id_chamado,
             id_usuario: g_id_usuario,
+            auto_usuario: g_auto_usuario,
             tipo: 'b'
         },
 
@@ -1799,7 +1800,7 @@ $('#btnBloquearChamado').on('click', function(e) {
                 carregaChamado(g_id_chamado, true);
             } 
             else {
-                alert('Chamado bloqueado por ' + data);
+                alert(data);
                 carregaChamado(g_id_chamado, true);
             }
             

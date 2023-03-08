@@ -869,7 +869,7 @@ class Json extends CI_Controller {
             $auto_usuario = $this->input->post('auto_usuario');
             $tipo = $this->input->post('tipo');
 
-            $chamado = $this->db->query("select id_usuario_responsavel_chamado from chamado where id_chamado = " . $id_chamado);
+            $chamado = $this->db->query("select id_usuario_responsavel_chamado, id_fila_chamado from chamado where id_chamado = " . $id_chamado);
             $id_responsavel = $chamado->row()->id_usuario_responsavel_chamado;
             
 
@@ -878,23 +878,40 @@ class Json extends CI_Controller {
                 //var_dump($id_responsavel);
 
                 if ($id_responsavel === NULL) {
-                    $this->db->query("UPDATE chamado set id_usuario_responsavel_chamado = " . $id_usuario .
-                                             " WHERE id_chamado = " . $id_chamado);
 
-                    // ------------ LOG -------------------
-                    $log = array(
+                    $bloqueados = $this->db->query("select count(id_usuario_responsavel_chamado) as bloqueados
+                    from chamado where id_fila_chamado = 1 and status_chamado = 'ABERTO' and id_usuario_responsavel_chamado = " . $id_usuario)->row()->bloqueados;
+
+                    
+
+                    if (($bloqueados < 3 || $auto_usuario > 2) || $chamado->row()->id_fila_chamado !== "1") {
+
+                        $this->db->query("UPDATE chamado set id_usuario_responsavel_chamado = " . $id_usuario .
+                        " WHERE id_chamado = " . $id_chamado);
+
+                        // ------------ LOG -------------------
+                        $log = array(
                         'acao_evento' => 'BLOQUEAR_CHAMADO',
                         'desc_evento' => 'ID CHAMADO: ' . $id_chamado,
                         'id_usuario_evento' => $_SESSION['id_usuario']
-                    );
-                    $this->db->insert('evento', $log);
+                        );
+                        $this->db->insert('evento', $log);
 
-                    // -------------- /LOG ----------------
-                    echo NULL;
+                        // -------------- /LOG ----------------
+                        echo NULL;
+
+                    }
+
+                    else {
+
+                        echo "Limite de bloqueios atingido para esta fila!";
+                    }
+
+                   
                 }
                 else {
                     $nome_responsavel = $this->db->query("select nome_usuario from usuario where id_usuario = " . $id_responsavel)->row()->nome_usuario;
-                    echo $nome_responsavel;
+                    echo "Chamado bloqueado por " + $nome_responsavel;
                 }
             } else {
 
