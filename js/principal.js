@@ -1,6 +1,29 @@
 const patrimonio_regex = /\b[1-9]\d{5}\b/g
 var fila_atual = null;
 
+var chamados_expo = []
+var cont_imp = 0;
+
+function checkExpo() {
+
+    
+    
+    $('.chkExpo').on('click', function(e) {
+                
+        $(this).is(":checked") ? cont_imp++ : cont_imp--
+        
+        cont_imp > 0 ? $("#contImp").text(cont_imp) : $("#contImp").text("")
+
+        chamados_expo.push($(this).attr('value'))
+    
+    
+    
+    })
+
+}
+
+
+
 // --- PLUGIN DATETIME.JS
 
 // UMD
@@ -79,6 +102,7 @@ function getCookie(cname) {
 
 
 window.addEventListener('load', function(){
+  
     $("#btnFilas").children('label').each(function() {
         
         if($(this).attr("data-fila") == getCookie("fila_painel")) {
@@ -98,6 +122,9 @@ var fila_painel = getCookie("fila_painel") !=  "" ? getCookie("fila_painel") : g
 $(function() {
 
     // PAINEL
+
+
+   
 
     
 
@@ -251,7 +278,12 @@ function painel(id_fila) {
 
         "processing": true,
 
+
+        "initComplete": checkExpo(),
+
         "drawCallback": function(settings) {
+
+            checkExpo()
 
             var api = this.api()
 
@@ -264,13 +296,13 @@ function painel(id_fila) {
                 "</span>"
             )
           
-            $('.chkExpo').on('click', function(e) {
+            // $('.chkExpo').on('click', function(e) {
                 
-                $(this).is(":checked") ? cont_imp++ : cont_imp--
+            //     $(this).is(":checked") ? cont_imp++ : cont_imp--
                 
-                cont_imp > 0 ? $("#contImp").text(cont_imp) : $("#contImp").text("")
+            //     cont_imp > 0 ? $("#contImp").text(cont_imp) : $("#contImp").text("")
 
-            })
+            // })
 
         }
     });
@@ -335,8 +367,7 @@ function resetPainelChamados() {
 
     
 }
-var chamados_expo = []
-var cont_imp = 0;
+
 
 $('#btnImprimirChamado').on('click', function(e) {
 
@@ -353,31 +384,22 @@ $('#btnImprimir').on('click', function(e) {
 
     e.preventDefault();
 
-    chamados_expo = []
+    
 
     if (cont_imp == 0) {
         alert ("Sem chamados selecionados!")
         return false
     }
 
-    $('.chkExpo').each(function() {
-
-        if ($(this).is(":checked")) {
-           
-            chamados_expo.push($(this).attr('value'))
-            
-            cont_imp--;
-            
-            
-        }
-
-        $(this).prop("checked",false);
-    })
-
- 
-    $("#contImp").text("");
+    
 
     var out = window.open(base_url + 'chamado/imprimir_chamados?chamados=' + chamados_expo)
+
+    $("#contImp").text("");
+    chamados_expo = []
+    cont_imp = 0
+
+    $('#tblPainel').DataTable().ajax.reload(null, false);
     out.print();
   
 })
