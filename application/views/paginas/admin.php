@@ -16,7 +16,7 @@
 			</li>
 			<li class="nav-item">
 				<a class="nav-link" id="pills-relatorios-tab" data-toggle="pill" href="#pills-relatorios" role="tab" aria-controls="pills-relatorios" aria-selected="false">
-				<i class="fas fa-chart-pie"></i> Relatórios</a>
+				<i class="fas fa-chart-pie"></i> Dashboard</a>
 			</li>
 			
 		</ul>
@@ -47,7 +47,32 @@
 				<div id="filas-grid"></div>
 				
 			</div>
-			<div class="tab-pane fade" id="pills-relatorios" role="tabpanel" aria-labelledby="pills-relatorios-tab">relatorios</div>
+			<div class="tab-pane fade" id="pills-relatorios" role="tabpanel" aria-labelledby="pills-relatorios-tab">
+				<!-- MONITOR SSTEC -->
+				<iframe 
+				src="http://pms-labarq02:5000/public/dashboard/67dec996-cf31-45a3-843b-3b31970dd58d" 
+				frameborder="0" 
+				width="1800" 
+				height="1000" 
+				allowtransparency
+				></iframe>
+				<!-- INTERAÇÕES -->
+				<iframe
+				src="http://pms-labarq02:5000/public/dashboard/e53a91fc-284d-4e36-bf85-0760a5ce753f"
+				frameborder="0"
+				width="1800"
+				height="1100"
+				allowtransparency
+				></iframe>
+				<!-- SETOR DE MANUTENÇÃO -->
+				<iframe
+					src="http://pms-labarq02:5000/public/dashboard/2addca91-fe2f-47f8-b324-2823d0719943"
+					frameborder="0"
+					width="1800"
+					height="1000"
+					allowtransparency
+				></iframe>
+			</div>
 			
 		</div>
 	</div>

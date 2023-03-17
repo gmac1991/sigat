@@ -602,7 +602,7 @@ class Json extends CI_Controller {
 
             $dados['id_fila'] = $result['id_fila'];
 
-            $busca = $this->db->query("select * from fila");
+            $busca = $this->db->query("select * from fila where status_fila = 'ATIVO'");
 
             $result = $busca->result_array();
 

@@ -373,7 +373,7 @@ class Chamado_model extends CI_Model {
 
     public function buscaChamado($id_chamado, $status = "") {
 
-	   $q_buscaChamado = "select id_ticket_chamado, ticket_chamado, id_chamado, id_fila, nome_solicitante_chamado, endereco_local, nome_local, regiao_local, DATE_FORMAT(data_chamado, '%d/%m/%Y - %H:%i:%s') as data_chamado, telefone_chamado,
+	   $q_buscaChamado = "select complemento_chamado, id_ticket_chamado, ticket_chamado, id_chamado, id_fila, nome_solicitante_chamado, endereco_local, nome_local, regiao_local, DATE_FORMAT(data_chamado, '%d/%m/%Y - %H:%i:%s') as data_chamado, telefone_chamado,
         (select usuario.id_usuario from usuario where usuario.id_usuario = chamado.id_usuario_responsavel_chamado) as id_responsavel, 
         (select fila.nome_fila from fila where fila.id_fila = chamado.id_fila_chamado) as nome_fila_chamado, prioridade_chamado, resumo_chamado
         from local, fila, chamado

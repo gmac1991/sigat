@@ -33,10 +33,10 @@ if (isset($chamado)) {
   echo "<script type=\"text/javascript\">const g_id_chamado = " . $chamado->id_chamado . "</script>";
 }
 
-if (isset($t_info)) { 
+if (isset($triagem)) { 
  
-  echo "<script type=\"text/javascript\">const g_id_ticket = " . $t_info->id . "</script>";
-  echo "<script type=\"text/javascript\">const g_num_ticket = '" . $t_info->tn . "'</script>";
+  echo "<script type=\"text/javascript\">const g_id_ticket = " . $triagem["t_info"]->id . "</script>";
+  echo "<script type=\"text/javascript\">const g_num_ticket = '" . $triagem["t_info"]->tn . "'</script>";
   //echo "<script type=\"text/javascript\">const g_email_triagem = '" . $triagem->email_triagem . "'</script>";
 }
 
@@ -63,9 +63,9 @@ if (isset($chamado)) {
  echo "<script type=\"text/javascript\">atualizaInteracoes(g_id_chamado)</script>"; 
 }
 
-if (isset($t_info)) { // verifica se está na tela de uma triagem
+if (isset($triagem)) { // verifica se está na tela de uma triagem
 
-echo "<script type=\"text/javascript\">carregaTriagem(" . $t_info->id . ")</script>";
+echo "<script type=\"text/javascript\">carregaTriagem(" . $triagem["t_info"]->id . ")</script>";
 }
  
 ?>

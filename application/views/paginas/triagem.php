@@ -75,7 +75,7 @@
    <div class="modal-dialog modal-dialog-centered" role="document">
       <div class="modal-content">
          <div class="modal-header">
-            <h5 class="modal-title"><i class="fas fa-file-upload"></i> Devolução ao OTRS</h5>
+            <h5 class="modal-title"><i class="fas fa-file-upload"></i> Devolução ao Nível 0</h5>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
             </button>
@@ -100,19 +100,20 @@
 <nav aria-label="breadcrumb">
    <ol class="breadcrumb">
       <li class="breadcrumb-item active"><a href="<?= base_url('painel?v=triagem'); ?>">Painel</a></li>
-      <li class="breadcrumb-item" aria-current="page">Triagem #<?= $t_info->id; ?></li>
+      <li class="breadcrumb-item" aria-current="page">Triagem #<?= $triagem["t_info"]->id; ?></li>
    </ol>
 </nav>
 <div class="container py-2">
    <div id="msg"></div>
 </div>
+
 <div id="divTriagem" class="container py-2">
    <div class="row">
       <div class="col-8">
-         <h3 >Ticket#<?= $t_info->tn; ?> <a style="font-size:medium" target="_blank" href="<?= $this->config->item('url_ticketsys') ?>index.pl?Action=AgentTicketZoom;TicketID=<?= $t_info->id ?>"><i class="fas fa-external-link-alt"></i></a></h3>
+         <h3 >Ticket#<?= $triagem["t_info"]->tn; ?> <a style="font-size:medium" target="_blank" href="<?= $this->config->item('url_ticketsys') ?>index.pl?Action=AgentTicketZoom;TicketID=<?= $triagem["t_info"]->id ?>"><i class="fas fa-external-link-alt"></i></a></h3>
       </div>
       <div class="col-4 text-right">
-         <button type="button" class="btn btn-warning" id="btnDevolveChamado" data-toggle="modal" data-target="#modalDevolucao"><i class="fas fa-file-upload"></i> Devolver ao OTRS</button>
+         <button type="button" class="btn btn-warning" id="btnDevolveChamado" data-toggle="modal" data-target="#modalDevolucao"><i class="fas fa-file-upload"></i> Devolver ao Nível 0</button>
       </div>
    </div>
    <hr id="header_triagem" />
@@ -120,23 +121,23 @@
       <div class="row">
          <div class="form-group col">
             <div class="accordion" id="accordionArticles">
-               <?php $count = count($t_articles); ?>
+               <?php $count = count($triagem["t_articles"]); ?>
                <?php for($i = 0; $i < $count; $i++): ?>
                <div class="card">
                   <div class="card-header">
                      <h2 class="mb-0">
-                     <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#a_<?= $t_articles[$i]->article_id ?>">
+                     <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#a_<?= $triagem["t_articles"][$i]->article_id ?>">
                      <i class="fas fa-user-circle"></i>
-                     <?= preg_replace("/\s{1}<.+>/","",$t_articles[$i]->a_from,1); ?> 
-                       <?php $date = date_create($t_articles[$i]->create_time); ?>
+                     <?= preg_replace("/\s{1}<.+>/","",$triagem['t_articles'][$i]->a_from,1); ?> 
+                       <?php $date = date_create($triagem["t_articles"][$i]->create_time); ?>
                        
                        <div class="float-right"><div class="float-right"><i class="fas fa-calendar-alt"></i> <?= date_format($date,"d/m/y - H:i:s",); ?></div>
                      </button>
                      </h2>
                   </div>
-                  <div id="a_<?= $t_articles[$i]->article_id ?>" class="collapse <?php echo $i == 0 ? 'show' : '' ?>" data-parent="#accordionArticles">
+                  <div id="a_<?= $triagem["t_articles"][$i]->article_id ?>" class="collapse <?php echo $i == 0 ? 'show' : '' ?>" data-parent="#accordionArticles">
                      <div class="card-body">
-                        <pre><?= $t_articles[$i]->a_body ?></pre>
+                        <pre><?= $triagem["t_articles"][$i]->a_body ?></pre>
                      
                      </div>
                   </div>
@@ -147,6 +148,33 @@
          
       </div>
       <div class="row">
+         <div class="form-group col">
+            <p class="h5"><i class="fas fa-users"></i> Equipe</p>
+            <hr>
+         </div>
+      </div>
+      <div class="row">
+         <div class="form-group col">
+            <select class="form-control" id="slctEquipe">
+               <option value="1">Suporte Técnico</option>
+               <option value="2">Infraestrutura</option>
+            </select>
+         </div>
+         <div class="form-group col" id="linhaInfra">
+               <div class="row">
+                  <div class="col col-sm-2">Fila</div>
+                  <div class="col">
+                     <select class="form-control col" id="slctFilaInfra" name="id_fila_infra">
+                        <option value=""></option>
+                        <?php foreach ($filas_infra as $f): ?>
+                        <option value="<?= $f['id_fila'] ?>"><?= $f['nome_fila'] ?></option>
+                        <?php endforeach; ?>
+                     </select>
+                  </div>
+               </div>
+         </div>
+      </div>
+      <div class="row" id="linhaSuporte">
          <div class="form-group col">
             <p class="h5"><i class="fas fa-desktop"></i> Equipamentos</p>
             <hr>
@@ -168,7 +196,7 @@
          </div>
       </div>
       
-  
+                
       <div class="row" id="linhaInfoTriagem">
          <div class="form-group col">
             <p class="h5"><i class="fas fa-info-circle"></i> Informações</p>
@@ -177,10 +205,13 @@
             <input type="text" class="form-control col-7" name="resumo_solicitacao" id="listaResumos">
             <br />
             <label for="nome_solicitante">Solicitante</label>
-            <input type="text" class="form-control col-5" name="nome_solicitante" id="listaSolicitantes" value="<?= preg_replace("/\s{1}<.+>/","",$t_info->a_from,1); ?> ">
+            <input type="text" class="form-control col-5" name="nome_solicitante" id="listaSolicitantes" value="<?= preg_replace("/\s{1}<.+>/","",$triagem['t_info']->a_from,1); ?> ">
             <br />
             <label for="telefone">Telefone</label>
-            <input type="text" maxlength="15" class="form-control col-4" name="telefone" aria-describedby="" placeholder="">
+            <input type="text" maxlength="15" class="form-control col-4" name="telefone" aria-describedby="" placeholder="Telefone fixo do local">
+            <br />
+            <label for="telefone">Celular</label>
+            <input type="text" maxlength="15" class="form-control col-4" name="celular" aria-describedby="" placeholder="Celular do responsável">
             <br />
             <label for="local">Local</label>
             <input type="text" class="form-control col-8" name="nome_local" id="listaLocais" data-toggle="popover">

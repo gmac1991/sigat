@@ -135,11 +135,17 @@ class Consultas_model extends CI_Model {
         return $this->db->query($q)->result();
     }
 
-    public function listaFilas() {
+    public function listaFilas($status = "'ATIVO'",$equipe = NULL) {
         
         $this->db->select();
         $this->db->from('fila');
-        $this->db->where('status_fila = \'ATIVO\'');
+        if ($status != NULL) {
+            $this->db->where("status_fila = " . $status);
+        }
+        if ($equipe != NULL) {
+            $this->db->where("equipe_fila = " . $equipe);
+        }
+   
         return $this->db->get()->result_array();
         
     }

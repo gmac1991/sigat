@@ -2490,6 +2490,21 @@ $("#tblAnexos").jsGrid({
 var agrupamento = false;
 var diffDesc = null
 
+
+$("#slctEquipe").on('change', function() {
+    var equipe = $(this).val()
+    if (equipe == 0) {
+        $("#linhaInfra").toggle()
+        $("#linhaSuporte").toggle()
+
+    } else {
+        $("#linhaInfra").toggle()
+        $("#linhaSuporte").toggle()
+
+    } 
+    
+})
+
 async function carregaTriagem(p_id_ticket) {
 
    
@@ -2502,6 +2517,7 @@ async function carregaTriagem(p_id_ticket) {
     var anexos = [];
 
     $("#linhaInfoTriagem").hide();
+    $("#linhaInfra").hide();
 
     await $.ajax({
         url: base_url + 'json/triagem',
@@ -3063,6 +3079,15 @@ $('input[name="telefone"]').on("keyup keyup keypress blur change", function(){
 } );
 
 
+$('input[name="celular"]').on("keyup keyup keypress blur change", function(){
+
+    var out = $(this).val();
+
+    $(this).val(out.replace(/[\.-\s]/g,""));
+} );
+
+
+
 
 
 $('input[name="resumo_solicitacao"]').on("keyup keyup keypress blur change", function(){
@@ -3079,17 +3104,21 @@ $('#tblEquips input').on("keyup keyup keypress blur change", function(){
     $(this).val(out.replace(/\s/g,""));
 } );
 
-
-
+var g_id_fila_infra = parseInt($('#slctFilaInfra').val())
 
 $('#frmImportarChamado').on('submit',
 
     function(e) {
 
+       
+
         e.preventDefault();
 
+       
+
     }).validate(agrupamento == true ? {ignore: "*"} : {
-        rules: {
+        
+    rules: {
         nome_solicitante: "required",
         nome_local: "required",
         telefone: {
@@ -3097,19 +3126,32 @@ $('#frmImportarChamado').on('submit',
             digits: true,
             minlength: 3,
         },
-        // descricao: {
-        //     required: true,
-        //     minlength: 10,
-        //     normalizer: function(value) {
-        //         return $.trim(value);
-        //     }
-        // },
         id_fila: {
             required: true,
         },
+        id_fila_infra: {
+
+            required: {
+                depends: function() {
+                  return $('#slctEquipe').val() === '2'
+                }
+            }
+
+        }, 
+        celular: {
+
+            required: {
+                depends: function() {
+                  return $('#slctFilaInfra').val() === '6'
+                }
+            },
+            digits: true,
+            minlength: 9,
+
+        }, 
         resumo_solicitacao: {
             required: true,
-        }
+        },
     },
     messages: {
         nome_solicitante: "Campo obrigatório!",
@@ -3119,35 +3161,35 @@ $('#frmImportarChamado').on('submit',
             digits: "Somente dígitos (0-9)!",
             minlength: "Mínimo 3 dígitos!"
         },
-        // descricao: {
-        //     required: "Campo obrigatório!",
-        //     minlength: "Descrição insuficiente!",
-        //     maxlength: "Tamanha máximo excedido!"
-        // },
-
         resumo_solicitacao: {
             required: "Campo obrigatório!",
+        },
+        id_fila_infra: {
+            required: "Campo obrigatório!"
+        },
+        celular: {
+            required: "Campo obrigatório para a fila Telefonia!",
+            digits: "Somente dígitos (0-9)!",
+            minlength: "Mínimo 9 dígitos!"
         }
     },
     
+    
+
     submitHandler: async function(form) {
+      
         var script_url = base_url + "chamado/importar_chamado";
         var dados = new FormData(form);
         dados.append('listaEquipamentos', JSON.stringify(g_equips));
         dados.append('num_ticket',g_num_ticket);
-        // dados.append('email_triagem',g_email_triagem);
-        // let response = await fetch(base_url + "triagem/descricao/" + g_id_triagem);
-        // let desc = "";
-
-        // if (response.ok) { 
-        //     desc = await response.text();
-        // } else {
-        //     console.log("HTTP-Error: " + response.status);
-        // }
-        // var replaced = $("#descricao_triagem").html().replace(/'/g, "\\'" );
-        // dados.append('textoTriagem', desc);
+       
         dados.append('g_anexos', JSON.stringify($("#tblAnexos").jsGrid("option","data")));
         dados.append('id_ticket', g_id_ticket);
+
+        if ($("#slctEquipe").val() == "2") {
+    
+            dados.append('id_fila_infra',g_id_fila_infra)
+        }
         $.ajax({
 
             url: script_url,
@@ -3157,7 +3199,8 @@ $('#frmImportarChamado').on('submit',
             cache: false,
             processData: false,
             beforeSend: function() {
-                if (confirmado == false) {
+                equipe = $("#slctEquipe").val()
+                if (confirmado == false && equipe == "1") {
                     alert("Verifique a lista de equipamentos!")
                     return false;
                 }

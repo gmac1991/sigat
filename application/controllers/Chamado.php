@@ -573,11 +573,14 @@ class Chamado extends CI_Controller {
         $pdf->SetFont('Arial','',11);
         $pdf->Cell(0,8,$chamado->regiao_local,1);
         $pdf->Ln();
-
+        $pdf->SetFont('Arial','B',11);
+        $pdf->Cell(28,8,"Complemento",1,0,"R");
+        $pdf->SetFont('Arial','',11);
+        $pdf->Cell(0,8,utf8_decode($chamado->complemento_chamado),1);
+        $pdf->Ln();
         $pdf->SetFont('Arial','B',11);
         $pdf->Cell(0,8,"Resumo",1);
         $pdf->Ln();
-
         $pdf->SetFont('Arial','',10);
         $pdf->MultiCell(0,8,utf8_decode($chamado->resumo_chamado),1,'L');
         $pdf->SetFont('Arial','B',11);

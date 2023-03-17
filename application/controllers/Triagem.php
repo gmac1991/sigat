@@ -30,15 +30,18 @@ class Triagem extends CI_Controller {
 
       else {
 
-        $triagem = NULL;
+        $dados = array();
+
+       
 		
-		    $triagem  = $this->consultas_model->buscaTicket($id_ticket,37); //traz chamado migrado, fila Suporte Atendimento
+		    $dados['triagem']  = $this->consultas_model->buscaTicket($id_ticket,37); //traz chamado migrado, fila Suporte Atendimento
+		    $dados['filas_infra']  = $this->consultas_model->listaFilas("'ATIVO'","'INFRA'");
 		
-		    if (isset($triagem )) { // se o chamado existir
+		    if (isset($dados['triagem'] )) { // se o chamado existir
 
           $this->load->view('templates/cabecalho', $usuario);
 
-          $this->load->view('paginas/triagem', $triagem);
+          $this->load->view('paginas/triagem', $dados);
 
           $this->load->view('templates/rodape');
 			
