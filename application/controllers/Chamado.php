@@ -13,6 +13,7 @@ class Chamado extends CI_Controller {
     $this->load->model("chamado_model"); //carregando o model chamado
     $this->load->model("usuario_model"); //carregando o model usuario
     $this->load->model("interacao_model"); //carregando o model interacao
+    $this->load->model("triagem_model"); //carregando o model interacao
 
     
     //$this->load->library("mailer");
@@ -52,7 +53,7 @@ class Chamado extends CI_Controller {
 
           //
 
-          $dados['ticket']  = $this->consultas_model->buscaTicket($dados['chamado']->id_ticket_chamado,43); // fila SIGAT
+          $dados['ticket']  = $this->triagem_model->buscaTicket($dados['chamado']->id_ticket_chamado,43); // fila SIGAT
 
           $this->load->view('paginas/chamado/'.$pagina, $dados);
 
@@ -73,19 +74,20 @@ class Chamado extends CI_Controller {
 
   public function importar_chamado() {
   
-      $dados = array();
+    $dados = array();
   
-      // campos
-      $dados['id_ticket'] =          $this->input->post("id_ticket");
-      $dados['nome_solicitante'] =    str_replace(array("'","\""),"",$this->input->post("nome_solicitante"));
-      $dados['resumo_solicitacao'] =  str_replace(array("'","\""),"",$this->input->post("resumo_solicitacao"));
-      $dados['telefone'] =            $this->input->post("telefone");
-      $dados['nome_local'] =          $this->input->post("nome_local");
-      $dados['comp_local'] =          str_replace(array("'","\""),"",$this->input->post("comp_local"));
-      $dados['listaEquipamentos'] =   json_decode($this->input->post("listaEquipamentos"));
-      $dados['anexos'] =              json_decode($this->input->post("g_anexos"));
-      $dados['num_ticket'] =          "Ticket#" . $this->input->post("num_ticket");
-      $dados['id_usuario'] =          $_SESSION["id_usuario"];
+    // campos
+    $dados['id_ticket'] =           $this->input->post("id_ticket");
+    $dados['nome_solicitante'] =    str_replace(array("'","\""),"",$this->input->post("nome_solicitante"));
+    $dados['resumo_solicitacao'] =  str_replace(array("'","\""),"",$this->input->post("resumo_solicitacao"));
+    $dados['telefone'] =            $this->input->post("telefone");
+    $dados['nome_local'] =          $this->input->post("nome_local");
+    $dados['comp_local'] =          str_replace(array("'","\""),"",$this->input->post("comp_local"));
+    $dados['listaEquipamentos'] =   json_decode($this->input->post("listaEquipamentos"));
+    $dados['listaServicos'] =       json_decode($this->input->post("listaServicos"));
+    $dados['anexos'] =              json_decode($this->input->post("g_anexos"));
+    $dados['num_ticket'] =          "Ticket#" . $this->input->post("num_ticket");
+    $dados['id_usuario'] =          $_SESSION["id_usuario"];
 
       
       
@@ -128,6 +130,13 @@ class Chamado extends CI_Controller {
     curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'PATCH');
     curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
     curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+    // SOMENTE DEV
+    if (ENVIRONMENT == 'development') {
+      curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
+      curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
+    }
+    
+
     curl_exec($curl);
     curl_close($curl);
 
@@ -182,6 +191,11 @@ class Chamado extends CI_Controller {
     curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'PATCH');
     curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
     curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+     // SOMENTE DEV
+     if (ENVIRONMENT == 'development') {
+      curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
+      curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
+    }
     curl_exec($curl);
     curl_close($curl);
 
@@ -249,7 +263,12 @@ class Chamado extends CI_Controller {
     curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'PATCH');
     curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
     curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
-    curl_exec($curl);
+     // SOMENTE DEV
+     if (ENVIRONMENT == 'development') {
+      curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
+      curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
+    }
+    curl_exec($curl); 
     curl_close($curl);
   }
 
@@ -274,7 +293,7 @@ class Chamado extends CI_Controller {
 
   public function listar_chamados_painel($id_fila = NULL) {
 
-    $result_banco = $this->consultas_model->listaChamados($id_fila,$_SESSION['id_usuario']);
+    $result_banco = $this->chamado_model->listaChamados($id_fila,$_SESSION['id_usuario']);
  
     $lista_painel['data'] = array();
 
@@ -322,7 +341,7 @@ class Chamado extends CI_Controller {
 
 
     // Exibição do tempo de espera
-
+    // [01,00,00]
     if ($array_tempo_espera[0] >= 1) {
       $tempo_espera_display .= $array_tempo_espera[0]."a ";
     }
@@ -384,7 +403,7 @@ class Chamado extends CI_Controller {
 		if ($linha->entrega_chamado == 1)
 			$nome_local .= " <span class=\"badge badge-success\" title=\"Entrega\"><i class=\"fas fa-truck\"></i></span>"; //inserindo badge de entrega
 	
-    if ($this->consultas_model->temEquipEspera($linha->id_chamado) > 0)
+    if ($this->chamado_model->temEquipEspera($linha->id_chamado) > 0)
       $nome_local .= " <span class=\"badge badge-warning\" title=\"Espera\"><i class=\"fas fa-hourglass-half\"></i></span>"; //inserindo badge de espera
 
     // $percent_atend = round((100*$linha->atend_equips) / $linha->total_equips,0);
@@ -439,7 +458,7 @@ class Chamado extends CI_Controller {
   
   public function listar_encerrados_painel() {
 
-    $result_banco = $this->consultas_model->listaEncerrados();
+    $result_banco = $this->chamado_model->listaEncerrados();
     $lista_painel['data'] = array();
 
     foreach ($result_banco as $linha) {

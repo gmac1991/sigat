@@ -12,7 +12,9 @@ class Triagem extends CI_Controller {
     $this->load->model("consultas_model"); //carregando o model das consultas 
     $this->load->model("chamado_model"); //carregando o model chamado
     $this->load->model("usuario_model"); //carregando o model usuario
-    $this->load->library("Charset_normalizer");
+    $this->load->model("servico_model"); //carregando o model servico
+    $this->load->model("triagem_model"); //carregando o model triagem
+    //$this->load->library("Charset_normalizer");
 
     
   }
@@ -32,12 +34,13 @@ class Triagem extends CI_Controller {
 
         $dados = array();
 
-       
-		
-		    $dados['triagem']  = $this->consultas_model->buscaTicket($id_ticket,37); //traz chamado migrado, fila Suporte Atendimento
-		    $dados['filas_infra']  = $this->consultas_model->listaFilas("'ATIVO'","'INFRA'");
-		
-		    if (isset($dados['triagem'] )) { // se o chamado existir
+      
+		    $dados['triagem']  = $this->triagem_model->buscaTicket($id_ticket); //traz info do ticket		    
+		   
+		    if (isset($dados['triagem'] )) { // se o ticket existir
+
+          $dados['fila_sigat'] =  $this->config->item('conversao_id_filas')[$dados['triagem']['t_info']->queue_id];
+
 
           $this->load->view('templates/cabecalho', $usuario);
 
@@ -58,36 +61,18 @@ class Triagem extends CI_Controller {
 
   public function listar_triagem() {
 
-    $result_banco = $this->consultas_model->listaTriagem();
+    $result_banco = $this->triagem_model->listaTriagem();
     $lista_painel['data'] = array();
 
     foreach ($result_banco as $linha) {
-    
-  
 
-    // $lista_painel['data'][] = array(
-    //                           0 => $linha->id_triagem,
-    //                           1 => $linha->ticket_triagem,
-    //                           2 => $linha->data_triagem,
-    //                           3 => $linha->nome_solicitante_triagem,
-    //                           4 => $linha->email_triagem,
-    //                           // 5 => "<a href=\"" . base_url('triagem/' . $linha->id_triagem) . 
-    //                           // "\" rel=\"noopener\" role=\"button\"" .
-    //                           // " class=\"d-block btn btn-sm btn-info\"><i class=\"fas fa-search\"></i></a> "
-    //                         ); //detalhes
-
-
-    $lista_painel['data'][] = array(
-      0 => $linha->id,
-      1 => "Ticket#" . $linha->tn,
-      2 => $linha->create_time,
-      3 => $linha->title,
-      4 => $linha->a_from,
-      //4 => $linha->email_triagem,
-      // 5 => "<a href=\"" . base_url('triagem/' . $linha->id_triagem) . 
-      // "\" rel=\"noopener\" role=\"button\"" .
-      // " class=\"d-block btn btn-sm btn-info\"><i class=\"fas fa-search\"></i></a> "
-    ); //detalhes
+      $lista_painel['data'][] = array(
+        0 => $linha->id,
+        1 => "Ticket#" . $linha->tn,
+        2 => $linha->create_time,
+        3 => $linha->title,
+        4 => $linha->a_from,
+      ); //detalhes
 
     }
 
@@ -97,47 +82,28 @@ class Triagem extends CI_Controller {
 
   }
 
-  public function gerar_descricao_iframe($id_triagem) {
-
-    $ticket_triagem =  $this->db->query("select ticket_triagem from triagem 
-    where id_triagem = " . $id_triagem)->row()->ticket_triagem;
-
-    $desc = $this->db->query("select descricao_triagem from triagem where id_triagem = " . $id_triagem)->row()->descricao_triagem;
-
-    $chamado_existente = $this->db->query("select * from chamado 
-                        where ticket_chamado = '" 
-                        . $ticket_triagem . "' 
-                        and status_chamado = 'ABERTO'");
-
-    $cn = new Charset_normalizer;
-
-    header('Content-Type: text/html;');
-
-    $diff = "";
-    
-    if ($chamado_existente->num_rows() > 0) {
-
-        $this->load->library('simplediff');
-
-        $sd = new SimpleDiff;
-
-        $novo_texto = $desc;
-        $antigo_texto = $chamado_existente->row()->descricao_chamado;
-        $diff = $sd->htmlDiff($antigo_texto,$novo_texto);
 
 
+  public function carregar_anexos_ticket() {
 
-        echo $cn->normalize(strip_tags($diff,$this->tags_permitidas));
+    if (isset($_SESSION['id_usuario'])) {
+
+      $result = array();
+            
+      $id_ticket = $this->input->get('id_ticket');
+
+      $result = $this->triagem_model->buscaAnexosTicket($id_ticket);
+
+      header("Content-Type: application/json");
+          
+      echo json_encode($result);
+
+    } else {
+      header('Location: ' . base_url(),false,403);
     }
-    else {
 
 
 
-      $out = preg_replace('/\<\/span\>/','<br /><br /></span>', $desc);
-      $out = preg_replace('/\<\/html\>/','<br /><br /></html>', $out);
-
-      echo $cn->normalize(strip_tags($out,$this->tags_permitidas));
-      //echo $cn->normalize($out);
-    }
   }
+
 }

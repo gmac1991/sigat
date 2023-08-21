@@ -14,9 +14,13 @@ class Usuario extends CI_Controller {
 
     public function listar_usuarios() {
 
+        $usuarios = $this->usuario_model->buscaUsuarios();
+        foreach($usuarios as &$usuario) {
+            $usuario["triagem_usuario"] = $usuario["triagem_usuario"] === "0" ? FALSE : TRUE;
+            $usuario["encerramento_usuario"] = $usuario["encerramento_usuario"] === "0" ? FALSE : TRUE;
+        }
         header("Content-Type: application/json");
-
-        echo json_encode($this->usuario_model->buscaUsuarios());
+        echo json_encode($usuarios);
     }
 
     public function atualizar_usuario() {
@@ -29,34 +33,62 @@ class Usuario extends CI_Controller {
         $dados['status_usuario'] = $this->input->post('status_usuario');
         $dados['autorizacao_usuario'] = $this->input->post('autorizacao_usuario');
         $dados['fila_usuario'] = $this->input->post('fila_usuario');
+        $dados['triagem_usuario'] = $this->input->post('triagem_usuario');
+        $dados['encerramento_usuario'] = $this->input->post('encerramento_usuario');
+        $dados["triagem_usuario"] = $dados["triagem_usuario"] === "true" ? 1 : 0;
+        $dados["encerramento_usuario"] = $dados["encerramento_usuario"] === "true" ? 1 : 0;
 
-        $this->usuario_model->atualizaUsuario($dados);
+        $dados_usuario = $this->usuario_model->atualizaUsuario($dados);
+
+        // $usuario = $this->usuario_model->buscaUsuario($dados['id_usuario']);
+        $dados_usuario["triagem_usuario"] =  $dados_usuario["triagem_usuario"] === 0 ? FALSE : TRUE;
+        $dados_usuario["encerramento_usuario"] = $dados_usuario["encerramento_usuario"] === 0 ? FALSE : TRUE;
 
         header("Content-Type: application/json");
-
-        echo json_encode($this->usuario_model->buscaUsuario($dados['id_usuario']));
-        
+        echo json_encode($dados_usuario);
     }
 
     public function inserir_usuario() {
+        if (isset($_SESSION['id_usuario'])) {
+            $dados = array();
+            
+            $dados['nome_usuario'] = $this->input->post('nome_usuario');
+            $dados['login_usuario'] = $this->input->post('login_usuario');
+            $dados['status_usuario'] = $this->input->post('status_usuario');
+            $dados['autorizacao_usuario'] = $this->input->post('autorizacao_usuario');
+            $dados['data_criacao_usuario'] = $this->input->post('autorizacao_usuario');
+            $dados['fila_usuario'] = 0;
+            $dados['triagem_usuario'] = $this->input->post('triagem_usuario');
 
-        $dados = array();
+            if($dados['triagem_usuario'] == "true") {
+                $dados['triagem_usuario'] = 1;
+            } else {
+                $dados['triagem_usuario'] = 0;
+            }
 
-        $dados['nome_usuario'] = $this->input->post('nome_usuario');
-        $dados['login_usuario'] = $this->input->post('login_usuario');
-        $dados['status_usuario'] = $this->input->post('status_usuario');
-        $dados['autorizacao_usuario'] = $this->input->post('autorizacao_usuario');
-        $dados['fila_usuario'] = $this->input->post('fila_usuario');
+            // removendo aspas duplas e simples
+            $dados['login_usuario'] = str_replace('"', "", $dados['login_usuario']);
+            $dados['login_usuario'] = str_replace("'", "", $dados['login_usuario']);
+            $usuario = $this->usuario_model->validaUsuario($dados);
 
-        $this->usuario_model->insereUsuario($dados);
+            if(!empty($usuario)) {
+                echo '<script>alert("Usuário está ativo no sistema");</script>';
+                return;
+            }
+            
+            $insercao = $this->usuario_model->insereUsuario($dados);
+            if (!empty($insercao)) {
+                $insercao['data_usuario'] = date("d/m/Y", strtotime($insercao['data_usuario']));
+                $insercao['alteracao_usuario'] = date("d/m/Y", strtotime($insercao['alteracao_usuario']));
+                header("Content-Type: application/json");
+                echo json_encode($insercao);
+            }
 
-        header("Content-Type: application/json");
-
-        echo json_encode($this->usuario_model->buscaUltimoUsuario());
-        
+            else {
+                echo FALSE;
+            }
+        }
     }
-    
-
 }
 
 ?>

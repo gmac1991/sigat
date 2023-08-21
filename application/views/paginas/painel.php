@@ -14,10 +14,6 @@
 			</li>
 		</ul>
 
-		
-
-		
-
 		<div class="tab-content mt-3">
 
 				<!-- ENCERRADOS -->
@@ -25,8 +21,7 @@
 				<div class="tab-pane fade show mb-5" id="encerrados" role="tabpanel" aria-labelledby="encerrados-tab">
 					<div class="mb-5">
 					<table id="tblEncerrados" style="width:100%" class="display nowrap">
-						
-						<thead >
+						<thead>
 						<tr>
 							<th>#</th>
 							<th>Ticket</th>
@@ -47,9 +42,9 @@
 				<div class="tab-pane fade show mb-5" id="triagem" role="tabpanel" aria-labelledby="triagem-tab">
 					<div class="mb-5">
 						<table id="tblTriagem" style="width:100%" class="display nowrap">
-							<thead >
+							<thead>
 							<tr>
-								<th>#</th>
+								<th>#</th> <!-- oculto -->
 								<th>Ticket</th>
 								<th>Data de abertura</th>
 								<th>Assunto</th>
@@ -63,9 +58,6 @@
 				<!-- CHAMADOS -->
 
 				<div class="tab-pane fade show mb-5 active" id="painel" role="tabpanel" aria-labelledby="painel-tab">
-				
-				
-				
 				<div class="mb-5">
 					<div class="d-flex p-2 justify-content-center">	
 						<div class="btn-group btn-group-toggle" role="group" data-toggle="buttons" id="btnFilas">
@@ -80,8 +72,6 @@
 							<label data-fila="0" class="btn btn-info btn-sm mr-1">
 								<input type="radio" onclick="mudaFila(0)"><i class="fas fa-search"></i> Todos
 							</label>
-							
-							
 						</div>
 						<div class="btn-toolbar" role="toolbar">
 							<div class="btn-group-toggle" data-toggle="buttons">
@@ -97,28 +87,25 @@
 					</div>
 				</div>
 					
-					<table id="tblPainel" style="width:100%" class="display nowrap">
-					
-						<thead >
-						<tr>
-							<th>#</th>
-							<th>Status</th>
-							<th>Ticket</th>
-							<th>Solicitante</th>
-							<th>Solicitação</th>
-							<th>Local</th>
-							<th>Região</th>
-							<th><i class="fas fa-tasks"></i></th>
-							<th>Data</th>
-							<th>Horas de espera (oculto)</th>
-							<th class="text-center" title="Última interação"><i class="far fa-clock"></i></th>
-							<th>Responsável</th>
-						</tr>
-						</thead>
-					</table>
-				</div>
-
-		
-		
+				<table id="tblPainel" style="width:100%" class="display nowrap">
+				
+					<thead >
+					<tr>
+						<th>#</th>
+						<th>Status</th>
+						<th>Ticket</th>
+						<th>Solicitante</th>
+						<th>Solicitação</th>
+						<th>Local</th>
+						<th>Região</th>
+						<th><i class="fas fa-tasks"></i></th>
+						<th>Data</th>
+						<th>Horas de espera (oculto)</th>
+						<th class="text-center" title="Última interação"><i class="far fa-clock"></i></th>
+						<th>Responsável</th>
+					</tr>
+					</thead>
+				</table>
+			</div>
 		</div>	
 	</div>

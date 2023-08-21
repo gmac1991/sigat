@@ -72,4 +72,5 @@ $route['del_equip_chamado'] = 'json/remover_equipamento_chamado';
 $route['desc_equipamento/(:any)'] = 'json/desc_equipamento/$1';
 $route['anexos_chamado/(:num)'] = 'json/anexos_chamado/$1';
 $route['endereco_local/(:num)'] = 'json/endereco_local/$1';
+$route['listar_servicos_chamado/(:num)'] = 'json/listar_servicos_chamado/$1';
 

@@ -73,29 +73,29 @@ class Chamado_model extends CI_Model {
                 if (strlen($complementoM) > 6)
                     $this->db->query("insert complemento values(NULL,'" . $complementoM . "')"); // cadastrando complementos
 
-                
-                
-                
+            
 
                 $nome_fila = $this->db->query("select nome_fila from fila where id_fila = 1")->row()->nome_fila;
-                    if (!empty($dados['listaEquipamentos'])) {
+                    // if (!empty($dados['listaEquipamentos']) || $dados['serv_tel'] == 1 || $dados['serv_rede'] == 1) {
+                if (!empty($dados['listaEquipamentos']) || !empty($dados['listaServicos']) ) {
 
-                        $novo_id = importar($this_model,$q_insereChamado,$nome_fila,$dados['id_usuario']);
+                    $novo_id = importar($this_model,$q_insereChamado,$nome_fila,$dados['id_usuario']);
 
-                        if( $novo_id !== FALSE) {
+                    if( $novo_id !== FALSE) {
 
-                            // ------------ LOG -------------------
+                        // ------------ LOG -------------------
 
-                            $log = array(
-                                'acao_evento' => 'INSERIR_CHAMADO',
-                                'desc_evento' => 'ID CHAMADO: ' . $novo_id ,
-                                'id_usuario_evento' => $_SESSION['id_usuario']
-                            );
-                            
-                            $this->db->insert('evento', $log);
+                        $log = array(
+                            'acao_evento' => 'INSERIR_CHAMADO',
+                            'desc_evento' => 'ID CHAMADO: ' . $novo_id ,
+                            'id_usuario_evento' => $_SESSION['id_usuario']
+                        );
+                        
+                        $this->db->insert('evento', $log);
 
-                            // -------------- /LOG ----------------
-                    
+                        // -------------- /LOG ----------------
+
+                        if (!empty($dados['listaEquipamentos'])) {
                             foreach($dados['listaEquipamentos'] as $equip) { //registrando nas tabelas equipamento_chamado e, se necessario, na tabela equipamento
                                 $busca_equip = $this->db->query("select * from equipamento where num_equipamento = '". $equip->Número ."'");
                                 if ($busca_equip->num_rows() == 0) { //equipamento novo
@@ -104,33 +104,43 @@ class Chamado_model extends CI_Model {
                                 $this->db->query("insert into equipamento_chamado values('" . $equip->Número."','ABERTO', NULL, NOW(),". $novo_id .")");
                             }
 
-                            foreach($dados['anexos'] as $anexo) {
-                                $this->db->query("insert into anexos_otrs(id_chamado_sigat,id_anexo_otrs) values(".$novo_id.",". $anexo->id_arquivo.")");
+                        }
+
+                        var_dump($dados['listaServicos']);
+
+                        if (!empty($dados['listaServicos'])) {
+                            foreach($dados['listaServicos'] as $servico) {
             
+                                $this->db->query("insert into servico_chamado values(" . $novo_id . "," . $servico->id_servico . 
+                                ",'ABERTO', NOW())");
                             }
 
-                        //$this->db->query("delete from anexos_otrs where id_chamado_sigat is NULL and id_triagem_sigat = " . $dados['id_triagem']); //deletando anexos descartados
-                        //$this->db->query("update triagem set triado_triagem = 1 where id_triagem = " . $dados['id_triagem']); //marcando triagem como realizada
-                        
-                    
-                        $msg = "";
-                        $msg = "<div id=\"alerta\" class=\"alert alert-success\">";
-                        $msg .= "<small class=\"float-right\">". date('G:i:s') . "</small>";
-                        $msg .= "Importação concluída! Chamado n. "; 
-                        $msg .= $novo_id . "<br /><a href=". base_url('/painel?v=triagem') . ">Voltar para o painel</a>";
-                        $msg .= "</div>"; 
-
-                        return array("novo_id" => $novo_id, "msg" => $msg);
-                    }
-
-                        
-                        else
-                            die($novo_id);
-
-                        
-                    }
+                        }
                 
-            } else {
+
+                        foreach($dados['anexos'] as $anexo) {
+                            $this->db->query("insert into anexos_otrs(id_chamado_sigat,id_anexo_otrs) values(".$novo_id.",". $anexo->id_arquivo.")");
+        
+                        }
+
+                    //$this->db->query("delete from anexos_otrs where id_chamado_sigat is NULL and id_triagem_sigat = " . $dados['id_triagem']); //deletando anexos descartados
+                    //$this->db->query("update triagem set triado_triagem = 1 where id_triagem = " . $dados['id_triagem']); //marcando triagem como realizada
+                    
+                
+                    $msg = "";
+                    $msg = "<div id=\"alerta\" class=\"alert alert-success\">";
+                    $msg .= "<small class=\"float-right\">". date('G:i:s') . "</small>";
+                    $msg .= "Importação concluída! Chamado n. "; 
+                    $msg .= $novo_id . "<br /><a href=". base_url('/painel?v=triagem') . ">Voltar para o painel</a>";
+                    $msg .= "</div>"; 
+
+                    return array("novo_id" => $novo_id, "msg" => $msg);
+                }          
+                else {
+                    die($novo_id);
+                }
+            } 
+            else {
 
                 $msg .= "<div id=\"alerta\" class=\"alert alert-warning alert-dismissible\">" .
                 "<a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a>" .
@@ -139,6 +149,7 @@ class Chamado_model extends CI_Model {
 
                 exit($msg);
             }
+        }
     }
 
     public function alteraChamado($dados) {
@@ -321,13 +332,13 @@ class Chamado_model extends CI_Model {
     public function devolveChamado($p_id_chamado) {
 
         $ticket = $this->buscaTicketTriagem($p_id_chamado);
-        $this->db->query("delete from triagem where id_triagem = " . $p_id_chamado);
+        //$this->db->query("delete from triagem where id_triagem = " . $p_id_chamado);
         $this->db->query("delete from anexos_otrs where id_chamado_sigat = " . $p_id_chamado);
 
         $this->db->query("insert into alteracao_chamado ".
                          "values(NULL," . $p_id_chamado . 
                          "," . $_SESSION['id_usuario'] .
-                         ",'<b>devolveu o ticket ".  $ticket . " para o OTRS</b>',NOW())");
+                         ",'<b>devolveu o ticket ".  $ticket . " para o Nível 0</b>',NOW())");
 
          // ------------ LOG -------------------
 
@@ -467,6 +478,100 @@ class Chamado_model extends CI_Model {
         
         return $endereco;
     }
+
+    public function listaEncerrados() {
+
+        $q = "SELECT id_chamado,ticket_chamado, nome_solicitante_chamado, 
+        (SELECT nome_local FROM local WHERE id_local = id_local_chamado) AS nome_local, 
+        data_chamado, data_encerramento_chamado
+        FROM chamado
+        WHERE status_chamado = 'ENCERRADO' order by data_encerramento_chamado desc limit 500";
+
+        return $this->db->query($q)->result();
+    }
+
+    public function temEquipEspera($id_chamado) {
+
+        $out = 0;
+
+        $this->db->select("status_equipamento_chamado");
+        $this->db->from("equipamento_chamado");
+        $this->db->where("status_equipamento_chamado =  'ESPERA'");
+        $this->db->where("id_chamado_equipamento = " . $id_chamado);
+
+        $out = $this->db->get()->num_rows();
+
+        return $out;
+    }
+
+    public function listaChamados($id_fila = NULL,$id_usuario) {
+
+        //removida verificacao do solicitante
+
+        $nivel_usuario = $this->db->query('select autorizacao_usuario from usuario where id_usuario = ' . $id_usuario)->row()->autorizacao_usuario;
+
+
+        $q = "SELECT id_chamado, ticket_chamado, id_fila_chamado, nome_solicitante_chamado, data_chamado, prioridade_chamado, resumo_chamado,
+        (
+       SELECT nome_local
+       FROM local
+       WHERE id_local = id_local_chamado) AS nome_local, 
+
+       (
+       SELECT regiao_local
+       FROM local
+       WHERE id_local = id_local_chamado) AS regiao_local, 
+               data_chamado, 
+        (
+       SELECT usuario.nome_usuario
+       FROM usuario
+       WHERE usuario.id_usuario = c.id_usuario_responsavel_chamado) AS nome_responsavel, 
+    --    (
+    --    SELECT COUNT(*)
+    --    FROM equipamento_chamado
+    --    WHERE id_chamado_equipamento = c.id_chamado) AS total_equips,
+    --    (
+    --    SELECT COUNT(*)
+    --    FROM equipamento_chamado
+    --    WHERE id_chamado_equipamento = c.id_chamado AND status_equipamento_chamado IN('ATENDIDO','ENTREGUE','INSERVIVEL')) AS atend_equips,
+       status_chamado, entrega_chamado,
+       (
+        SELECT data_interacao FROM interacao
+        WHERE id_chamado_interacao = c.id_chamado
+        ORDER BY data_interacao DESC
+        LIMIT 1
+        ) AS data_ultima_interacao
+       FROM chamado c where";
+
+        $q .= ' status_chamado <> \'ENCERRADO\' and';
+
+
+        // if ($nivel_usuario <= 2 ) { 
+        //     $q .= ' (id_usuario_responsavel_chamado = ' . $id_usuario;
+        //     $q .= " or id_usuario_responsavel_chamado is NULL) and";
+        // }
+
+        if ($id_fila > 0) {
+
+            if ($id_fila == 7) { // fila de Entrega (virtual)
+               // $q .= " id_fila_chamado = 3";
+
+                $q .= " and entrega_chamado = 1";
+            } else {
+
+                $q .= " id_fila_chamado = " . $id_fila;
+            }
+            
+        } else {
+
+            $q .= " id_fila_chamado > 0 ";
+        }
+
+        //$q .= ' order by data_chamado';
+
+        return $this->db->query($q)->result();
+    }
+	
 
 }
 

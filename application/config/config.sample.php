@@ -533,3 +533,18 @@ $config['url_ticketsys'] = "";
 $config['ticketsys_login'] = "";
 $config['ticketsys_pwd'] = "";
 $config['changelog_url'] = "";
+
+$config['conversao_id_filas'] = array(
+
+    37 => 1,      //Fila Remoto       id_fila_otobo => id_fila_sigat
+    45 => 6,      //Fila Telefonia    
+    46 => 5,      //Fila Redes
+);
+
+$config['id_filas'] = array(
+    1 => "REMOTO",              // id_fila_sigat => rotulo
+    2 => "PRESENCIAL",
+    3 => "MANUTENCAO",
+    5 => "REDES",
+    6 => "TELEFONIA",
+);

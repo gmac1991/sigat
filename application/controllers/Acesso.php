@@ -52,12 +52,6 @@ if (!isset($_SESSION['id_usuario'])) {
     
     $usuario = $this->usuario_model->validaUsuario($dados);
 
-    // var_dump($dados);
-    
-    // var_dump($autentica_LDAP);
-
-    // var_dump($usuario);
-
     if ($usuario === NULL) {
 
       // ------------ LOG -------------------
@@ -156,7 +150,6 @@ if (!isset($_SESSION['id_usuario'])) {
     
     if (isset($_SESSION['id_usuario'])) {
 
-     // $lista_chamados = $this->consultas_model->listaChamados($id_fila,$_SESSION['id_usuario']);
 
       $lista_filas = $this->consultas_model->listaFilas();
 

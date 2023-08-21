@@ -121,6 +121,9 @@
                 <li class="nav-item">
                 <a class="nav-link" id="equip-tab" data-toggle="tab" href="#equip" role="tab" aria-controls="equip" aria-selected="false"><i class="fas fa-desktop"></i> Equipamentos</a>
                 </li>
+                <li class="nav-item">
+                <a class="nav-link" id="servicos-tab" data-toggle="tab" href="#serv" role="tab" aria-controls="servicos" aria-selected="false"><i class="fas fa-toolbox"></i> Serviços</a>
+                </li>
 				<li class="nav-item">
                 <a class="nav-link" id="descricao-tab" data-toggle="tab" href="#descricao" role="tab" aria-controls="descricao" aria-selected="false"><i class="fas fa-scroll"></i> Descrição completa</a>
                 </li>
@@ -205,6 +208,11 @@
                 <div class="tab-pane" id="equip" role="tabpanel" aria-labelledby="equip-tab">
                     <div class="content mt-3 mb-5">
                         <div id="tblEquipamentosChamado" class="jsgrid"></div>   
+                    </div>
+                </div>
+                <div class="tab-pane" id="serv" role="tabpanel" aria-labelledby="servicos-tab">
+                    <div class="content mt-3 mb-5">
+                        <div id="tblServicosChamado" class="jsgrid"></div>   
                     </div>
                 </div>
                 <div class="tab-pane" id="atendimento" role="tabpanel" aria-labelledby="atendimento-tab">

@@ -13,6 +13,9 @@
         <link rel="stylesheet" href="<?= base_url("css/custom.css") ?>">
         <link rel="stylesheet" href="<?= base_url("css/jsgrid.min.css") ?>">
         <link rel="stylesheet" href="<?= base_url("css/jsgrid-theme.min.css") ?>">
+        <link rel="stylesheet" href="<?= base_url("css/token-input.css") ?>">
+        <link rel="stylesheet" href="<?= base_url("css/token-input-sigat.css") ?>">
+        <!-- <link rel="stylesheet" href=" base_url(css/bootstrap-tokenfield.min.css)"> -->
         
         <link href="<?= base_url("fa/css/all.min.css") ?>" rel="stylesheet">
 
@@ -43,17 +46,13 @@
         <div class="modal" id="modalBuscaRapida" tabindex="-1">
             <div class="modal-dialog modal-xl">
                 <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title"></h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-
-                    
-                    
-                </div> <!-- FIM MODAL BODY -->
+                    <div class="modal-header">
+                        <h5 class="modal-title"></h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body"></div> <!-- FIM MODAL BODY -->
                 </div>
             </div>
         </div>
@@ -63,7 +62,7 @@
        <h3 class="d-inline">SIGAT <?= ENVIRONMENT == 'development' ? "<small><span style=\"color:orange\">DEV</span></small>" : "" ?>
        </h3>
         </a>
-        <span class="d-flex my-0" style="color:orange; margin-left: 200px">O sistema foi atualizado para a versão <?= $this->config->item('versao') ?><br>Favor excluir cookies e cache do site!</span>
+       
         <form class="form-inline" id="frmBuscaRapida">
         <div class="input-group">
             <input type="text" class="form-control" placeholder="Busca rápida..." id="txtBuscaRapida" value="<?php if($this->input->get("t") !== NULL) echo $this->input->get("t"); ?>">

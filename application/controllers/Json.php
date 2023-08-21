@@ -360,48 +360,6 @@ class Json extends CI_Controller {
         }
     }
 	
-	public function triagem() {
-
-        if (isset($_SESSION['id_usuario'])) {
-			
-			$result = array();
-            
-            $id_ticket = $this->input->get('id_ticket');
-
-   
-            //$q_buscaTriagem = "select ticket_triagem, nome_solicitante_triagem from triagem where id_triagem = " . $id_triagem;
-
-            // $ticket_triagem =  $this->db->query("select ticket_triagem from triagem 
-            // where id_triagem = " . $id_triagem)->row()->ticket_triagem;
-
-            $chamado_existente = $this->db->query("select * from chamado 
-                                where id_ticket_chamado = " 
-                                . $id_ticket . " 
-                                and status_chamado = 'ABERTO'");
-
-            
-            if ($chamado_existente->num_rows() > 0) {
-                $result['chamado'] = $chamado_existente->row_array();
-                $result['agrupamento'] = 1;
-            }
-
-            $db_otrs = $this->load->database('otrs', TRUE);
-
-        
-            $res = $db_otrs->query("SELECT aa.id, aa.filename FROM article_data_mime_attachment aa
-            INNER JOIN article a ON (aa.article_id = a.id)
-            WHERE(aa.disposition = 'attachment' OR aa.content_type LIKE 'image%') AND a.ticket_id = " .$id_ticket);
-			
-            $result['anexos_otrs'] = $res->result_array();
-
-
-            header("Content-Type: application/json");
-                
-            echo json_encode($result);
-        }
-
-        
-    }
 	
 	public function anexo_otrs($id_anexo) {
 
@@ -417,6 +375,7 @@ class Json extends CI_Controller {
 
             
 			header("Content-Disposition: attachment; filename=" . $anexo['filename']);
+            
 			ob_clean();
 			flush();
 			
@@ -841,6 +800,24 @@ class Json extends CI_Controller {
         }
     }
 
+
+    public function listar_servicos_chamado($id_chamado) {
+        if (isset($_SESSION['id_usuario'])) {
+            
+            $q_buscaServicos = "SELECT s.nome_servico, sc.status_servico_chamado as status_servico from servico s 
+            inner join servico_chamado sc on s.id_servico = sc.id_servico_chamado 
+            where sc.id_chamado_servico = " . $id_chamado;
+          
+            $linhas = $this->db->query($q_buscaServicos)->result();
+            
+            header("Content-Type: application/json");
+
+            echo json_encode($linhas);
+
+        } else {
+            header('HTTP/1.0 403 Forbidden');
+        }
+    }
     
 
     public function usuarios() {

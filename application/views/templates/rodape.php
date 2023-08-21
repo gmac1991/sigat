@@ -8,8 +8,11 @@ $amb = ENVIRONMENT;
 $grupo = $this->consultas_model->buscaGrupo($autorizacao_usuario);
 
 
-echo '<div class="navbar bg-dark text-light fixed-bottom">' .
-      '<div class="text-right w-100 h-auto"><small>';
+echo '<div class="navbar bg-dark text-light fixed-bottom">' . 
+      '<div class="text-right w-100 h-auto">
+      <small>
+      Sistema atualizado para a versão ' . 
+      $this->config->item('versao') . ' ';
 
 if (isset($_SESSION['id_usuario'])) { 
 
@@ -53,6 +56,8 @@ if (isset($triagem)) {
   <script src="<?= base_url("js/jsgrid.min.js"); ?>"></script>
   <script src="<?= base_url("fa/js/all.min.js")?>"></script>
   <script src="<?= base_url("js/moment.min.js")?>"></script>
+  <!-- <script src=" base_url(js/bootstrap-tokenfield.min.js)"></script> -->
+  <script src="<?= base_url("js/jquery.tokeninput.js")?>"></script>
   <script src="<?= $amb == 'development' ? base_url("js/principal.js") : base_url("js/principal.min.js") ."?v=". $versao ?>"></script>
 
 <?php

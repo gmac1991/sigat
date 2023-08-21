@@ -1,0 +1,29 @@
+{
+  "categoria_interacao": [
+      {
+        "Name": "Atendimento",
+        "Id": "ATENDIMENTO"
+      },
+      {
+        "Name": "Observação",
+        "Id": "OBSERVACAO"
+      },
+      {
+        "Name": "Classificar como inservível",
+        "Id": "INSERVIVEL"
+      },
+      {
+        "Name": "Alteração de fila",
+        "Id": "ALT_FILA"
+      },
+      {
+        "Name": "Remover da espera",
+        "Id": "REM_ESPERA"
+      },
+      {
+        "Name": "Deixar em espera",
+        "Id": "ESPERA"
+      }
+  ]
+}
+  

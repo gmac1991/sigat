@@ -209,13 +209,13 @@ function painel(id_fila) {
                     switch(data) {
 
                         case "1":
-                            display = "1 - PRIOR <span class=\"text-warning\"><i class=\"fas fa-star\"></i></span>";
+                            display = "<span style=\"font-size: 0.5px; color: white\">1 - PRIOR</span> <span class=\"text-warning\"><i class=\"fas fa-star\"></i></span>";
                             break;
                         case "ABERTO":
-                            display = "2 - ABERTO <span class=\"text-warning\"><i class=\"fas fa-circle\"></i></span>";
+                            display = "<span style=\"font-size: 0.5px; color: white\">2 - ABERTO</span> <span class=\"text-warning\"><i class=\"fas fa-circle\"></i></span>"
                             break;
                         case "FECHADO":
-                            display = "3 - FECHADO <span class=\"text-success\"><i class=\"fas fa-circle\"></i></span>";
+                            display = "<span style=\"font-size: 0.5px; color: white\">3 - FECHADO</span> <span class=\"text-success\"><i class=\"fas fa-circle\"></i></span>";
                             break;
                     }
                     
@@ -226,7 +226,7 @@ function painel(id_fila) {
             },
 
             {
-                "targets": [7,9],
+                "targets": [1,7,9],
                 "className": "text-center"
 
             },
@@ -490,6 +490,10 @@ function triagem() {
                 "targets": 2,
                 "render": $.fn.dataTable.render.moment('YYYY-MM-DD HH:mm:ss', 'DD/MM/YYYY H:mm:ss')
             },
+            {
+                "visible":false,
+                "targets": 0
+            }
         ],
 
         "language": {
@@ -646,6 +650,8 @@ function verificaTipo(fila_ant, id_chamado) { //verificar tipo da fila no modal 
             $('#divEquipamentos').show();
             $('#divFila').show();
             $('#slctFila').attr('disabled', true);
+            $('#divMensagem').show();
+            modalModeloMensagem($('#slctTipo').val(), fila_ant);
             break;
 
         case 'ALT_FILA':
@@ -653,6 +659,8 @@ function verificaTipo(fila_ant, id_chamado) { //verificar tipo da fila no modal 
             $('#divFila').show();
             $('#divEquipamentos').hide();
             $('#slctFila').attr('disabled', false);
+            $('#divMensagem').show();
+            modalModeloMensagem($('#slctTipo').val(), fila_ant);
             break;
 
         case 'OBSERVACAO':
@@ -660,6 +668,8 @@ function verificaTipo(fila_ant, id_chamado) { //verificar tipo da fila no modal 
             $('#divFila').hide();
             $('#slctFila').attr('disabled', true);
             $('#btnRegistrarInteracao').removeAttr('disabled');
+            $('#divMensagem').show();
+            modalModeloMensagem($('#slctTipo').val(), fila_ant);
             break;
             
         case 'INSERVIVEL':
@@ -669,11 +679,14 @@ function verificaTipo(fila_ant, id_chamado) { //verificar tipo da fila no modal 
                 $('#divEquipamentos').show();
                 $('#divFila').show();
                 $('#slctFila').attr('disabled', true);
+                $('#divMensagem').show();
+                modalModeloMensagem($('#slctTipo').val(), fila_ant);
             } else {
                 $('#divEquipamentos').show();
                 $('#divEquipamentos').html('Opção disponível somente na fila <strong>Manutenção de Hardware</strong><br>');
                 $('#btnRegistrarInteracao').prop('disabled', 'true');
                 $('#divFila').hide();
+                $('#divMensagem').hide();
             }
 
 
@@ -684,6 +697,8 @@ function verificaTipo(fila_ant, id_chamado) { //verificar tipo da fila no modal 
             $('#divEquipamentos').show();
             $('#divFila').hide();
             $('#slctFila').attr('disabled', true);
+            $('#divMensagem').show();
+            modalModeloMensagem($('#slctTipo').val(), fila_ant);
             break;
 
         case 'REM_ESPERA':
@@ -691,13 +706,77 @@ function verificaTipo(fila_ant, id_chamado) { //verificar tipo da fila no modal 
             $('#divEquipamentos').show();
             $('#divFila').hide();
             $('#slctFila').attr('disabled', true);
+            $('#divMensagem').show();
+            modalModeloMensagem($('#slctTipo').val(), fila_ant);
             break;
         case 'FECHAMENTO':
 
             break;
-
     }
+}
 
+function exibeModeloMensagem() {
+    // Capturar o evento de alteração de valor
+    var textoSelecionado = '<p>' + $("#slctModeloMensagem option:selected").text() + '</p>';
+    // Retorna o valor para o summernote
+    $('textarea[name=txtInteracao]').summernote('code', textoSelecionado);
+}
+async function modalModeloMensagem(tipo, id_fila) {
+    // Seleciona o modelo de mensagem de acordo com o tipo
+    var modeloMensagens = await carregaModeloMensagem(tipo, id_fila);
+    $('#slctModeloMensagem').empty();
+    $('textarea[name=txtInteracao]').summernote('code', '');
+    if (modeloMensagens === null) {
+        // desativa campo para não alterar
+        $('#slctModeloMensagem').attr('disabled', true);
+        $('#slctModeloMensagem').append("<option value='2' disabled selected>Não possui nenhuma mensagem :(</option>");
+    } else {
+        $('#slctModeloMensagem').attr('disabled', false);
+        $('#slctModeloMensagem').append("<option value='2' disabled selected>Selecione a mensagem</option>");
+
+        modeloMensagens.forEach(modeloMensagem => {
+            $('#slctModeloMensagem').append('<option value=\"MENSAGEM\">'+modeloMensagem.mensagem_modelo_mensagem+'</option>');
+        });
+    }
+}
+async function carregaModeloMensagem(tipo, id_fila) {
+    var out = null;
+    await $.ajax({
+        url: base_url + `ModeloMensagem/listar_modelo_mensagem?tipo=${tipo}&id_fila=${id_fila}`,
+        type: 'GET',
+        success: function(data) {
+            out = data;
+        }
+    })
+
+    return out;
+}
+
+async function carregaFilas() {
+    var out = null;
+    await $.ajax({
+        url: base_url + "Admin/listar_filas/1",
+        type: 'GET',
+        success: function(data) {
+            out = data;
+        }
+    })
+
+    return out;
+}
+
+
+async function carregaSecretarias() {
+    var out = null;
+    await $.ajax({
+        url: base_url + "local/listar_secretarias/",
+        type: 'GET',
+        success: function(data) {
+            out = data;
+        }
+    })
+    
+    return out;
 }
 
 function criaFormRegistro(p_id_chamado, p_id_fila_ant) { //carregar o form no modal de Registro de Atendimento
@@ -713,6 +792,13 @@ function criaFormRegistro(p_id_chamado, p_id_fila_ant) { //carregar o form no mo
         "<div class=\"col\">" +
         "<label for=\"id_fila\">Fila</label>" +
         "<select class=\"form-control\" name=\"id_fila\" id=\"slctFila\"></select>" +
+        "</div>" +
+        "</div>" +
+        "<div class=\"row\" id=\"divMensagem\">" +
+        "<div class=\"col\">" +
+        "<label for=\"id_mensagem\">Mensagem</label>" +
+        "<select class=\"form-control\" name=\"id_mensagem\" id=\"slctModeloMensagem\" onchange=\"exibeModeloMensagem()\">" +
+        "</select>" +
         "</div>" +
         "</div>" +
         "<div class=\"row mt-3\">" +
@@ -884,7 +970,6 @@ $('input[name=nome_solicitante]').autoComplete({ //na abertura do chamado
 
 
 
-
 $('input[name=nome_local]').autoComplete({
     source: function(term, response) {
         try {
@@ -905,6 +990,7 @@ $('input[name=nome_local]').autoComplete({
 //------------- CARREGA CHAMADO ---------------------
 
 var tblEquipsChamado = null;
+var tblServicosChamado = null;
 
 async function carregaHistorico(p_id_chamado) {
 
@@ -974,7 +1060,7 @@ var status_chamado = null;
 
 
 
-async function carregaChamado(p_id_chamado, sem_equipamentos) {
+async function carregaChamado(p_id_chamado,sem_equipamentos) {
 
     //atualiza os dados do chamado
 
@@ -1073,24 +1159,27 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
                     res = data;
                 });
                
-                if(res !== null && parseInt(res.id_chamado) !== g_id_chamado) {
+                if(res !== null) {
+                    if (res.status_equipamento_chamado == 'ABERTO' && parseInt(res.id_chamado) !== g_id_chamado)  {
                     alert("O item " + num_equip + " já está em atendimento!\nChamado: " + res.id_chamado + "\n" + res.ticket_chamado);
                     d.reject();
                     return d.promise();
+                    }
+                    else {
+                        return $.ajax({
+                                url: base_url + "edit_equip_chamado",
+                                dataType: "json",
+                                method: "post",
+                                data: {item,g_id_chamado,item_antigo},
+                                success: async function() {
+                                    var historico = await carregaHistorico(p_id_chamado);
+                                    $("#historico").html(historico);
+                                    carregaChamado(p_id_chamado);
+                                }
+                            });
+                    }
                 }
-                else {
-                    return $.ajax({
-                            url: base_url + "edit_equip_chamado",
-                            dataType: "json",
-                            method: "post",
-                            data: {item,g_id_chamado,item_antigo},
-                            success: async function() {
-                                var historico = await carregaHistorico(p_id_chamado);
-                                $("#historico").html(historico);
-                                carregaChamado(p_id_chamado);
-                            }
-                        });
-                }
+                
             },
             insertItem: async function(item) {
                 var d = $.Deferred();
@@ -1108,6 +1197,10 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
                 if(res !== null){
                     if (res.status_equipamento_chamado == 'ABERTO') {
                         alert("O item " + num_equip + " já está em atendimento!\nChamado: " + res.id_chamado + "\n" + res.ticket_chamado);
+                        d.reject();
+                        return d.promise();
+                    } else if(res.status_equipamento_chamado == 'INSERVIVEL'){
+                        alert("O equipamento " + num_equip + " está inservivel!\nChamado: " + res.id_chamado + "\n" + res.ticket_chamado);
                         d.reject();
                         return d.promise();
                     }
@@ -1160,7 +1253,63 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
                 }
             }       
         },
-});
+    });
+
+    $("#tblServicosChamado").jsGrid({
+
+        height: "auto",
+        width: "100%",
+        inserting: false,
+        editing: false,
+        autoload: true,
+        sorting: true,
+        invalidMessage: "Dados inválidos inseridos!",
+        loadMessage: "Aguarde...",
+        deleteConfirm: "Tem certeza?",
+        noDataContent: "Vazio",
+
+        onInit: function(args) {
+            tblServicosChamado = args.grid;
+        },
+
+        onItemUpdating: function(args) {
+
+            item_antigo = null;
+            item_antigo = args.previousItem;
+
+        },
+
+        fields: [
+            {
+                name: "nome_servico",
+                title: "Nome do Serviço",
+                type: "text",
+                readOnly: true,
+            },  
+            {
+                name: "status_servico",
+                title: "Status",
+                width: 50,
+                align: "center",
+            }, 
+        ],
+
+        
+
+        rowClass: function(item) { return item.status_servico == 'ABERTO' ? 'bg-warning' : ''; },
+
+        controller: {
+            loadData: function() {
+                return $.ajax({
+                    url: base_url + "listar_servicos_chamado/" + g_id_chamado,
+                    dataType: "json",
+                    method: "get",
+                });
+            },
+             
+        },
+    });
+   
 
     document.title = "Chamado #" + p_id_chamado + " - SIGAT";
 
@@ -1401,9 +1550,6 @@ async function carregaChamado(p_id_chamado, sem_equipamentos) {
     
 }
 
-
-
-
 function finalizaManual(p_id_chamado) {
 
 
@@ -1615,10 +1761,6 @@ function verificaEntrega() { //confirmando se a entrega foi realizada
             $('#btnRegistrarEntrega').attr("class",'btn btn-success');
             $('#txtFalhaEntrega').hide();
         }
-
-       
-        
-       
     }
 }
 
@@ -1643,9 +1785,6 @@ $('#frmRegistroEntrega').on('submit', function(e) { //submit do registro de entr
     }
 
     $('input[name="termo_responsabilidade"]').val() !== "" ? dados.append("termo_resp",1) : dados.append("termo_resp",0);
-
-    // console.log(dados);
-
 
     $.ajax({
 
@@ -2090,78 +2229,77 @@ var opcoes_fila = [{
 }, ];
 
 // --- ATUALIZA FILAS ----
-var filas = [{
-    id_fila: "0",
-    nome_fila: "Todos"
-}];
+// var filas = [{
+//     id_fila: "0",
+//     nome_fila: "Todos"
+// }];
 
-$.ajax({
-    url: base_url + 'json/filas',
-    dataType: 'json',
-    complete: resp => {
-        Array.prototype.push.apply(filas, resp.responseJSON);
+// $.ajax({
+//     url: base_url + 'json/filas',
+//     dataType: 'json',
+//     complete: resp => {
+//         Array.prototype.push.apply(filas, resp.responseJSON);
 
-        //console.log(filas);
+//         //console.log(filas);
 
-        $("#usuarios-grid").jsGrid({
+//         $("#usuarios-grid").jsGrid({
 
-            fields: [
-                //{ name: "id_usuario", type: "text", readOnly:true },
-                {
-                    name: "nome_usuario",
-                    type: "text",
-                    validate: "required",
-                    title: "Nome"
-                }, {
-                    name: "login_usuario",
-                    type: "text",
-                    validate: "required",
-                    title: "Login"
-                }, {
-                    name: "data_usuario",
-                    type: "text",
-                    readOnly: true,
-                    title: "Data de criação"
-                }, {
-                    name: "status_usuario",
-                    type: "select",
-                    items: estados,
-                    textField: "Name",
-                    valueField: "Id",
-                    title: "Situação"
-                }, {
-                    name: "autorizacao_usuario",
-                    type: "select",
-                    items: autorizacoes,
-                    textField: "Name",
-                    valueField: "Id",
-                    title: "Autorização"
-                }, {
-                    name: "fila_usuario",
-                    type: "select",
-                    items: filas,
-                    textField: "nome_fila",
-                    valueField: "id_fila",
-                    title: "Fila preferencial"
-                }, {
-                    name: "alteracao_usuario",
-                    type: "text",
-                    readOnly: true,
-                    title: "Última alteração"
-                }, {
-                    type: "control",
-                    deleteButton: false
-                }
-            ]
+//             fields: [
+//                 //{ name: "id_usuario", type: "text", readOnly:true },
+//                 {
+//                     name: "nome_usuario",
+//                     type: "text",
+//                     validate: "required",
+//                     title: "Nome"
+//                 }, {
+//                     name: "login_usuario",
+//                     type: "text",
+//                     validate: "required",
+//                     title: "Login"
+//                 }, {
+//                     name: "data_usuario",
+//                     type: "text",
+//                     readOnly: true,
+//                     title: "Data de criação"
+//                 }, {
+//                     name: "status_usuario",
+//                     type: "select",
+//                     items: estados,
+//                     textField: "Name",
+//                     valueField: "Id",
+//                     title: "Situação"
+//                 }, {
+//                     name: "autorizacao_usuario",
+//                     type: "select",
+//                     items: autorizacoes,
+//                     textField: "Name",
+//                     valueField: "Id",
+//                     title: "Autorização"
+//                 }, {
+//                     name: "fila_usuario",
+//                     type: "select",
+//                     items: filas,
+//                     textField: "nome_fila",
+//                     valueField: "id_fila",
+//                     title: "Fila preferencial"
+//                 }, {
+//                     name: "alteracao_usuario",
+//                     type: "text",
+//                     readOnly: true,
+//                     title: "Última alteração"
+//                 }, {
+//                     type: "control",
+//                     deleteButton: false
+//                 }
+//             ]
 
-        });
-    }
-});
+//         });
+//     }
+// });
 
 
 
 //--------------------
-
 $("#usuarios-grid").jsGrid({
     width: "100%",
     height: "auto",
@@ -2176,6 +2314,14 @@ $("#usuarios-grid").jsGrid({
     loadMessage: "Carregando...",
 
     noDataContent: "(vazio)",
+
+    insertRowLocation: "top",
+
+    finishInsert: function(insertedItem) {
+        var grid = this._grid;
+        grid.option("data").unshift(insertedItem);
+        grid.refresh();
+    },
 
     controller: {
         loadData: function() {
@@ -2201,6 +2347,8 @@ $("#usuarios-grid").jsGrid({
             });
         },
     },
+
+    
 
     fields: [
         //{ name: "id_usuario", type: "text", readOnly:true },
@@ -2234,7 +2382,20 @@ $("#usuarios-grid").jsGrid({
             valueField: "Id",
             title: "Autorização"
         },
-        //	{ name: "fila_usuario", type: "select", items: filas, textField: "nome_fila", valueField:"id_fila", title:"Fila preferencial" },
+        {
+            name: "triagem_usuario",
+            type: "checkbox",
+            title: "Triagem",
+            // itemTemplate: function(value, item) {
+            //     return item.triagem_usuario == 1 ? 
+            //     "<input type=\"checkbox\" checked>" : "<input type=\"checkbox\">"
+            // }
+        }, {
+            name: "encerramento_usuario",
+            type: "checkbox",
+            title: "Encerramento Chamado",
+        },
+
         {
             name: "alteracao_usuario",
             type: "text",
@@ -2249,131 +2410,275 @@ $("#usuarios-grid").jsGrid({
 
 // ------------ FIM USUARIOS ---------------
 
-// ------------- FILAS --------------------
 
-$("#filas-grid").jsGrid({ // FILAS FIXAS
-    width: "100%",
-    height: "auto",
-
-    autoload: true,
-    inserting: false,
-    editing: false,
-    sorting: true,
-    paging: true,
-    filtering: false,
-
-    loadMessage: "Carregando...",
-
-    noDataContent: "(vazio)",
-
-    controller: {
-        loadData: function() {
-            return $.ajax({
-                url: base_url + "admin/listar_filas/1",
-                dataType: "json"
-            });
-        },
-        updateItem: function(item) {
-            return $.ajax({
-                type: "POST",
-                url: base_url + "admin/atualizar_fila",
-                data: item,
-                dataType: "json"
-            });
-        },
-        insertItem: function(item) {
-            return $.ajax({
-                type: "POST",
-                url: base_url + "admin/inserir_fila",
-                data: item,
-                dataType: "json"
-            });
-        },
-    },
-
-    fields: [
-        //{ name: "id_fila", type: "text", readOnly:true },
+// ------------- MODELO MENSAGENS --------------------
+let Filas = Promise.resolve(carregaFilas());
+Filas.then(value => {
+    var tipo = [
         {
-            name: "nome_fila",
-            type: "text",
-            validate: "required",
-            title: "Nome"
+            Name: "Atendimento",
+            Id: "ATENDIMENTO"
         }, {
-            name: "status_fila",
-            type: "select",
-            items: estados,
-            textField: "Name",
-            valueField: "Id",
-            title: "Situação"
-        },
-        // { name: "requer_equipamento_fila", type: "select", items: opcoes_fila, textField: "Name", valueField:"Id", title:"Requer patrimônio?" },
-    ]
-});
-
-$("#filas-avulsas-grid").jsGrid({ // FILAS AVULSAS
-    width: "100%",
-    height: "auto",
-
-    autoload: true,
-    inserting: true,
-    editing: true,
-    sorting: true,
-    paging: true,
-    filtering: false,
-
-    loadMessage: "Carregando...",
-
-    noDataContent: "(vazio)",
-
-    controller: {
-        loadData: function() {
-            return $.ajax({
-                url: base_url + "admin/listar_filas/0", // trazer filas avulsas
-                dataType: "json"
-            });
-        },
-        updateItem: function(item) {
-            return $.ajax({
-                type: "POST",
-                url: base_url + "admin/atualizar_fila",
-                data: item,
-                dataType: "json"
-            });
-        },
-        insertItem: function(item) {
-            return $.ajax({
-                type: "POST",
-                url: base_url + "admin/inserir_fila",
-                data: item,
-                dataType: "json"
-            });
-        },
-    },
-
-    fields: [
-        //{ name: "id_fila", type: "text", readOnly:true },
-        {
-            name: "nome_fila",
-            type: "text",
-            validate: "required",
-            title: "Nome"
+            Name: "Observação",
+            Id: "OBSERVACAO"
         }, {
-            name: "status_fila",
-            type: "select",
-            items: estados,
-            textField: "Name",
-            valueField: "Id",
-            title: "Situação"
-        },
-        //{ name: "requer_equipamento_fila", type: "select", items: opcoes_fila, textField: "Name", valueField:"Id", title:"Requer patrimônio?" },
-        {
-            type: "control",
-            deleteButton: false
+            Name: "Classificar como inservível",
+            Id: "INSERVIVEL"
+        }, {
+            Name: "Alteração de fila",
+            Id: "ALT_FILA"
+        }, {
+            Name: "Remover da espera",
+            Id: "REM_ESPERA"
+        }, {
+            Name: "Deixar em espera",
+            Id: "ESPERA"
         }
-    ]
+    ];
+    /*
+        $.ajax({
+        url: 'tipo.json',
+        dataType: 'json',
+        success: function(data) {
+            console.log(data); // Aqui você pode acessar o objeto JSON
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.error('Erro ao carregar o arquivo JSON:', textStatus, errorThrown);
+        }
+        });
+    */
+
+    //var filas = [{
+    //    Name: "Remoto",
+    //    Id: "1"
+    //}, {
+    //    Name: "Presencial",
+    //    Id: "2"
+    //}, {
+    //    Name: "Laboratório",
+    //    Id: "3"
+    //}, {
+    //    Name: "Almoxarifado",
+    //    Id: "4"
+    //}, {
+    //    Name: "Rede",
+    //    Id: "5"
+    //}, {
+    //    Name: "Telefonia",
+    //    Id: "6"
+    //}];
+    console.log(value)
+    $("#modelos-mensagens-grid").jsGrid({
+        width: "100%",
+        height: "auto",
+
+        autoload: true,
+        inserting: true,
+        editing: true,
+        sorting: true,
+        paging: true,
+        filtering: false,
+
+        loadMessage: "Carregando...",
+
+        noDataContent: "(vazio)",
+
+        controller: {
+            loadData: function() {
+                return $.ajax({
+                    url: base_url + "ModeloMensagem/listar_modelo_mensagem/",
+                    dataType: "json"
+                });
+            },
+            updateItem: function(item) {
+                return $.ajax({
+                    type: "POST",
+                    url: base_url + "modeloMensagem/atualizar_modelo_mensagem",
+                    data: item,
+                    dataType: "json"
+                });
+            },
+            insertItem: function(item) {
+                console.log(item)
+                return $.ajax({
+                    type: "POST",
+                    url: base_url + "modeloMensagem/inserir_modelo_mensagem",
+                    data: item,
+                    dataType: "json"
+                });
+            },
+            
+        },
+
+        fields: [
+            {
+                name: "mensagem_modelo_mensagem",
+                type: "text",
+                validate: "required",
+                title: "Mensagem"
+            }, {
+                name: "tipo_modelo_mensagem",
+                type: "select",
+                items: tipo,
+                textField: "Name",
+                valueField: "Id",
+                title: "Tipo da mensagem"
+            }, {
+                name: "status_modelo_mensagem",
+                type: "checkbox",
+                title: "Status",
+                insertTemplate: function() {
+                    return $("<input>").attr("type", "checkbox").prop("checked", true).prop("disabled", true); // Set to true for checked, false for unchecked
+                },
+                insertValue: function() {
+                    return "true"; // Set to true for checked
+                }
+                
+            }, {
+                name: "data_modelo_mensagem",
+                type: "text",
+                readOnly: true,
+                title: "Data de criação"
+            }, {
+                name: "fila_modelo_mensagem",
+                type: "select",
+                items: value,
+                textField: "nome_fila",
+                valueField: "id_fila",
+                title: "Fila"
+            }, {
+                name: "alterado_modelo_mensagem",
+                type: "text",
+                readOnly: true,
+                title: "Última alteração",
+            }, {
+                type: "control",
+                deleteButton: false
+            }
+        ]
+    });
 });
 
-//------------- FIM FILAS ------------------
+//------------- FIM MODELO MENSAGENS ------------------
+
+// ------------- LOCAIS --------------------
+const secretarias = Promise.resolve(carregaSecretarias());
+secretarias.then(value => {
+    let regiao = [
+        {
+            NAME: "INTERNA",
+            ID: "INTERNA"
+        },
+        {
+            NAME: "CENTRO",
+            ID: "CENTRO"
+        },
+        {
+            NAME: "NORTE",
+            ID: "NORTE"
+        },
+        {
+            NAME: "SUL",
+            ID: "SUL"
+        },
+        {
+            NAME: "OESTE",
+            ID: "OESTE"
+        },
+        {
+            NAME: "LESTE",
+            ID: "LESTE",
+        },
+    ]
+
+    $("#locais-grid").jsGrid({
+        width: "100%",
+        height: "auto",
+    
+        autoload: true,
+        inserting: true,
+        editing: true,
+        sorting: true,
+        paging: true,
+        filtering: false,
+    
+        loadMessage: "Carregando...",
+    
+        noDataContent: "(vazio)",
+    
+        controller: {
+            loadData: function() {
+                return $.ajax({
+                    url: base_url + "local/listar_locais/",
+                    dataType: "json"
+                });
+            },
+            updateItem: function(item) {
+                return $.ajax({
+                    type: "POST",
+                    url: base_url + "local/atualizar_local",
+                    data: item,
+                    dataType: "json"
+                });
+            },
+            insertItem: function(item) {
+                return $.ajax({
+                    type: "POST",
+                    url: base_url + "local/inserir_local",
+                    data: item,
+                    dataType: "json"
+                });
+            },
+        },
+    
+        fields: [
+            {
+                name: "nome_local",
+                type: "text",
+                validate: "required",
+                title: "Local"
+            }, {
+                name: "endereco_local",
+                type: "text",
+                title: "Endereço"
+            }, {
+                name: "secretaria_local",
+                type: "select",
+                items: value,
+                textField: "sigla_secretaria",
+                valueField: "id_secretaria",
+                title: "Secretaria"
+            }, {
+                name: "regiao_local",
+                type: "select",
+                items: regiao,
+                textField: "NAME",
+                valueField: "ID",
+                title: "Região"
+            }, {
+                name: "status_local",
+                type: "checkbox",
+                title: "Status",
+                insertTemplate: function() {
+                    return $("<input>").attr("type", "checkbox").prop("checked", true).prop("disabled", true); // Set to true for checked, false for unchecked
+                },
+                insertValue: function() {
+                    return "true"; // Set to true for checked
+                }
+                
+            }, {
+                type: "control",
+                deleteButton: false
+            }
+        ]
+    });
+}).catch(err => {
+    console.log(err);
+})
+
+
+//------------- FIM LOCAIS ------------------
+
 
 
 // ---------------- LOG DE EVENTOS --------------
@@ -2505,22 +2810,26 @@ $("#slctEquipe").on('change', function() {
     
 })
 
+
+var servicos = []
+var servico_atualizado = []
+
+
+
 async function carregaTriagem(p_id_ticket) {
 
-   
-    //$('div[name=descricao_triagem]').html('');
 
-    //traz os dados do chamado MIGRADO (OTRS)
+
+    //traz os dados do chamado MIGRADO (OTOBO)
 
     document.title = "Triagem #" + p_id_ticket + " - SIGAT";
 
     var anexos = [];
-
-    $("#linhaInfoTriagem").hide();
-    $("#linhaInfra").hide();
-
+    
+    // CARREGANDO ANEXOS OTOBO ...
+    
     await $.ajax({
-        url: base_url + 'json/triagem',
+        url: base_url + 'triagem/carregar_anexos_ticket',
         dataType: 'json',
         async: true,
         data: {
@@ -2528,26 +2837,11 @@ async function carregaTriagem(p_id_ticket) {
         },
         success: function(data) {
 
-            if (data.agrupamento == 1) {
-                $("#header_triagem")
-                .after("<div class=\"alert alert-info\" role=\"alert\">" +
-                "<p class=\"mb-0\"><i class=\"fas fa-info-circle\"></i> Já existe um <a target=\"_blank\" href=\"" + base_url + "chamado/" + data.chamado.id_chamado + 
-                "\" class=\"alert-link\">chamado aberto<sup><i class=\"fas fa-external-link-square-alt\"></i></sup></a> para este ticket! Caso seja feita a importação, as novas informações serão agrupadas nele.</p></div>");
-            
-                agrupamento = true;
-                //diffDesc = data.diff;
-
-                $("#linhaInfoTriagem").html("");
-            }
-
-
             $("#linhaInfoTriagem").show();
-    
-
             
-            if (data.anexos_otrs.length > 0) {
+            if (data.length > 0) {
 
-                data.anexos_otrs.forEach(function(item){
+                data.forEach(function(item){
                     anexos.push({id_arquivo:item.id,nome_arquivo:item.filename})
 
                 })   
@@ -2555,16 +2849,94 @@ async function carregaTriagem(p_id_ticket) {
         },
     });
 
-    // if (!agrupamento) {
-    //     desc_triagem = UTF8.decode(desc_triagem)
-    // }
+    var _grupo = null
 
-    // $('#descricao_triagem').html(desc_triagem);
+    switch(id_fila_sigat) {
+        case 5:
+            _grupo = "infra"
+            break
+        case 6:
+            _grupo = "telefonia"
+    }
+
+    await $.ajax({
+        url: base_url + 'servico/listar_servicos_triagem',
+        dataType: 'json',
+        async: true,
+        type: "POST",
+        data: {
+            grupos: _grupo
+        },
+        success: function(data) {
+            servicos = data
+        },
+    });
+
+    $("#tblServicos").jsGrid({
+        width: '100%',
+        autoload: false,
+        editing: true,
+        inserting: true,
+        noDataContent: "Lista vazia.",
+        confirmDeleting: false,
+        deleteConfirm: "Tem certeza?",
+        sorting: true,
+     
+        fields: [
+            { 
+                name: "id_servico",
+                title: "Nome do serviço",
+                type: "select",
+                items: servicos, valueField: "id_servico", textField: "nome_servico", 
+                visible: true, 
+                    
+            },
+            
+            {
+                type: "control",
+                deleteButton: true,
+                editButton: true,
+                insertButton: true,
+            }
+        ],
+        onItemInserting: function(args) {
+
+            var s = args.item.id_servico
+
+            var info_servico = servicos.find(e => e.id_servico == s)
+
+            args.item.grupo_servico = info_servico.grupo_servico
+            // args.item.timestamp = Date.now().toString()
+            
+
+        },
+
+        onItemInserted: function(args) {
+            
+
+        },
+
+        onItemUpdating: function(args) {
+
+            var s = args.item.id_servico
+
+            var info_servico = servicos.find(e => e.id_servico == s)
+
+            args.previousItem.grupo_servico = info_servico.grupo_servico
+
+        },
+     
+    });
+    
+
 
     verificaAutoEquip();
     $("#tblAnexos").jsGrid("option","data",anexos);
 
 }
+
+
+
 
 function uniq_fast(a) {
     var seen = {};
@@ -2625,41 +2997,8 @@ async function verificaAutoEquip() {
         text = text + $(this).html();
 
     })
-
-  
-
-    // let response = await fetch(base_url + "triagem/descricao/" + g_id_triagem);
-
-    // if (response.ok) { 
-    //     text = await response.text();
-    // } else {
-    //     console.log("HTTP-Error: " + response.status);
-    // }
-    
-    if (agrupamento) {
-
-        // var diff_n1 = text.match(/<div class="diff">(.*?)<\/div>/g);
-
-        // var novo_texto = null
-
-        // diff_n1.forEach(function (item) {
-
-        //     novo_texto = novo_texto + item.match(/<div class="diff">(.*?)<\/div>/g);
-
-        
-        // });
-
-        // nums_equip = novo_texto.match(patrimonio_regex);
-
-        // confirmado = true;
-
-        $("#btnValidaEquip").removeAttr("disabled");
-        $("#btnLoteEquip").removeAttr("disabled");
-        
-    }
-    // else {
-        nums_equip = text.match(patrimonio_regex);
-    // }
+   
+    nums_equip = text.match(patrimonio_regex);
 
     if (nums_equip !== null) {
         if (nums_equip.length > 0) {
@@ -2698,7 +3037,7 @@ async function verificaAutoEquip() {
     else {
 
         $("#btnValidaEquip").removeAttr("disabled");
-            $("#btnLoteEquip").removeAttr("disabled");
+        $("#btnLoteEquip").removeAttr("disabled");
     } 
     
 }
@@ -2744,7 +3083,6 @@ $("#btnValidaEquip").on('click', async function() {
 
     $(this).prop("disabled","true");
     
-    
     $("#pbEquips").css("width","0%");  
    
     var grid_equips = $("#tblEquips").jsGrid("option","data");
@@ -2788,8 +3126,6 @@ $("#btnValidaEquip").on('click', async function() {
             total_percentage = total_percentage + percentage;
             $("#pbEquips").css("width",total_percentage+"%"); 
         }
-
-        //console.log(erros)
 
         if (erros.length == 0) {
             $("#tblEquips").jsGrid("option","data",grid_equips); 
@@ -2920,8 +3256,6 @@ $("#radLoteLista").on('click', function() {
 
 $("#btnInsereLote").on('click', async function() {
 
-    
-    
     if ($("#radLoteFaixa").is(':checked')) {
 
         var inicio = Number($("#txtInicioFaixaLote").val());
@@ -2970,11 +3304,8 @@ $("#btnInsereLote").on('click', async function() {
             $("#modalLote").removeClass('fade').modal('hide');
             $("#modalLote").modal('dispose');
 
-            $(this).removeAttr("disabled");
-            
+            $(this).removeAttr("disabled");   
         }
-        
-    
     }
     
     if ($("#radLoteLista").is(':checked')) {
@@ -2992,8 +3323,6 @@ $("#btnInsereLote").on('click', async function() {
         total_percentage = 0;
 
         var grid_lista = [];
-
-       
 
         for(var i = 0;i < linhas.length;i++){
            
@@ -3019,8 +3348,6 @@ $("#btnInsereLote").on('click', async function() {
         $(this).removeAttr("disabled");
     
     }
-
-    
 });
 
 
@@ -3104,7 +3431,6 @@ $('#tblEquips input').on("keyup keyup keypress blur change", function(){
     $(this).val(out.replace(/\s/g,""));
 } );
 
-var g_id_fila_infra = parseInt($('#slctFilaInfra').val())
 
 $('#frmImportarChamado').on('submit',
 
@@ -3129,20 +3455,10 @@ $('#frmImportarChamado').on('submit',
         id_fila: {
             required: true,
         },
-        id_fila_infra: {
-
-            required: {
-                depends: function() {
-                  return $('#slctEquipe').val() === '2'
-                }
-            }
-
-        }, 
         celular: {
-
             required: {
                 depends: function() {
-                  return $('#slctFilaInfra').val() === '6'
+                    return nome_fila_sigat === "TELEFONIA"
                 }
             },
             digits: true,
@@ -3164,11 +3480,8 @@ $('#frmImportarChamado').on('submit',
         resumo_solicitacao: {
             required: "Campo obrigatório!",
         },
-        id_fila_infra: {
-            required: "Campo obrigatório!"
-        },
         celular: {
-            required: "Campo obrigatório para a fila Telefonia!",
+            required: "Campo obrigatório para serviços de Telefonia!",
             digits: "Somente dígitos (0-9)!",
             minlength: "Mínimo 9 dígitos!"
         }
@@ -3180,16 +3493,20 @@ $('#frmImportarChamado').on('submit',
       
         var script_url = base_url + "chamado/importar_chamado";
         var dados = new FormData(form);
-        dados.append('listaEquipamentos', JSON.stringify(g_equips));
+
+        dados.append('id_fila',id_fila_sigat);
+
+        if (id_fila_sigat == 1) {
+            dados.append('listaEquipamentos', JSON.stringify(g_equips));
+        } else {
+            dados.append('listaServicos', JSON.stringify($("#tblServicos").jsGrid("option","data")));
+
+        }
+        
         dados.append('num_ticket',g_num_ticket);
-       
         dados.append('g_anexos', JSON.stringify($("#tblAnexos").jsGrid("option","data")));
         dados.append('id_ticket', g_id_ticket);
 
-        if ($("#slctEquipe").val() == "2") {
-    
-            dados.append('id_fila_infra',g_id_fila_infra)
-        }
         $.ajax({
 
             url: script_url,
@@ -3199,9 +3516,15 @@ $('#frmImportarChamado').on('submit',
             cache: false,
             processData: false,
             beforeSend: function() {
-                equipe = $("#slctEquipe").val()
-                if (confirmado == false && equipe == "1") {
-                    alert("Verifique a lista de equipamentos!")
+
+                var grid_servicos = $("#tblServicos").jsGrid("option","data")
+          
+                if (confirmado == false && grid_servicos.length < 1) {
+                    alert("Verifique a lista de equipamentos ou adicione um dos serviços!")
+                    targetOffset = $('#tblServicos').offset().top;
+                    $('html, body').animate({
+                        scrollTop: targetOffset - 100
+                    }, 200);
                     return false;
                 }
                 $('#btnImportarChamado').prop("disabled", "true");
@@ -3243,13 +3566,6 @@ $('#frmImportarChamado').on('submit',
 
 // --------- BUSCA RAPIDA ----------
 
-
-$('#tblEquipsBr').on('click', 'tbody tr', function () {
-
-    alert('pasiodkpsoadksopadkosa');
- 
-   // window.open(base_url + 'chamado/' + $("td:nth-child(3)").value());
-  });
 
 
 var result_br = [];
@@ -3364,6 +3680,4 @@ $('#modalEndereco').on('show.bs.modal', async function (e) {
     });
    $(this).find(".modal-body").html("<h5>" + $("input[name=nome_local]").val() + "</h5><p>" + endereco + "</p>")
 })
-
-
 

@@ -1,4 +1,9 @@
+<?php
+  
 
+   $rotulo = $this->config->item('id_filas')[$fila_sigat] == "REMOTO" ? "SUPORTE" : $this->config->item('id_filas')[$fila_sigat];
+
+?>
 <!-- modal Lote -->
 <div class="modal fade show" id="modalLote" tabindex="-1" role="dialog" aria-hidden="true">
      <div class="modal-dialog" role="document">
@@ -110,7 +115,8 @@
 <div id="divTriagem" class="container py-2">
    <div class="row">
       <div class="col-8">
-         <h3 >Ticket#<?= $triagem["t_info"]->tn; ?> <a style="font-size:medium" target="_blank" href="<?= $this->config->item('url_ticketsys') ?>index.pl?Action=AgentTicketZoom;TicketID=<?= $triagem["t_info"]->id ?>"><i class="fas fa-external-link-alt"></i></a></h3>
+         <h3 >Ticket#<?= $triagem["t_info"]->tn; ?> [<?= $rotulo ?>] <a style="font-size:medium" target="_blank" href="<?= $this->config->item('url_ticketsys') ?>index.pl?Action=AgentTicketZoom;TicketID=<?= $triagem["t_info"]->id ?>"><i class="fas fa-external-link-alt"></i></a></h3>
+         <span><b>Assunto: </b><?= $triagem["t_info"]->title ?> </span>
       </div>
       <div class="col-4 text-right">
          <button type="button" class="btn btn-warning" id="btnDevolveChamado" data-toggle="modal" data-target="#modalDevolucao"><i class="fas fa-file-upload"></i> Devolver ao Nível 0</button>
@@ -147,34 +153,10 @@
          </div>
          
       </div>
-      <div class="row">
-         <div class="form-group col">
-            <p class="h5"><i class="fas fa-users"></i> Equipe</p>
-            <hr>
-         </div>
-      </div>
-      <div class="row">
-         <div class="form-group col">
-            <select class="form-control" id="slctEquipe">
-               <option value="1">Suporte Técnico</option>
-               <option value="2">Infraestrutura</option>
-            </select>
-         </div>
-         <div class="form-group col" id="linhaInfra">
-               <div class="row">
-                  <div class="col col-sm-2">Fila</div>
-                  <div class="col">
-                     <select class="form-control col" id="slctFilaInfra" name="id_fila_infra">
-                        <option value=""></option>
-                        <?php foreach ($filas_infra as $f): ?>
-                        <option value="<?= $f['id_fila'] ?>"><?= $f['nome_fila'] ?></option>
-                        <?php endforeach; ?>
-                     </select>
-                  </div>
-               </div>
-         </div>
-      </div>
-      <div class="row" id="linhaSuporte">
+   
+      <?php if ($rotulo == "SUPORTE"): ?>
+      
+         <div class="row" id="linhaSuporte">
          <div class="form-group col">
             <p class="h5"><i class="fas fa-desktop"></i> Equipamentos</p>
             <hr>
@@ -187,6 +169,22 @@
             </div>
          </div>
       </div>
+
+      <?php else: ?>
+      
+         <div class="row">
+         <div class="form-group col">
+            <p class="h5"><i class="fas fa-satellite-dish"></i> Serviços</p>
+            <hr>
+         </div>
+      </div>
+      <div class="row">
+         <div class="form-group col">
+            <div id="tblServicos" class="jsgrid"></div>
+         </div>
+      </div>
+
+      <?php endif; ?>
       
       <div class="row">
          <div class="form-group col">
@@ -195,8 +193,7 @@
             <div id="tblAnexos" class="jsgrid"></div>
          </div>
       </div>
-      
-                
+
       <div class="row" id="linhaInfoTriagem">
          <div class="form-group col">
             <p class="h5"><i class="fas fa-info-circle"></i> Informações</p>
@@ -228,4 +225,6 @@
       </div>
    </form>
 </div>
+<script type="text/javascript"> const id_fila_sigat = <?= $fila_sigat ?> </script>
+<script type="text/javascript"> const nome_fila_sigat = "<?= $rotulo ?>" </script>
 
