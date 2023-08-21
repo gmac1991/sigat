@@ -13,9 +13,6 @@
         <link rel="stylesheet" href="<?= base_url("css/custom.css") ?>">
         <link rel="stylesheet" href="<?= base_url("css/jsgrid.min.css") ?>">
         <link rel="stylesheet" href="<?= base_url("css/jsgrid-theme.min.css") ?>">
-        <link rel="stylesheet" href="<?= base_url("css/token-input.css") ?>">
-        <link rel="stylesheet" href="<?= base_url("css/token-input-sigat.css") ?>">
-        <!-- <link rel="stylesheet" href=" base_url(css/bootstrap-tokenfield.min.css)"> -->
         
         <link href="<?= base_url("fa/css/all.min.css") ?>" rel="stylesheet">
 
