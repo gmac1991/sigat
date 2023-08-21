@@ -83,14 +83,23 @@ class Chamado extends CI_Controller {
     $dados['telefone'] =            $this->input->post("telefone");
     $dados['nome_local'] =          $this->input->post("nome_local");
     $dados['comp_local'] =          str_replace(array("'","\""),"",$this->input->post("comp_local"));
-    $dados['listaEquipamentos'] =   json_decode($this->input->post("listaEquipamentos"));
-    $dados['listaServicos'] =       json_decode($this->input->post("listaServicos"));
+
+    if (NULL !== $this->input->post("listaEquipamentos")) {
+      $dados['listaEquipamentos'] = json_decode($this->input->post("listaEquipamentos"));
+    } 
+
+    if (NULL !== $this->input->post("listaServicos")) {
+      $dados['listaServicos'] =  json_decode($this->input->post("listaServicos"));
+    }
+
+   
     $dados['anexos'] =              json_decode($this->input->post("g_anexos"));
     $dados['num_ticket'] =          "Ticket#" . $this->input->post("num_ticket");
     $dados['id_usuario'] =          $_SESSION["id_usuario"];
 
       
       
+    var_dump($dados);
     $nome_usuario = $this->usuario_model->buscaUsuario($_SESSION["id_usuario"])->nome_usuario;
   
     $novo_chamado = $this->chamado_model->importaChamado($dados);

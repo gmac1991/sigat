@@ -106,7 +106,6 @@ class Chamado_model extends CI_Model {
 
                         }
 
-                        var_dump($dados['listaServicos']);
 
                         if (!empty($dados['listaServicos'])) {
                             foreach($dados['listaServicos'] as $servico) {
