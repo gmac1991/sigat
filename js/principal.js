@@ -755,7 +755,7 @@ async function carregaModeloMensagem(tipo, id_fila) {
 async function carregaFilas() {
     var out = null;
     await $.ajax({
-        url: base_url + "Admin/listar_filas/1",
+        url: base_url + "fila/listar_filas",
         type: 'GET',
         success: function(data) {
             out = data;

@@ -10,16 +10,6 @@
 				<a class="nav-link" id="pills-usuarios-tab" data-toggle="pill" href="#pills-usuarios" role="tab" aria-controls="pills-usuarios" aria-selected="true">
 				<i class="fas fa-users"></i> Usuários</a>
 			</li>
-			<!--
-				<li class="nav-item">
-					<a class="nav-link" id="pills-filas-tab" data-toggle="pill" href="#pills-filas" role="tab" aria-controls="pills-filas" aria-selected="false">
-					<i class="fas fa-project-diagram"></i> Filas</a>
-				</li>
-				<li class="nav-item">
-					<a class="nav-link" id="pills-relatorios-tab" data-toggle="pill" href="#pills-relatorios" role="tab" aria-controls="pills-relatorios" aria-selected="false">
-					<i class="fas fa-chart-pie"></i> Dashboard</a>
-				</li>
-			-->
 			<li class="nav-item">
 				<a class="nav-link" id="pills-modelos-mensagens-tab" data-toggle="pill" href="#pills-modelos-mensagens" role="tab" aria-controls="pills-modeloMensagem" aria-selected="false">
 				<i class="fas fa-comments"></i> Modelos de Mensagem</a>
