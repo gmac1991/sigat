@@ -66,4 +66,16 @@ class Triagem_model extends CI_Model {
 
         return $res->result();
     }
+
+    public function verificarChamadoAberto($id_ticket_chamado){
+        $res = array();
+        $res = $this->db->query("select id_chamado from chamado  where id_ticket_chamado  = ". $id_ticket_chamado .";");
+
+        if($res->num_rows() >= 1) {
+
+            return $res->result_array();
+
+        }
+
+    }
 }

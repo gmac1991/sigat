@@ -36,17 +36,21 @@ class Triagem extends CI_Controller {
 
       
 		    $dados['triagem']  = $this->triagem_model->buscaTicket($id_ticket); //traz info do ticket		    
-		   
+        //$this->dd->dd($dados);
 		    if (isset($dados['triagem'] )) { // se o ticket existir
 
           $dados['fila_sigat'] =  $this->config->item('conversao_id_filas')[$dados['triagem']['t_info']->queue_id];
 
+          if(isset($dados['fila_sigat'])){
+            $this->load->view('templates/cabecalho', $usuario);
 
-          $this->load->view('templates/cabecalho', $usuario);
+            $this->load->view('paginas/triagem', $dados);
 
-          $this->load->view('paginas/triagem', $dados);
-
-          $this->load->view('templates/rodape');
+            $this->load->view('templates/rodape');
+          }else{
+            header('Location: ' . base_url('/painel?v=triagem'));
+          }
+          
 			
 		    }
         else {
@@ -54,7 +58,7 @@ class Triagem extends CI_Controller {
         }
 		  }
     } else {
-      header('Location: ' . base_url(),false,403);
+      header('Location: ' . base_url('/painel'));
     }
   }
 
@@ -104,6 +108,25 @@ class Triagem extends CI_Controller {
 
 
 
+  }
+
+  public function consultar_chamado_aberto() {
+
+    if (isset($_SESSION['id_usuario'])) {
+
+      $id_ticket_chamado = $this->input->get('id_ticket_chamado');
+
+      $result = $this->triagem_model->verificarChamadoAberto($id_ticket_chamado);
+
+      header("Content-Type: application/json");
+          
+      echo json_encode($result);
+
+    }else {
+      header('Location: ' . base_url(),false,403);
+    }
+
+    
   }
 
 }

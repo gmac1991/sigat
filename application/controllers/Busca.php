@@ -13,15 +13,20 @@ class Busca extends CI_Controller {
   function index() {
 
     $t = $this->input->get("t");
-
+    $ticketbusca = $this->input->get("ticketbusca");
+    
 
     $dados = array();
 
-    $dados['termo'] = urldecode($t);
+    if(isset($t)){
+      $dados['termo'] = urldecode($t);
 
-    $dados['result'] = $this->consultas_model->buscaRapida($t);
+      $dados['result'] = $this->consultas_model->buscaRapida($t);
 
-    $this->load->view('paginas/busca',$dados);
+      $this->load->view('paginas/busca',$dados);
+    }
+
   }
+
 
 }

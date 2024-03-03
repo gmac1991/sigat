@@ -52,12 +52,58 @@ div.diff {
     
 }
 
-#tblEquipsBr, #tblTriagemBr, #tblChamadosBr tbody tr {
+#tblEquipsBr, #tblTriagemBr, #tblChamadosBr,#tblChamadosEquipBr tbody tr {
     cursor: pointer;
     font-size: 0.80rem;
 }
+
+.form-check span {
+    cursor: pointer;
+}
+
+
 
 .bg-warning td {
     background-color:#ffff99 !important;
 }
 
+#impressao {
+    display:none;
+}
+
+@media print {
+    @page {
+       size: A4 landscape; /* Pode ajustar o tamanho conforme necessário */
+       margin: 1cm; /* Margens da página */
+    }
+    #content-inservivel {
+       display: none;
+    }
+    body {
+       font-family: Arial, sans-serif;
+       font-size: 10px;
+       margin: 20px;
+    }
+    #impressao {
+        display: inline;
+    }
+
+    #impressao table thead tr th {
+        font-size: 10px;
+    }
+    .recebido {
+        border-bottom: 1px solid #000;
+        margin-top: 20px;
+        padding-bottom: 20px;
+        font-size: 13px;
+        /* width: 50%; */
+    }
+    .conferido {
+        font-size: 10px;
+    }
+    .data {
+        margin-top: 20px;
+        font-size: 13px;
+        margin-left: 35px;
+    }
+ }

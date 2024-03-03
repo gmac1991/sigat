@@ -178,7 +178,7 @@ switch (ENVIRONMENT)
  *
  * Un-comment the $assign_to_config array below to use this feature
  */
-	$assign_to_config['versao'] = '1.4.0';
+	$assign_to_config['versao'] = '1.9.0';
 	
 
 

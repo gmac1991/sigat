@@ -62,7 +62,8 @@ class Chamado_model extends CI_Model {
                 $id_local . ",'" .
                 $dados['nome_solicitante'] . "','" .
                 $dados['telefone'] . "'," .
-                $dados['id_usuario'] . ", 'ABERTO', 1, NOW(),'" .
+                $dados['id_usuario'] . ", 'ABERTO', ".
+                $dados['id_fila'] .", NOW(),'" .
                 $dados['num_ticket'] . "'," .
                 $dados['id_ticket'] . ",'" .
                 $complementoM . "','" .
@@ -110,8 +111,9 @@ class Chamado_model extends CI_Model {
                         if (!empty($dados['listaServicos'])) {
                             foreach($dados['listaServicos'] as $servico) {
             
-                                $this->db->query("insert into servico_chamado values(" . $novo_id . "," . $servico->id_servico . 
-                                ",'ABERTO', NOW())");
+                                $this->db->query("insert into servico_chamado
+                                (id_chamado_servico, id_servico_chamado, status_servico_chamado, data_ult_alteracao_servico_chamado, quantidade) values(" . $novo_id . "," . $servico->id_servico . 
+                                ",'ABERTO', NOW(), " . $servico->quantidade .");");
                             }
 
                         }
@@ -178,7 +180,7 @@ class Chamado_model extends CI_Model {
 
         
 
-        $texto_alteracao = NULL;
+        $texto_alteracao = "";
 
 
         $chamado_original = $this->db->query('select id_usuario_responsavel_chamado, 
@@ -214,19 +216,19 @@ class Chamado_model extends CI_Model {
             $novo_nome_local = $this->db->query('select nome_local from local where id_local = ' . $id_local)->row()->nome_local;
 
             $texto_alteracao .= 'alterou o local de <strong>' . $chamado_original->nome_local . '</strong>';
-            $texto_alteracao .= ' para <strong>' . $novo_nome_local . '</strong></p>';
+            $texto_alteracao .= ' para <strong>' . $novo_nome_local . '</strong>; ';
         }
 
         if ($chamado_original->telefone_chamado != $dados['telefone']) {
 
             $texto_alteracao .= 'alterou o telefone de <strong>' . $chamado_original->telefone_chamado . '</strong>';
-            $texto_alteracao .= ' para <strong>' . $dados['telefone'] . '</strong></p>';
+            $texto_alteracao .= ' para <strong>' . $dados['telefone'] . '</strong>; ';
         }
 
         if ($chamado_original->nome_solicitante_chamado != $dados['nome_solicitante']) {
 
             $texto_alteracao .= 'alterou o solicitante de <strong>' . $chamado_original->nome_solicitante_chamado . '</strong>';
-            $texto_alteracao .= ' para <strong>' . $dados['nome_solicitante'] . '</strong></p>';
+            $texto_alteracao .= ' para <strong>' . $dados['nome_solicitante'] . '</strong>; ';
         }
 
         if ($dados['id_responsavel'] != NULL) { 
@@ -236,20 +238,22 @@ class Chamado_model extends CI_Model {
 
                 if ($chamado_original->id_usuario_responsavel_chamado != NULL) { 
                     $texto_alteracao .= 'alterou o responsável de <strong>' . $chamado_original->nome_responsavel . '</strong>';
-                    $texto_alteracao .= ' para <strong>' . $novo_nome_responsavel . '</strong>';
+                    $texto_alteracao .= ' para <strong>' . $novo_nome_responsavel . '</strong>; ';
 
                 }
 
                 else { //se a alteracao do responsavel for de NULL para algum valor...
 
                     $texto_alteracao .= 'alterou o responsável';
-                    $texto_alteracao .= ' para <strong>' . $novo_nome_responsavel . '</strong>';
+                    $texto_alteracao .= ' para <strong>' . $novo_nome_responsavel . '</strong>; ';
                 }
                 
                 
             }
 
         }
+
+        
 
         if($this->db->query($q_alteraChamado)) {
 
@@ -298,8 +302,12 @@ class Chamado_model extends CI_Model {
 
             if($q_encerraChamado) {
 
-                $this->db->query("insert into interacao values(NULL, 'ENC', NOW(), ' encerrou o chamado'," 
-                . $dados['id_chamado'] . "," . $dados['id_usuario'] . " ,NULL,NULL)"); //inserindo a interacao
+                $sql = "INSERT INTO interacao
+                (id_interacao, tipo_interacao, data_interacao, texto_interacao, id_chamado_interacao, id_usuario_interacao, id_fila_ant_interacao, pool_equipamentos, pool_servicos)
+                VALUES(NULL, 'ENC', NOW(), ' encerrou o chamado', " 
+                . $dados['id_chamado'] . ", " . $dados['id_usuario'] . ", NULL, NULL, NULL)";
+                
+                $this->db->query($sql); //inserindo a interacao
 
 
                 // ------------ LOG -------------------
@@ -383,9 +391,9 @@ class Chamado_model extends CI_Model {
 
     public function buscaChamado($id_chamado, $status = "") {
 
-	   $q_buscaChamado = "select complemento_chamado, id_ticket_chamado, ticket_chamado, id_chamado, id_fila, nome_solicitante_chamado, endereco_local, nome_local, regiao_local, DATE_FORMAT(data_chamado, '%d/%m/%Y - %H:%i:%s') as data_chamado, telefone_chamado,
+	   $q_buscaChamado = "select complemento_chamado, id_ticket_chamado, ticket_chamado, id_chamado, id_fila, nome_solicitante_chamado, id_local, endereco_local, nome_local, regiao_local, DATE_FORMAT(data_chamado, '%d/%m/%Y - %H:%i:%s') as data_chamado, telefone_chamado,
         (select usuario.id_usuario from usuario where usuario.id_usuario = chamado.id_usuario_responsavel_chamado) as id_responsavel, 
-        (select fila.nome_fila from fila where fila.id_fila = chamado.id_fila_chamado) as nome_fila_chamado, prioridade_chamado, resumo_chamado
+        (select fila.nome_fila from fila where fila.id_fila = chamado.id_fila_chamado) as nome_fila_chamado, prioridade_chamado, resumo_chamado, email_nao_lido_chamado
         from local, fila, chamado
         where local.id_local = chamado.id_local_chamado and
         fila.id_fila = chamado.id_fila_chamado and
@@ -399,9 +407,19 @@ class Chamado_model extends CI_Model {
         if ($status !== "") {
             $q_buscaEquipamentos .= " AND status_equipamento_chamado in (" . $status . ")";
         }
+
+        $q_buscaServicos = "SELECT s.nome_servico, s.unidade_medida, sc.quantidade
+        FROM servico s INNER JOIN servico_chamado sc on s.id_servico = sc.id_servico_chamado
+        WHERE sc.id_chamado_servico = " . $id_chamado;
+        
+        if ($status !== "") {
+            $q_buscaServicos .= " AND status_servico_chamado not in (" . $status . ")";
+        }
         
         
         $result['equipamentos'] = $this->db->query($q_buscaEquipamentos)->result();
+
+        $result['servicos'] = $this->db->query($q_buscaServicos)->result();
 
         $result['chamado'] = $this->db->query($q_buscaChamado)->row();
         
@@ -538,9 +556,9 @@ class Chamado_model extends CI_Model {
 
         if ($id_fila > 0) {
 
-            if ($id_fila == 7) { // fila de Entrega (virtual)  
+            if ($id_fila == 99) { // fila de Entrega (virtual)  
 
-                $q .= " and entrega_chamado = 1";
+                $q .= " entrega_chamado = 1";
             } else {
 
                 $q .= " id_fila_chamado = " . $id_fila;
@@ -555,7 +573,187 @@ class Chamado_model extends CI_Model {
 
         return $this->db->query($q)->result();
     }
-	
+
+    public function listaTicketChamado($id_chamado) {
+        $this->db->select('ticket_chamado');
+        $this->db->where('id_chamado', $id_chamado);
+        $query = $this->db->get('chamado');
+
+        return $query->row();
+    }
+
+    public function buscarChamadosBloqueados($id_usuario){
+        $sql = "SELECT id_chamado, status_chamado, ticket_chamado, resumo_chamado, data_chamado 
+        FROM chamado WHERE id_usuario_responsavel_chamado = " . $id_usuario;
+
+        $busca = $this->db->query($sql);
+
+        if($busca->num_rows() >= 1) {
+
+            return $busca->result_array();
+
+        }
+
+        else{
+            return NULL;
+        }
+    }
+
+    public function listar_servicos_chamado($id_chamado){
+        
+        $q_buscaServicos = "SELECT s.id_servico, s.nome_servico, s.unidade_medida, sc.quantidade, sc.status_servico_chamado as status_servico, sc.id from servico s inner join servico_chamado sc on s.id_servico = sc.id_servico_chamado             where sc.id_chamado_servico = " . $id_chamado;
+
+          
+        $linhas = $this->db->query($q_buscaServicos)->result();
+
+        if(sizeof($linhas) >= 1){
+            return $linhas;
+        }
+
+        else{
+            return NULL;
+        }
+
+    }
+
+    public function listar_servicos($id_fila){
+
+        $sql = "SELECT id_servico, nome_servico, unidade_medida from servico
+        where id_fila_servico = {$id_fila} and status_servico = true";
+
+        $linhas = $this->db->query($sql)->result();
+
+        if(sizeof($linhas) >= 1){
+            return $linhas;
+        }
+
+        else{
+            return NULL;
+        }
+
+        return $linhas;
+    }
+
+    public function listar_servico($id){
+        $sql = "SELECT nome_servico from servico
+        where id_servico = {$id}";
+        $linha = $this->db->query($sql)->result_array();
+        
+        if($linha != NULL && $linha != ''){
+            return $linha;
+        }
+
+        else{
+            return NULL;
+        }
+
+     }
+    
+
+    public function inserir_servicos($servico){
+        $sql = "INSERT INTO servico_chamado
+        (id_chamado_servico, id_servico_chamado, status_servico_chamado, quantidade)
+        VALUES({$servico['id_chamado']}, {$servico['id_servico']}, '{$servico['status_servico']}', {$servico['quantidade']})";
+
+        $this->db->query($sql);
+    
+        // ------------ LOG -------------------
+
+        $nova_alteracao = array (
+            'id_alteracao' => NULL,
+            'data_alteracao' => date('Y-m-d H:i:s'),
+            'texto_alteracao' => "adicionou serviço: <b>" . $servico['nome_servico'] . "</b> ao chamado" ,
+            'id_chamado_alteracao' => $servico['id_chamado'],
+            'id_usuario_alteracao' => $_SESSION['id_usuario'],
+   
+         ); 
+         
+         $this->db->insert('alteracao_chamado',$nova_alteracao);
+
+
+        $log = array(
+            'acao_evento' => 'ADICIONAR_SERVICO',
+            'desc_evento' => 'ID CHAMADO: ' . $servico['id_chamado'],
+            'id_usuario_evento' => $_SESSION['id_usuario']
+        );
+        
+        $this->db->insert('evento', $log);
+
+        // -------------- /LOG ----------------
+    
+    }
+
+    public function excluir_servico($servico){
+        $sql = "DELETE FROM servico_chamado
+        WHERE id = " . $servico['id'] . "";
+
+        $this->db->query($sql);
+
+        // ------------ LOG -------------------
+
+        $nova_alteracao = array (
+            'id_alteracao' => NULL,
+            'data_alteracao' => date('Y-m-d H:i:s'),
+            'texto_alteracao' => "removeu serviço: <b>" . $servico['nome_servico'] . "</b> do chamado" ,
+            'id_chamado_alteracao' => $servico['id_chamado'],
+            'id_usuario_alteracao' => $_SESSION['id_usuario'],
+   
+         ); 
+         
+         $this->db->insert('alteracao_chamado',$nova_alteracao);
+
+
+        $log = array(
+            'acao_evento' => 'REMOVER_SERVICO',
+            'desc_evento' => 'ID CHAMADO: ' . $servico['id_chamado'],
+            'id_usuario_evento' => $_SESSION['id_usuario']
+        );
+        
+        $this->db->insert('evento', $log);
+
+        // -------------- /LOG ----------------
+    }
+
+    public function atualizar_servicos($servico){
+        $sql = "UPDATE db_sigat.servico_chamado
+        SET  quantidade={$servico['quantidade']}
+        WHERE id={$servico['id']};";
+
+        $this->db->query($sql);
+    
+        // ------------ LOG -------------------
+
+        $nova_alteracao = array (
+            'id_alteracao' => NULL,
+            'data_alteracao' => date('Y-m-d H:i:s'),
+            'texto_alteracao' => "atualizou serviço: <b>" . $servico['nome_servico'] . "</b> ao chamado" ,
+            'id_chamado_alteracao' => $servico['id_chamado'],
+            'id_usuario_alteracao' => $_SESSION['id_usuario'],
+   
+         ); 
+         
+         $this->db->insert('alteracao_chamado',$nova_alteracao);
+
+
+        $log = array(
+            'acao_evento' => 'ATUALIZAR_SERVICO',
+            'desc_evento' => 'ID CHAMADO: ' . $servico['id_chamado'],
+            'id_usuario_evento' => $_SESSION['id_usuario']
+        );
+        
+        $this->db->insert('evento', $log);
+
+        // -------------- /LOG ----------------
+    
+    }
+
+    public function zerar_chamados($chamado){
+        $sql = "UPDATE db_sigat.chamado
+        SET email_nao_lido_chamado=0
+        WHERE id_chamado={$chamado}";
+        
+        $this->db->query($sql);
+    }
 
 }
 

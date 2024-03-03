@@ -1,5 +1,5 @@
 	<div class="mt-3 mb-5 mx-3">
-		<h3 id="titulo">Administração</h3>	
+		<h3 id="titulo"><i class="fas fa-cogs"></i> Administração</h3>	
 		<hr />
 		<ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
 		<li class="nav-item">
@@ -16,8 +16,23 @@
 			</li>
 			<li class="nav-item">
 				<a class="nav-link" id="pills-locais-tab" data-toggle="pill" href="#pills-locais" role="tab" aria-controls="pills-locais" aria-selected="false">
-				<i class="fas fa-map"></i> Locais</a>
+				<i class="fas fa-home"></i> Locais</a>
 			</li>
+			<li class="nav-item">
+				<a class="nav-link" id="pills-secretarias-tab" data-toggle="pill" href="#pills-secretarias" role="tab" aria-controls="pills-secretarias" aria-selected="false">
+				<i class="fas fa-building"></i> Secretarias</a>
+			</li>
+
+			<li class="nav-item">
+				<a class="nav-link" id="pills-servicos-tab" data-toggle="pill" href="#pills-servicos" role="tab" aria-controls="pills-servicos" aria-selected="false">
+				<i class="fas fa-wrench"></i> Serviços</a>
+			</li>
+
+			<li class="nav-item">
+				<a class="nav-link" id="pills-bancadas-tab" data-toggle="pill" href="#pills-bancadas" role="tab" aria-controls="pills-bancadas" aria-selected="false">
+				<i class="fas fa-layer-group"></i> Bancadas</a>
+			</li>
+			
 		</ul>
 		
 		<div class="tab-content" id="pills-tabContent">
@@ -44,6 +59,15 @@
 			</div>
 			<div class="tab-pane fade" id="pills-locais" role="tabpanel" aria-labelledby="pills-locais">
 				<div id="locais-grid"></div>
+			</div>
+			<div class="tab-pane fade" id="pills-secretarias" role="tabpanel" aria-labelledby="pills-secretarias">
+				<div id="secretarias-grid"></div>
+			</div>
+			<div class="tab-pane fade" id="pills-servicos" role="tabpanel" aria-labelledby="pills-servicos">
+				<div id="servicos-grid"></div>
+			</div>
+			<div class="tab-pane fade" id="pills-bancadas" role="tabpanel" aria-labelledby="pills-bancadas">
+				<div id="bancadas-grid"></div>
 			</div>
 			
 		</div>

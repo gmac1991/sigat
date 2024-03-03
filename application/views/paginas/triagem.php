@@ -1,9 +1,4 @@
-<?php
-  
 
-   $rotulo = $this->config->item('id_filas')[$fila_sigat] == "REMOTO" ? "SUPORTE" : $this->config->item('id_filas')[$fila_sigat];
-
-?>
 <!-- modal Lote -->
 <div class="modal fade show" id="modalLote" tabindex="-1" role="dialog" aria-hidden="true">
      <div class="modal-dialog" role="document">
@@ -115,7 +110,7 @@
 <div id="divTriagem" class="container py-2">
    <div class="row">
       <div class="col-8">
-         <h3 >Ticket#<?= $triagem["t_info"]->tn; ?> [<?= $rotulo ?>] <a style="font-size:medium" target="_blank" href="<?= $this->config->item('url_ticketsys') ?>index.pl?Action=AgentTicketZoom;TicketID=<?= $triagem["t_info"]->id ?>"><i class="fas fa-external-link-alt"></i></a></h3>
+         <h3 >Ticket#<?= $triagem["t_info"]->tn; ?> [<?=  $this->config->item('id_filas')[$fila_sigat] ?>] <a style="font-size:medium" target="_blank" href="<?= $this->config->item('url_ticketsys') ?>index.pl?Action=AgentTicketZoom;TicketID=<?= $triagem["t_info"]->id ?>"><i class="fas fa-external-link-alt"></i></a></h3>
          <span><b>Assunto: </b><?= $triagem["t_info"]->title ?> </span>
       </div>
       <div class="col-4 text-right">
@@ -154,7 +149,7 @@
          
       </div>
    
-      <?php if ($rotulo == "SUPORTE"): ?>
+      <?php if ( $this->config->item('id_filas')[$fila_sigat] == "SUPORTE"): ?>
       
          <div class="row" id="linhaSuporte">
          <div class="form-group col">
@@ -225,6 +220,5 @@
       </div>
    </form>
 </div>
-<script type="text/javascript"> const id_fila_sigat = <?= $fila_sigat ?> </script>
-<script type="text/javascript"> const nome_fila_sigat = "<?= $rotulo ?>" </script>
+
 

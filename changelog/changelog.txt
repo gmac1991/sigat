@@ -1,0 +1,321 @@
+SIGAT Changelog
+===============
+
+[1.9.0] - 2024-03-04
+
+== Adicionado ==
+
+[Geral]
+Novas filas: Gestão de Redes, Gestão de Telefonia e Infraestrutura
+
+[Chamado]
+Aba 'Infraestrutura', para registrar os serviços das filas Gestão de Redes, Gestão de Telefonia e Infraestrutura
+Aba 'Reparos', para registrar os reparos nos equipamentos
+Botão na aba 'Equipamentos' que leva à tela de informações por equipamento
+Botão na aba 'Equipamentos' que imprime a ficha do equipamento (não implementado)
+Campo 'Complemento' na impressão do chamado
+
+[Interação]
+Lista de modelos de mensagem
+Finalização de serviços da aba 'Infraestrutura'
+Texto da interação é mantido caso feche acidentalmente a tela
+
+[Busca]
+Quando o termo buscado traz exatamente um equipamento, a busca agora mostra os 10 últimos chamados deste equipamento
+
+[Admin]
+Seção 'Usuários'
+--> Inclusão de novos usuários
+--> Permissionamento de 'Triagem' e 'Encerramento'
+--> Filtro por 'Nome completo', 'Login de rede' e 'Autorização'
+--> O clique na linha do usuário direciona para a tela de informações daquele usuário
+
+Seção 'Modelos de Mensagem'
+--> Cadastro de modelos de texto por fila e por tipo de atendimento
+--> Filtro por 'Texto', 'Fila' e 'Tipo'
+
+Seção 'Locais'
+--> Cadastro de locais atendidos, por secretaria e região
+--> Filtro por 'Nome', 'Endereço' e 'Secretaria' e 'Região'
+
+Seção 'Secretarias'
+--> Filtro por 'Nome' e 'Sigla'
+
+Seção 'Serviços'
+--> Cadastro de serviços por fila
+--> Filtro por 'Serviço' e 'Fila'
+
+Seção 'Bancada'
+--> Cadastro de bancadas de reparo
+
+[Remessas de inservíveis]
+Tabela com as remessas geradas, com três status 'Aberta', 'Fechada', 'Erro' e 'Entregue'
+Visualização da remessa, contendo o laudo por equipamento e com funções de impressão e upload de remessa assinada
+
+[Usuário]
+Tela restrita ao grupo Master de visualização de informações sobre o usuário, contendo permissionamento, acompanhamento de atividades, chamados bloqueados no momento e data do último acesso
+
+[Equipamento]
+Tela de visualização de informações sobre o equipamento, contendo seus últimos chamados e função de ping de rede e informações de hardware do BGInfo
+
+[Reparo]
+Tela de registro de reparo, restrita à fila 'Manutenção', que permite o registro de serviços, envio para garantia e baixa como inservível
+Envio automático do laudo técnico em caso de baixa como inservível para o solicitante, através da API do Otobo
+
+[Triagem]
+Bloqueio que impede mais de um usuário trabalhar na mesma solicitação ou finalizá-la
+Exibição do campo 'Assunto' enviado pelo solicitante
+
+[Outros]
+Novas opções do arquivo de configuração
+
+== Modificado ==
+
+[Chamado]
+A aba 'Descrição completa' mudou para 'Comunicação', permitindo a comunicação direta com o solicitante via e-mail através da API do Otobo, com envio de anexo, desde que o chamado esteja bloqueado.
+Os itens da aba 'Comunicação' agora são mostrados na ordem do mais recente para o mais antigo
+
+[Outros]
+O changelog foi trocado para modo texto simples (changelog.txt) e armazenado na pasta 'changelog'
+
+== Corrigido ==
+
+[Triagem]
+Erro que permitia o usuário inserir um equipamento que ainda constava como aberto em chamado
+
+[Chamado]
+Erro de formatação no histórico ao se alterar dois ou mais dados do chamado
+
+[Interação]
+Erro ao colocar equipamentos com identificação alfanumérica em espera
+
+[Outros]
+Pequenos ajustes visuais
+
+== Removido ==
+
+[Interação]
+Tipo 'Classificar como inservível'
+
+[Outros]
+Tabela de configuração
+
+-----FIM------
+
+[1.4.0] - 2023-03-07
+
+== Adicionado ==
+
+[Busca]
+Busca por número de lacre
+Número do chamado clicável na busca rápida
+
+[Painel]
+Coluna 'Região', referente ao local do chamado
+Impressão dos chamados pelo painel
+Botão para resetar os filtros do painel
+
+[Chamado]
+Botão para impressão do chamado
+Fechamento manual do chamado para casos excepcionais
+Limitação de 3 bloqueios por usuário do grupo Operação na fila Atendimento Remoto
+
+== Modificado == 
+
+[Painel]
+Permite a visualização dos chamados sem restrição do responsável atual
+As colunas 'Prioridade' e 'Status' foram agrupadas
+
+[Interação]
+Os equipamentos agora são ordenados na tela de registro de interação
+
+== Corrigido ==
+
+[Chamado]
+Alterações nos equipamentos do chamado não eram persistidas
+Atribuição incorreta de status para todos os chamados de um equipamento
+Horário dos artigos do Otobo com exibição incorreta (+3h)
+Impossibilidade de finalizar o chamado após remover um equipamento
+
+[Interação]
+Sinalização de entrega removida incorretamente
+
+[Arquivo]
+Erro de ordenação no painel do arquivo
+
+[Outros]
+Pequenos ajustes visuais
+
+-----FIM------
+
+[1.3.7a] - 2023-01-20
+
+== Corrigido ==
+
+[Chamado]
+Patch para permitir parse de imagens PNG pela biblioteca FPDF via HTTPS
+
+-----FIM------
+
+[1.3.7] - 2022-10-20
+
+== Corrigido ==
+
+[Painel]
+Ordenação incorreta dos chamados 
+Clique com o botão direito dispara o evento de abrir a tela do chamado
+
+== Adicionado ==
+
+[Painel]
+Clique com o botão de rolagem (scroll) no painel de chamados abre a tela do chamado em
+outra aba
+Filtros do painel de chamados são salvos em cookies
+
+[Outros]
+Link para o changelog no rodapé
+
+-----FIM------
+
+[1.3.6] - 2022-10-11
+
+== Adicionado ==
+
+[Painel]
+O botão de cada fila exibe o total de chamados
+
+== Modificado ==
+
+[Painel]
+Data de abertura não exibe mais a hora, minuto e segundo da criação do chamado
+
+-----FIM------
+
+[1.3.5] - 2022-09-29
+
+== Corrigido ==
+
+[Interação]
+Contagem incorreta de equipamentos pendentes
+
+-----FIM------
+
+[1.3.4] - 2022-09-28
+
+== Modificado ==
+
+[Busca]
+Os resultados da busca rápida agora busca os dez últimos registros
+[Arquivo]
+O arquivo agora traz os últimos 500 registros
+[Interação]
+A tela de registro de interação foi ligeiramente diminuída para caber em telas menores
+
+-----FIM------
+
+[1.3.3] - 2022-09-28
+
+== Corrigido ==
+
+[Interação]
+Timestamps de alteracões de equipamentos no chamado não eram registrados
+Finalização não esperada do chamado quando havia equipamentos em espera
+[Chamado]
+Exibição de quantidade incorreta de anexos buscados do OTRS
+
+== Adicionado ==
+
+[Chamado]
+Novo botão para exibir o endereço do local do chamado
+Alteração de prioridade é registrada no log de eventos e no histórico do chamado
+
+== Removido ==
+
+[Painel]
+Atualização automática dos painéis removida
+
+-----FIM------
+
+[1.2.3] - 2022-09-04
+
+== Corrigido ==
+
+[Busca]
+Erro ao usar a busca rápida
+
+== Adicionado ==
+
+[Painel]
+A última fila visitada agora é gravada em cookie para melhorar a navegação
+
+-----FIM------
+
+[1.2.2] - 2022-07-04
+
+== Corrigido ==
+
+[Chamado]
+Retornado valor 0 para ID do chamado após a importação.
+[Interação]
+Registro duplicado de interações do tipo Entrega
+
+-----FIM------
+
+[1.2.1] - 2022-06-27
+
+== Corrigido ==
+
+[Chamado]
+Remoção indevida de equipamentos
+
+-----FIM------
+
+[1.2.0] - 2022-06-24
+
+== Corrigido ==
+
+[Chamado]
+Falha ao inserir novo equipamento
+Remoção indevida de equipamentos
+Rodapé sobrepondo a tabela de equipamentos
+
+[Interação]
+Texto do registro de falha de entrega não é persistido
+Renderização do laudo técnico com dados inconsistentes
+Criação de interação inválida após erros no envio de arquivos
+
+[Triagem]
+Usuário pode ter acesso à view de Triagem sem ter permissão
+
+== Modificado ==
+
+[Chamado]
+Sinalização de equipamentos em aberto na lista de equipamentos
+
+== Adicionado ==
+
+[Triagem]
+Comunicação com OTRS diretamente via API (devolução, importação e encerramento)
+Painel com as informações em tempo real obtidos do OTRS
+Descrição do ticket separado por artigo na tela de triagem
+Download dos anexos diretamente da base de dados do OTRS
+
+[Chamado] 
+Descrição do ticket separado por artigo na tela de chamado
+Sinalização de prioridade no chamado
+Download dos anexos diretamente da base de dados do OTRS
+
+[Painel]
+Coluna de percentual de conclusão no painel de chamados
+Indicação visual do tempo decorrido desde a última interação no painel de chamados
+
+[Busca]
+Pesquisa pelo número do chamado na busca rápida
+
+== Removido ==
+
+[Triagem]
+Removido armazenamento de tickets para triagem
+Removido armazenamento do conteúdo dos anexos
+
+-----FIM------

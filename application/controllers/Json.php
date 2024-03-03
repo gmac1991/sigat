@@ -43,6 +43,12 @@ class Json extends CI_Controller {
 
 
     public function interacao() {
+        //altera o nome do arquivo
+        $nomeArquivo = time().'-'.$arquivo['name'];
+
+        $rotaArquivo = $_SERVER['DOCUMENT_ROOT'].'/portal_email/uploads/'.$nomeArquivo;
+
+        $arquivoNovo = explode('.',$arquivo['name']);
 
         if (isset($_SESSION['id_usuario'])) {
 
@@ -89,7 +95,7 @@ class Json extends CI_Controller {
 
             $r_interacao = $this->db->query($busca)->result_array();
 
-            $busca_ultimo = "SELECT id_interacao FROM interacao WHERE id_chamado_interacao = " . $id_chamado . " ORDER BY id_interacao DESC limit 1";
+            $busca_ultimo = "SELECT id_interacao FROM interacao WHERE id_chamado_interacao = " . $id_chamado . " and tipo_interacao not in('INSERVIVEL_REPARO') ORDER BY id_interacao DESC limit 1";
 
             $r_ult_interacao = $this->db->query($busca_ultimo)->row_array();
 
@@ -339,15 +345,18 @@ class Json extends CI_Controller {
 
            $q_buscaStatusEquipamentos = "select status_equipamento_chamado from equipamento_chamado where equipamento_chamado.id_chamado_equipamento = " . $id_chamado;
 
+           $q_buscaStatusServicos = "SELECT status_servico_chamado from servico_chamado WHERE id_chamado_servico = {$id_chamado}";
 
             $result = $this->db->query($q_buscaChamado)->row_array();
 
             $result['nome_solicitante_chamado'] = str_replace(array('"', "'"), '', $result['nome_solicitante_chamado']);
+
             
             //$result['descricao_chamado'] = strip_tags($result['descricao_chamado'],$this->tags_permitidas);
 
             
             $result['status_equipamentos'] = $this->db->query($q_buscaStatusEquipamentos)->result_array();
+            $result['status_servicos'] = $this->db->query($q_buscaStatusServicos)->result_array();
             
 
             header("Content-Type: application/json");
@@ -390,26 +399,40 @@ class Json extends CI_Controller {
 
     public function anexos_chamado() {
         $id_chamado = $this->input->post("id_chamado");
+        // $id_ticket = $this->input->post("id_ticket");
+
+        //var_dump($id_chamado);
+
         if (isset($_SESSION['id_usuario'])) {
             $anexos = array();
 			$q_anexos_sigat = "select id_anexo_otrs from anexos_otrs where id_chamado_sigat = " . $id_chamado;
             $q = $this->db->query($q_anexos_sigat);
             if ($q->num_rows() >= 1) {
                 $db_otrs = $this->load->database('otrs', TRUE);
-
-                    foreach ($q->result() as $l) {
-                        $q_buscaAnexoOTRS = "SELECT id as id_anexo_otrs, filename as nome_arquivo_otrs FROM article_data_mime_attachment
-                                    WHERE disposition in ('attachment','inline') AND id = " . $l->id_anexo_otrs;
+                
+                foreach ($q->result() as $l) {
+                    $q_buscaAnexoOTRS = "SELECT id as id_anexo_otrs, filename as nome_arquivo_otrs FROM article_data_mime_attachment
+                                    WHERE disposition in ('','attachment','inline') AND id = " . $l->id_anexo_otrs;
                         array_push($anexos,$db_otrs->query($q_buscaAnexoOTRS)->row());
                     }
                 
                
-                    
+            // $db_otrs = $this->load->database('otrs', TRUE);
 
-                
-            }
+            // foreach ($q->result() as $l) {
+            //     $q_buscaAnexoOTRS = "SELECT id as id_anexo_otrs, filename as nome_arquivo_otrs FROM article_data_mime_attachment
+            //                 WHERE disposition in ('attachment','inline') AND id = " . $l->id_anexo_otrs;
+            //     array_push($anexos,$db_otrs->query($q_buscaAnexoOTRS)->row());
+            // }
+
+            
             header("Content-Type: application/json");
             echo json_encode($anexos);
+        }
+
+                
+            
+            
         }
         else {
             header('HTTP/1.0 403 Forbidden');
@@ -539,11 +562,17 @@ class Json extends CI_Controller {
     }
 
     public function status_equipamento() {
-        $statusEquip = $this->equipamento_model->buscaStatusEquipamento($_POST['e_status']);
-    
+        $statusEquip = $this->equipamento_model->buscaStatusEquipamento($_POST['e_status'], $_POST['isArray']);
         header("Content-Type: application/json");
         echo json_encode($statusEquip);
     }
+
+    /* public function statuses_equipamento() {
+        $statusEquip = $this->equipamento_model->buscaStatusesEquipamento($_POST['e_status']);
+        //$this->dd->dd($statusEquip);
+        header("Content-Type: application/json");
+        echo json_encode($statusEquip);
+    } */
 
     
 
@@ -801,29 +830,10 @@ class Json extends CI_Controller {
     }
 
 
-    public function listar_servicos_chamado($id_chamado) {
-        if (isset($_SESSION['id_usuario'])) {
-            
-            $q_buscaServicos = "SELECT s.nome_servico, sc.status_servico_chamado as status_servico from servico s 
-            inner join servico_chamado sc on s.id_servico = sc.id_servico_chamado 
-            where sc.id_chamado_servico = " . $id_chamado;
-          
-            $linhas = $this->db->query($q_buscaServicos)->result();
-            
-            header("Content-Type: application/json");
-
-            echo json_encode($linhas);
-
-        } else {
-            header('HTTP/1.0 403 Forbidden');
-        }
-    }
-    
-
     public function usuarios() {
         if (isset($_SESSION['id_usuario'])) {
             
-            $busca = $this->db->query("select * from usuario where status_usuario = 'ATIVO' order by nome_usuario");
+            $busca = $this->db->query("select * from usuario where status_usuario = true order by nome_usuario");
 
             $result = $busca->result_array();
 
@@ -864,7 +874,7 @@ class Json extends CI_Controller {
                     if (($bloqueados < 3 || $auto_usuario > 2) || $chamado->row()->id_fila_chamado !== "1") {
 
                         $this->db->query("UPDATE chamado set id_usuario_responsavel_chamado = " . $id_usuario .
-                        " WHERE id_chamado = " . $id_chamado);
+                        ", email_nao_lido_chamado=0 WHERE id_chamado = " . $id_chamado);
 
                         // ------------ LOG -------------------
                         $log = array(
@@ -888,6 +898,7 @@ class Json extends CI_Controller {
                 }
                 else {
                     $nome_responsavel = $this->db->query("select nome_usuario from usuario where id_usuario = " . $id_responsavel)->row()->nome_usuario;
+                    $this->dd->dd($nome_responsavel);
                     echo "Chamado bloqueado por " + $nome_responsavel;
                 }
             } else {

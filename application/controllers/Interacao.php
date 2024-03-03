@@ -9,11 +9,16 @@ class Interacao extends CI_Controller {
 
     function __construct() {
         parent::__construct();
-        
+
+        $this->load->library('form_validation');
         $this->load->model("chamado_model"); //carregando o model chamado
         $this->load->model("interacao_model"); //carregando o model interacoes
         $this->load->model("usuario_model"); //carregando o model usuario
         $this->load->model("equipamento_model"); //carregando o model usuario
+        $this->load->model("inservivel_model"); //carregando o model usuario
+        $this->load->model("reparo_model"); //carregando o model usuario
+        $this->load->model("bancada_model"); //carregando o model usuario
+
 
         
     }
@@ -38,21 +43,283 @@ class Interacao extends CI_Controller {
         }
         
     }
+    public function registrar_interacao_reparo() {
+        if (isset($_SESSION['id_usuario'])){
+            $dados = array();
+
+            $dados['texto'] = $this->input->post('txtInteracaoReparo');
+            $dados['id_chamado'] = $this->input->post('id_chamado');
+            $dados['id_reparo'] = $this->input->post('id_reparo');
+            $dados['tipo'] = $this->input->post('tipo');
+            $dados['id_fila'] = 3;
+            $dados['id_fila_ant'] = NULL;
+            $dados['equip_atendidos'] = array(0 => $this->input->post('num_equipamento'));
+            $dados['id_usuario'] = $this->input->post('id_usuario');
+
+            $fase1 = FALSE;
+            $fase2 = FALSE;
+
+            switch ($dados['tipo']) {
+                case 'INSERVIVEL_REPARO':
+
+                    $reparo = $this->reparo_model->buscarReparo($dados['id_reparo']);
+
+                    $libera_bancada = $this->bancada_model->atualizarBancada($reparo->id_bancada_reparo,0);
+
+                   
+
+                    if ($libera_bancada) {
+                        //inserindo na ultima remessa 
+                        $equip_inserv = $dados['equip_atendidos'][0];
+                        $remessa_aberta = $this->inservivel_model->lista_remessa_aberta();
+                        $finaliza_reparo = $this->reparo_model->atualizarReparo($dados['id_reparo'],"FINALIZADO", $_SESSION['id_usuario'],$remessa_aberta->id_remessa_inservivel);
+                        if ($remessa_aberta->pool_equipamentos == null) {
+                            $equipamentos = implode("::", $dados['equip_atendidos']);
+                            $this->inservivel_model->alterar_pool($remessa_aberta->id_remessa_inservivel, $equipamentos);
+                        } else {
+                            $equips = explode("::", $remessa_aberta->pool_equipamentos);
+                            array_push($equips, $equip_inserv);
+                            $equipamentos = implode("::", $equips);
+                            $this->inservivel_model->alterar_pool($remessa_aberta->id_remessa_inservivel, $equipamentos);
+                        }
+
+                        $fase1 = $finaliza_reparo ? $finaliza_reparo : FALSE;
+                    }
+                    break;
+                case 'SERVICO_REPARO':
+                    $reparo = $this->reparo_model->buscarReparo($dados['id_reparo']);
+                    $libera_bancada = $this->bancada_model->atualizarBancada($reparo->id_bancada_reparo, 0);
+                    $finaliza_reparo = $this->reparo_model->atualizarReparo($dados['id_reparo'],"FINALIZADO");
+
+                    break;
+            }
+
+            if ($fase1) {
+
+                $fase2 = $this->interacao_model->registraInteracao($dados);
+
+                $fase2 = $fase2 == NULL ? TRUE : FALSE;
+
+            }
+            
+
+            $result = array();
+            $result['operacao'] = $fase1 && $fase2;
+
+            if ($fase1 && $fase2) {
+                $res['status'] = 200;
+                $res['mensagem'] = "Operação realizada com sucesso.";
+
+                if ($dados['tipo'] == 'INSERVIVEL_REPARO') {
+                    /* $dados = $this->chamado_model->buscaChamado($dados['id_chamado'],"'ENTREGA'"); */
+                    $laudo = $this->inservivel_model->lista_laudo_equipamento($equip_inserv);
+                    $nome_usuario_atual = $this->usuario_model->buscaUsuario($_SESSION['id_usuario'])->nome_usuario;
+                    $nome_arquivo = "Laudo_Equipamento_{$equip_inserv}.pdf";
+                    $patch_arquivo = "{$this->config->item('caminho_termos')}Laudo_Equipamento_{$equip_inserv}.pdf";
+
+                    $this->load->library('pdf');
+                    $pdf = new PDF();
+                    $pdf->AliasNbPages();
+                    $pdf->AddPage();
+                    $pdf->SetFont('Arial','B',18);
+                    $pdf->Cell(0,10,'Laudo '.utf8_decode('Técnico'),0,0,'C');
+                    $pdf->Ln(10);
+                    $pdf->SetFont('Arial','',11);
+                    $pdf->Cell(0,10,"Documento gerado em " . date('d/m/Y - H:i:s'),0,0,'R');
+        
+                    $pdf->Ln(15);
+                    $pdf->SetFont('Arial','B',12);
+                    $pdf->Cell(55,10,$laudo->ticket_chamado,1,0,'L');
+                    $pdf->SetFont('Arial','B',12);
+                    $pdf->Cell(38,10,'Data de abertura',1,0,'R');
+                    $pdf->SetFont('Arial','',12);
+                    $pdf->Cell(40,10,date('d/m/Y H:i:s', strtotime($laudo->data_chamado)),1,0,'C');
+                    $pdf->SetFont('Arial','B',12);
+                    $pdf->Cell(15,10,"SIGAT",1,0,'L');
+                    $pdf->SetFont('Arial','',12);
+                    $pdf->Cell(0,10,"#".$laudo->id_chamado,1,0,'L');
+                    
+                    $pdf->Ln();
+                    $pdf->SetFont('Arial','B',12);
+                    $pdf->Cell(25,10,'Solicitante',1);
+                    $pdf->SetFont('Arial','',12);
+                    $pdf->Cell(0,10,utf8_decode($laudo->nome_solicitante_chamado),1);
+                    $pdf->Ln();
+                    $pdf->SetFont('Arial','B',12);
+                    $pdf->Cell(25,10,'Local ',1);
+                    $pdf->SetFont('Arial','',11);
+                    $pdf->Cell(0,10,utf8_decode($laudo->nome_local),1);
+                    $pdf->Ln();
+                    $pdf->Ln();
+                    $pdf->SetFont('Arial','B',13);
+                    $pdf->Cell(0,10,"Equipamento",0,0,'C');
+                    $pdf->Ln();
+                    $pdf->SetFont('Arial','B',12);
+                    $pdf->Cell(48,10,'Num.',1,0,'C');
+                    $pdf->Cell(0,10,utf8_decode('Descrição'),1,0,'C');
+                    $pdf->SetFont('Arial','',12);
+                    $pdf->Ln();
+                    $pdf->Cell(48,10,$equip_inserv,1,0,'');
+                    $pdf->Cell(0,10,utf8_decode($laudo->descricao_equipamento),1,0,'');
+                    $pdf->Ln();
+                    $pdf->SetFont('Arial','B',14);
+                    $pdf->Cell(0,10,utf8_decode('LAUDO'),1,0,'C');
+                    $pdf->Ln();
+                    $pdf->SetFont('Arial','',12);
+                    $pdf->Multicell(0,8,utf8_decode($laudo->texto_interacao), 1, 1);
+                    $pdf->SetFont('Arial','I',11);
+                    $pdf->Cell(0,10,utf8_decode("Elaborado por " . $nome_usuario_atual . " em ") . 
+                    date('d/m/Y - H:i:s', strtotime($laudo->data_fim_reparo)),0,0,'R');
+
+                    $pdf->Output('F', $patch_arquivo, TRUE);
+
+                    if (file_exists($patch_arquivo)) {
+                        $id_ticket_chamado = $laudo->ticket_chamado;
+                        $id_ticket_chamado = explode('#', $id_ticket_chamado);
+                        $id_ticket_chamado = end($id_ticket_chamado);
+
+                        // configuração API Otobo
+                        $api_url = $this->config->item('url_ticketsys_api');
+                        $user = $this->config->item('ticketsys_login');
+                        $pwd = $this->config->item('ticketsys_pwd');
+                        $url_otobo = $api_url."Ticket/" . $laudo->id_ticket_chamado . "?UserLogin=".$user."&Password=".$pwd;
+                        $responsavel_otobo = strtolower($this->interacao_model->buscaSolicitanteOtobo($laudo->id_ticket_chamado));
+                        $url_api_ldap = "{$this->config->item('api_ldap')}ldap/{$responsavel_otobo}";
+
+                        $data_arr = array();
+                        $fp = fopen($patch_arquivo, "rb");
+                        $binario = fread($fp, filesize($patch_arquivo));
+                        fclose($fp);
+
+                        $data_arr = array("Attachment" => array(
+                            "Content" => base64_encode($binario),
+                            "ContentType" => "application/pdf",
+                            "Filename" => $nome_arquivo
+                        ));
+
+                        $curl = curl_init();
+                        curl_setopt($curl, CURLOPT_URL, $url_api_ldap);
+                        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+                        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'GET');
+                        curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+                        // SOMENTE DEV
+                        if (ENVIRONMENT == 'development') {
+                            curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
+                            curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
+                        }
+                        $res_ldap = json_decode(curl_exec($curl));
+                        curl_close($curl);
+
+                        if ($res_ldap != null) {
+                            $responsavel_otobo = $res_ldap->commonName;
+                        } else {
+                            $responsavel_otobo = $laudo->nome_solicitante_chamado;
+                        }
+
+                        $data_arr += array(
+                            "Article" => array(
+                                "Subject" => "Re: Ticket#$id_ticket_chamado - Laudo técnico - $equip_inserv",// titulo
+                                "From" => "$nome_usuario_atual via SIGAT<informatica@sorocaba.sp.gov.br>",
+                                "Body" => "Caro(a) {$responsavel_otobo},<br><br>
+                                O equipamento {$equip_inserv} vinculado a este ticket, solicitado por {$laudo->nome_solicitante_chamado}, foi laudado tecnicamente como inservível.<br>
+                                Encaminhamos anexo o laudo técnico do referido equipamento.
+                                <br><br>Por favor, ao entrar em contato conosco, tenha em mãos o número do ticket criado ou <u><strong>responda sempre neste e-mail</strong></u>.<br><br>--<br>Atenciosamente,<br><strong>Central de Serviços de Tecnologia da Informação</strong><br>Prefeitura Municipal de Sorocaba<br>Av. Eng. Carlos Reinaldo Mendes - Paço Municipal<br>email: <u><strong>informatica@sorocaba.sp.gov.br</strong></u></span>",
+                                "ContentType" => "text/html; charset=utf8",
+                                "IsVisibleForCustomer" => 1,
+                                "CommunicationChannel" => 'Email',
+                                "TicketNumber" => $laudo->ticket_chamado
+                            )
+                        );
+
+                        $json_data = json_encode($data_arr);
+                        $curl = curl_init();
+                        curl_setopt($curl, CURLOPT_URL, $url_otobo);
+                        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+                        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'PATCH');
+                        curl_setopt($curl, CURLOPT_POSTFIELDS, $json_data);
+                        curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+                        // SOMENTE DEV
+                        if (ENVIRONMENT == 'development') {
+                            curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
+                            curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
+                        }
+
+                        $res_otobo = json_decode(curl_exec($curl));
+                        curl_close($curl);
+        
+                        if (isset($res->Error)) {
+                            $res = array(
+                                "status" => 500,
+                                "error" => true,
+                                "mensagem" => "Otobo não respondeu"
+                            );
+                        } else {
+                            $arquivo = $this->interacao_model->buscarAnexoOtrs($res_otobo, "application/pdf")[0];
+        
+                            try {
+                                $this->interacao_model->insereAnexoSigat($dados['id_chamado'], $arquivo->id_anexo_otrs, $arquivo->nome_arquivo_otrs);
+        
+                                if (file_exists($patch_arquivo)) {
+                                    unlink($patch_arquivo);
+                                    /* $this->interacao_model->logEnviarEmail($laudo->id_chamado); */
+                                }
+        
+                                $res = array(
+                                    "status" => 200,
+                                    "error" => false,
+                                    "mensagem" => null
+                                );
+                            } catch (\Throwable $th) {
+                                $res = array(
+                                    "status" => 500,
+                                    "error" => true,
+                                    "mensagem" => "Ocorreu um erro ao tentar enviar o laudo do equipamento."
+                                );
+                            }    
+                        }
+                    }
+                }
+            } else {
+                $res['status'] = 500;
+                $res['mensagem'] = "Operação retornou erro.";
+            }
+
+            http_response_code($res['status']);
+            header('Content-Type: application/json');
+            echo json_encode($res);
+
+            /* $this->interacao_model->registraInteracao($dados); */
+
+            // if inservivel
+            // dar load no model_inservivel
+        }
+    }
       
     public function registrar_interacao() {
     
         $dados = array();
 
-        $dados['texto'] = $this->input->post('txtInteracao');
-        $dados['id_chamado'] = $this->input->post('id_chamado');
-        $dados['tipo'] = $this->input->post('tipo');
-        $dados['situacao'] = $this->input->post('situacao');
-        $dados['id_fila'] = $this->input->post('id_fila');
-        $dados['id_fila_ant'] = $this->input->post('id_fila_ant');
-        $dados['equip_atendidos'] = $this->input->post('equipamentos_atendidos');
-        $dados['id_usuario'] = $this->input->post('id_usuario');
+        $dados['texto'] =                   $this->input->post('txtInteracao');
+        $dados['id_chamado'] =              $this->input->post('id_chamado');
+        $dados['tipo'] =                    $this->input->post('tipo');
+        $dados['situacao'] =                $this->input->post('situacao');
+        $dados['id_fila'] =                 $this->input->post('id_fila');
+        $dados['id_fila_ant'] =             $this->input->post('id_fila_ant');
+        $dados['equip_atendidos'] =         $this->input->post('equipamentos_atendidos');
+        $dados['servicos_atendidos'] =      $this->input->post('servicos_atendidos');
+        $dados['id_servicos_atendidos'] =   $this->input->post('id_servicos_atendidos');
+        $dados['id_usuario'] =              $this->input->post('id_usuario');
+        
 
-        //var_dump($dados);
+        if (null !== $this->input->post('servicos_atendidos'))
+        {
+            $dados['nome_servico'] = [];
+            foreach ($dados['servicos_atendidos'] as $servico) {
+                array_push($dados['nome_servico'], $this->chamado_model->listar_servico($servico)[0]['nome_servico']);
+            }
+
+        }
+        
         
         $this->interacao_model->registraInteracao($dados);
     
@@ -143,12 +410,12 @@ class Interacao extends CI_Controller {
 
                 $dados['tipo'] = 'FALHA_ENTREGA';
                 $dados['txtFalhaEntrega'] = $this->input->post('txtFalhaEntrega');
-
+                //var_dump($this->input->post('txtFalhaEntrega'));
 
             }
 
             else {
-
+                $dados['txtFalhaEntrega'] = $this->input->post('txtFalhaEntrega');
                 $dados['tipo'] = 'TENTATIVA_ENTREGA';
 
 
@@ -470,6 +737,173 @@ class Interacao extends CI_Controller {
             header('HTTP/1.0 404 Not Found');
         }
         
+    }
+
+    public function enviar_email() {
+        if (isset($_SESSION['id_usuario'])) {
+            
+            // validação para caso envie arquivo maior que o servidor PHP aceita            
+            $this->form_validation->set_rules('conteudo', 'Conteudo', 'required');
+            if ($this->form_validation->run() == TRUE) {
+                $dados = array();
+                $data_arr = array();
+                $dados['conteudo'] = $this->input->post("conteudo");
+                $anexo = $this->input->post("anexos");
+                $nome_usuario = $this->usuario_model->buscaUsuario($_SESSION["id_usuario"])->nome_usuario;
+                $id_ticket = $this->input->post("id_ticket_chamado");
+                $id_chamado = $this->input->post("id_chamado");
+                $id_ticket_chamado = $this->chamado_model->listaTicketChamado($id_chamado);
+                $id_ticket_chamado = explode('#', $id_ticket_chamado->ticket_chamado);
+                $id_ticket_chamado = end($id_ticket_chamado);
+                $assinatura = "
+                    Atenciosamente,
+                    <br>{$nome_usuario}<br>
+                    Coordenadoria Geral de TI<br>
+                    Secretaria de Administração<br>
+                    Prefeitura Municipal de Sorocaba<br>
+                    Email: <a href='mailto:informatica@sorocaba.sp.gov.br'>informatica@sorocaba.sp.gov.br</a><br>
+                    Telefone: <a href=tel:3238-2174>3238-2174</a>
+                ";
+
+                $api_url = $this->config->item('url_ticketsys_api');
+                $user = $this->config->item('ticketsys_login');
+                $pwd = $this->config->item('ticketsys_pwd');
+                $url = $api_url."Ticket/" . $id_ticket . "?UserLogin=".$user."&Password=".$pwd;
+                //$url = $api_url."Ticket/" . $id_ticket . "?UserLogin=sigat&Password=A12345678";
+
+                if (isset($_FILES['anexoEmail'])) { //caso tenha anexo
+                    $this->load->library('files');
+                    $arquivos = $_FILES['anexoEmail'];
+
+                    //Diretório onde a anexo será gravada temporariamente
+                    $dirToSave = $this->config->item('caminho_termos');
+                    //Limite do tamanho máximo que a anexo deve ter
+                    $lengthLimit = $this->config->item('limit_size_file'); //8 MB por arquivo
+                    //Extensões permitidas para os arquivos ou * para todos
+                    $fileExtension = array('*');
+                    //Inicializa os parametros necessários para upload da anexo
+                    $this->files->initialize( $dirToSave, $lengthLimit, $lengthLimit, $fileExtension );
+                    //Verifica se alguma anexo foi selecionada
+                    $anexo = isset( $_FILES['anexoEmail'] ) ? $_FILES['anexoEmail'] : null;
+
+                    if( !is_null( $anexo ) ) {
+                        $anexos = array();
+                        //Seta o arquivo para upload
+                        $this->files->setFile( $anexo );
+
+                        //Processa o arquivo e recebe o retorno
+                        $upload = $this->files->processMultFiles();
+
+                        //Verifica retornbou algum código, se sim, ocorreu algum erro no upload
+                        if(!isset($upload['code'])) {
+                            // inicia var data_arr
+                            $data_arr = array();
+
+                            // percorre os arquivos que foi feito upload
+                            foreach ($upload as $i => $arquivo) {
+                                $fp = fopen($arquivo['file'] , "rb");
+                                if(filesize($arquivo['file']) <= 0) {
+                                    $this->files->deleteFileProcessed($upload);
+                                    $res = array(
+                                        "status" => 400,
+                                        "error" => true,
+                                        "message" => "Não é possivel enviar arquivo do tamanho de 0 KB."
+                                    );
+                                    http_response_code($res['status']);
+                                    header('Content-Type: application/json');
+                                    echo json_encode($res);
+                                    return false;
+                                }
+                                $binario = fread($fp, filesize($arquivo['file']));
+                                $nome_arquivo = explode('/', $arquivo['name_file']);
+                                $nome_arquivo = end($nome_arquivo);
+
+                                $anexo = array(
+                                    "Content" => base64_encode($binario),
+                                    "ContentType" => $arquivos['type'][$i],
+                                    "Filename" => $nome_arquivo
+                                );
+
+                            array_push($anexos,$anexo);
+                            $data_arr = array("Attachment" => $anexos);
+                            fclose($fp);
+                            }
+                            $this->files->deleteFileProcessed($upload);
+                        } else {
+                            // retorno caso der erro
+                            $res = array(
+                                "status" => 400,
+                                "error" => true,
+                                "message" => $upload['status']
+                            );
+                            http_response_code($res['status']);
+                            header('Content-Type: application/json');
+                            echo json_encode($res);
+                            return false;
+                        }
+                    }
+                }
+
+                $body = $dados['conteudo'] . "<br><br>" . $assinatura;
+                $data_arr += array(
+                    "Article" => array(
+                        "Subject" => "Re: Ticket#$id_ticket_chamado",//$titulo,
+                        "Body" => $body,
+                        "ContentType" => "text/html; charset=utf8",
+                        "IsVisibleForCustomer" => 1,
+                        "CommunicationChannel" => 'Email',
+                        "From" => "$nome_usuario via SIGAT<informatica@sorocaba.sp.gov.br>"
+                    )
+                );
+                $data = json_encode($data_arr);
+                $curl = curl_init();
+                curl_setopt($curl, CURLOPT_URL, $url);
+                curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+                curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'PATCH');
+                curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
+                curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+                // SOMENTE DEV
+                if (ENVIRONMENT == 'development') {
+                    curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
+                    curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
+                }
+                $dados = array();
+                $res_otobo = json_decode(curl_exec($curl));
+                curl_close($curl);
+
+                if (isset($res_otobo->Error)) {
+                    $res = array(
+                        "status" => 500,
+                        "error" => true,
+                        "message" => "Ocorreu um erro ao enviar o e-mail."
+                    );
+                } else {
+                    if (!is_null($anexo)) {
+                        $result = $this->interacao_model->buscarAnexoOtrs($res_otobo, $arquivos['type']);
+
+                        foreach ($result as $arquivo) {
+                            $this->interacao_model->insereAnexoSigat($id_chamado, $arquivo->id_anexo_otrs, $arquivo->nome_arquivo_otrs);
+                        }
+                    }
+                    $this->interacao_model->logEnviarEmail($id_chamado);
+
+                    $res = array(
+                        "status" => 200,
+                        "error" => false,
+                        "message" => null
+                    );
+                }
+            } else {
+                $res = array(
+                    "status" => 400,
+                    "error" => true,
+                    "message" => "O arquivo é muito grande!"
+                );
+            }
+            http_response_code($res['status']);
+            header('Content-Type: application/json');
+            echo json_encode($res);
+        }
     }
 }
 

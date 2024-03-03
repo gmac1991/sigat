@@ -13,15 +13,9 @@ class Chamado extends CI_Controller {
     $this->load->model("chamado_model"); //carregando o model chamado
     $this->load->model("usuario_model"); //carregando o model usuario
     $this->load->model("interacao_model"); //carregando o model interacao
-    $this->load->model("triagem_model"); //carregando o model interacao
-
-    
-    //$this->load->library("mailer");
-    $this->load->library("Charset_normalizer");
-
-    
-  
-    
+    $this->load->model("triagem_model"); //carregando o model triagem
+    $this->load->model("reparo_model"); //carregando o model triagem
+    $this->load->model("local_model"); //carregando o model local
   }
 
   public function index($pagina = NULL, $id_chamado = NULL) { //controle dos chamados
@@ -38,25 +32,22 @@ class Chamado extends CI_Controller {
 
 
       if ($pagina == 'ver_chamado') {
-
+        
         $dados = $this->chamado_model->buscaChamado($id_chamado); //traz patrimonios, info do chamado e anexos...
-        $dados['usuarios'] = $this->usuario_model->buscaUsuarios(); //traz a lista de todos os usuarios
-
-        //var_dump($dados['chamado']->id_ticket_chamado);
+        $dados['usuarios'] = $this->usuario_model->buscaUsuarios(); //traz a lista de todos os usuario
 
         
         $dados['usuario'] = $usuario; //dados do usuário logado
 
-        //print_r($dados);
-
         if (isset($dados['chamado'])) {
-
-          //
-
           $dados['ticket']  = $this->triagem_model->buscaTicket($dados['chamado']->id_ticket_chamado,43); // fila SIGAT
 
-          $this->load->view('paginas/chamado/'.$pagina, $dados);
+          $valores['id_local'] = $dados['chamado']->id_local;
 
+          $dados['telefones'] = $this->local_model->listarTelefones($valores);
+          //$this->dd->dd($dados['ticket']);
+          $this->load->view('paginas/chamado/'.$pagina, $dados);
+          //$this->dd->dd($dados['chamado']);
          //
 
         } else {
@@ -68,7 +59,7 @@ class Chamado extends CI_Controller {
       $this->load->view('templates/rodape');
 
     } else {
-      header('Location: ' . base_url(),false,403);
+      header('Location: ' . base_url('/painel'));
     }
   }
 
@@ -96,10 +87,8 @@ class Chamado extends CI_Controller {
     $dados['anexos'] =              json_decode($this->input->post("g_anexos"));
     $dados['num_ticket'] =          "Ticket#" . $this->input->post("num_ticket");
     $dados['id_usuario'] =          $_SESSION["id_usuario"];
+    $dados['id_fila'] =             $this->input->post("id_fila");
 
-      
-      
-    var_dump($dados);
     $nome_usuario = $this->usuario_model->buscaUsuario($_SESSION["id_usuario"])->nome_usuario;
   
     $novo_chamado = $this->chamado_model->importaChamado($dados);
@@ -127,7 +116,7 @@ class Chamado extends CI_Controller {
       "Article" => array(
         "Subject" => "[SIGAT] Novo Chamado",
         "Body" => $body,
-        "ContentType" => "text/plain; charset=utf8"
+        "ContentType" => "text/plain; charset=utf8",
       )
     );
 
@@ -389,8 +378,8 @@ class Chamado extends CI_Controller {
     $tempo_espera += $array_tempo_espera[3];
 
   
-    $tempo_medio = $this->consultas_model->conf()->tempo_medio_atendimento;
-    $tempo_max = $this->consultas_model->conf()->tempo_max_atendimento;
+    $tempo_medio = $this->config->item('tempo_medio_atendimento');
+    $tempo_max = $this->config->item('tempo_max_atendimento');
 
     $aviso_tempo = "";
     
@@ -540,16 +529,19 @@ class Chamado extends CI_Controller {
 
       
 
-        $dados = $this->chamado_model->buscaChamado($id,"'ABERTO','ENTREGA'");
+        $dados = $this->chamado_model->buscaChamado($id,"'FECHADO','ENTREGUE','ATENDIDO','REMESSA','INSERVIVEL','FALHA','ESPERA'");
 
         $chamado = $dados['chamado'];
         $equips = $dados['equipamentos'];
+        $servicos = $dados['servicos'];
+
+      
 
         
 
         $ult_interacao = $this->interacao_model->buscaUltimaInteracao($id);
 
-        preg_match("/(.*)(?=<hr)/",$ult_interacao->texto_interacao, $texto); //fazendo o parse para pegar o texto antes do <hr>
+        if(isset($ult_interacao)) preg_match("/(.*)(?=<hr)/",$ult_interacao->texto_interacao, $texto); //fazendo o parse para pegar o texto antes do <hr>
 
         //var_dump($ult_interacao);
        
@@ -559,6 +551,14 @@ class Chamado extends CI_Controller {
         foreach ($equips as $e) {
 
           $str_equips .= $e->num_equipamento . " - " . utf8_decode($e->descricao_equipamento) . "\n";
+      
+        }
+
+        $str_servicos = NULL;
+
+        foreach ($servicos as $s) {
+
+          $str_servicos .= utf8_decode($s->nome_servico) . " (" . $s->quantidade . " " . $s->unidade_medida . ")\n";
       
         }
       
@@ -614,9 +614,13 @@ class Chamado extends CI_Controller {
         $pdf->SetFont('Arial','B',11);
         $pdf->Cell(0,8,"Equipamentos pendentes",1);
         $pdf->Ln();
-
         $pdf->SetFont('Arial','',9);
         $pdf->MultiCell(0,8,$str_equips,1,'L');
+        $pdf->SetFont('Arial','B',11);
+        $pdf->Cell(0,8,utf8_decode("Serviços pendentes"),1);
+        $pdf->Ln();
+        $pdf->SetFont('Arial','',9);
+        $pdf->MultiCell(0,8,$str_servicos,1,'L');
         $pdf->SetFont('Arial','B',11);
         $pdf->Cell(33,8,utf8_decode("Última interação"),0);
         $pdf->SetFont('Arial','',11);
@@ -638,7 +642,7 @@ class Chamado extends CI_Controller {
         }
         else {
           
-          if ($ult_interacao->tipo_interacao == 'ENC'){
+          if (isset($ult_interacao) && $ult_interacao->tipo_interacao == 'ENC'){
 
             $pdf->MultiCell(0,8,utf8_decode("Chamado encerrado."),1,'L');
 
@@ -662,22 +666,103 @@ class Chamado extends CI_Controller {
 
         $pdf->Output('I','impressao_chamado.pdf',FALSE);
 
-        // ------------ LOG -------------------
-
-        // $log = array(
-        //     'acao_evento' => 'GERAR_TERMO_RESP',
-        //     'desc_evento' => 'ID CHAMADO: ' . $id_chamado . ' - NOME: termo_resp_' . $id_chamado . '.pdf',
-        //     'id_usuario_evento' => $_SESSION['id_usuario']
-        // );
-        
-        // $this->db->insert('evento', $log);
-
-        // -------------- /LOG ----------------
+      
     }
     else {
       header("HTTP/1.1 403 Forbidden");
     }
     
+  }
+
+  public function listar_servicos_chamado($id_chamado){
+    if (isset($_SESSION['id_usuario'])) {
+            
+            
+            $item = $this->input->post('item');
+            if(!empty($item) && $item != null){
+              $item['id_chamado'] = $id_chamado;
+              $this->chamado_model->inserir_servicos($item);
+            }
+            
+            $linhas = $this->chamado_model->listar_servicos_chamado($id_chamado);
+
+            header("Content-Type: application/json");
+
+            echo json_encode($linhas);
+            
+            
+
+        } else {
+            header('HTTP/1.0 403 Forbidden');
+        }
+  }
+
+  public function listar_servicos($id_fila){
+    if (isset($_SESSION['id_usuario'])) {
+            
+            
+            $servicos = $this->chamado_model->listar_servicos($id_fila);
+
+            header("Content-Type: application/json");
+
+            echo json_encode($servicos);
+
+        } else {
+            header('HTTP/1.0 403 Forbidden');
+        }
+  }
+
+  public function excluir_servico($id){
+
+    if (isset($_SESSION['id_usuario'])) {
+      $item = $this->input->post('item');
+      if(!empty($item) && $item != null){
+        $item['id_chamado'] = $this->input->post('g_id_chamado');
+        $this->chamado_model->excluir_servico($item);
+      }
+
+      header("Content-Type: application/json");
+
+      echo json_encode($item);
+    
+    } else {
+        header('HTTP/1.0 403 Forbidden');
+    }
+
+  }
+
+  public function atualizar_servicos_chamado($id_chamado){
+    if (isset($_SESSION['id_usuario'])) {
+            
+            
+            $item = $this->input->post('item');
+            //$this->dd->dd($item);
+            if(!empty($item) && $item != null){
+              $item['id_chamado'] = $id_chamado;
+              $this->chamado_model->atualizar_servicos($item);
+            }
+            
+            
+            header("Content-Type: application/json");
+
+            echo json_encode($item);
+            
+            
+
+        } else {
+            header('HTTP/1.0 403 Forbidden');
+        }
+  }
+
+  public function zerar_nao_lidos($chamado){
+    if (isset($_SESSION['id_usuario'])) {
+      
+      $this->chamado_model->zerar_chamados($chamado);
+
+      header("Content-Type: application/json");
+
+      echo json_encode('funciona');
+    }
   }
 }
 

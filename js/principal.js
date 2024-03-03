@@ -189,13 +189,13 @@ function painel(id_fila) {
     table_painel = $('#tblPainel').DataTable({ //  inicializacao do painel
 
         "autoWidth": true,
-        "pageLength" : 15,
+        "pageLength" : 25,
 
         stateSave: true,
 
         lengthMenu: [
-            [15, 25, 50, 100],
-            [15, 25, 50, 100],
+            [15, 25, 50, 100, 200],
+            [15, 25, 50, 100, 200],
         ],
 
         "columnDefs": [
@@ -527,8 +527,13 @@ function triagem() {
 }
 
 $('#tblTriagem').on('click', 'tbody td', function () {
+    //clicar triagem
+    
     var row = table_triagem.row($(this)).data();
+    
     document.location.href = base_url + 'triagem/' + row[0];
+        
+
   });
 
 
@@ -635,6 +640,49 @@ async function buscaEquipamentos(p_id_chamado, p_id_fila_ant, p_atendimento, ins
 
         } 
     }
+    $('#divServicos').empty();
+
+    var lista_servicos = [];
+    await $.ajax({
+
+        url: base_url + "listar_servicos_chamado/" + g_id_chamado,
+        type: 'GET',
+        async: true,
+        dataType: 'json',
+        success: function(data) {
+            lista_servicos = data;
+        }
+    });
+
+    var contador_servicos = 0;
+
+    if(lista_servicos != null){
+        if(lista_servicos.length > 0){
+            lista_servicos.forEach(function(servico){
+                if(servico.status_servico == 'ABERTO'){
+                    contador_servicos++;
+                }
+            });
+            if(contador_servicos > 0){
+                $('#divServicos').prepend("<p>Marque os serviços que foram finalizados:</p>");
+    
+                $('#divServicos').append("<input id=\"chkTudoS\" type=\"checkbox\" value=\"#\" onclick=\"$('#divServicos input:checkbox').not(this).prop('checked', this.checked)\">" +
+                "<label class=\"mr-2\" for=\"chkTudoS\">&nbsp;Todos</label>");
+            }
+            
+            
+            lista_servicos.forEach(function(servico) { //criando os checkbox com os patrimonios
+                
+                    if(contador_servicos > 0 && servico.status_servico == 'ABERTO'){
+                        $('#divServicos').append(
+                            "<input class=\"chkServ\" type=\"checkbox\" id=\"" + servico.id_servico + "\" value=\"" + servico.nome_servico + "\" id_servico=\"" + servico.id + "\">" +
+                            "<label class=\"mr-2\" for=\"" + servico.id_servico + "\">&nbsp;" + " " + servico.nome_servico + " ( "+ servico.quantidade+ " " + servico.unidade_medida + " ) " + "</label>"); 
+                    }
+                
+                });
+        }
+    }
+    
 }
 
 
@@ -648,70 +696,79 @@ function verificaTipo(fila_ant, id_chamado) { //verificar tipo da fila no modal 
         case 'ATENDIMENTO':
             buscaEquipamentos(id_chamado, fila_ant, true, false, false);
             $('#divEquipamentos').show();
+            $('#divServicos').show();
             $('#divFila').show();
             $('#slctFila').attr('disabled', true);
             $('#divMensagem').show();
-            modalModeloMensagem($('#slctTipo').val(), fila_ant);
+            listaModelosMensagems($('#slctTipo').val(), fila_ant);
             break;
 
         case 'ALT_FILA':
             buscaEquipamentos(id_chamado, fila_ant, false, false, false, true);
             $('#divFila').show();
             $('#divEquipamentos').hide();
+            $('#divServicos').hide();
             $('#slctFila').attr('disabled', false);
             $('#divMensagem').show();
-            modalModeloMensagem($('#slctTipo').val(), fila_ant);
+            listaModelosMensagems($('#slctTipo').val(), fila_ant);
             break;
 
         case 'OBSERVACAO':
             $('#divEquipamentos').hide();
+            $('#divServicos').hide();
             $('#divFila').hide();
             $('#slctFila').attr('disabled', true);
             $('#btnRegistrarInteracao').removeAttr('disabled');
             $('#divMensagem').show();
-            modalModeloMensagem($('#slctTipo').val(), fila_ant);
+            listaModelosMensagems($('#slctTipo').val(), fila_ant);
             break;
             
-        case 'INSERVIVEL':
+        // case 'INSERVIVEL':
 
-            if (fila_ant == 3) {
-                buscaEquipamentos(id_chamado, fila_ant, true, true);
-                $('#divEquipamentos').show();
-                $('#divFila').show();
-                $('#slctFila').attr('disabled', true);
-                $('#divMensagem').show();
-                modalModeloMensagem($('#slctTipo').val(), fila_ant);
-            } else {
-                $('#divEquipamentos').show();
-                $('#divEquipamentos').html('Opção disponível somente na fila <strong>Manutenção de Hardware</strong><br>');
-                $('#btnRegistrarInteracao').prop('disabled', 'true');
-                $('#divFila').hide();
-                $('#divMensagem').hide();
-            }
+        //     if (fila_ant == 3) {
+        //         buscaEquipamentos(id_chamado, fila_ant, true, true);
+        //         $('#divEquipamentos').show();
+        //         $('#divFila').show();
+        //         $('#slctFila').attr('disabled', true);
+        //         $('#divMensagem').show();
+        //         listaModelosMensagems($('#slctTipo').val(), fila_ant);
+        //     } else {
+        //         $('#divEquipamentos').show();
+        //         $('#divEquipamentos').html('Opção disponível somente na fila <strong>Manutenção de Hardware</strong><br>');
+        //         $('#btnRegistrarInteracao').prop('disabled', 'true');
+        //         $('#divFila').hide();
+        //         $('#divMensagem').hide();
+        //     }
 
 
-            break;
+        //     break;
 
         case 'ESPERA':
             buscaEquipamentos(id_chamado, fila_ant, false);
             $('#divEquipamentos').show();
+            $('#divServicos').hide();
             $('#divFila').hide();
             $('#slctFila').attr('disabled', true);
             $('#divMensagem').show();
-            modalModeloMensagem($('#slctTipo').val(), fila_ant);
+            listaModelosMensagems($('#slctTipo').val(), fila_ant);
             break;
 
         case 'REM_ESPERA':
             buscaEquipamentos(id_chamado, fila_ant, false, false,true,false);
+            $('#divServicos').hide();
             $('#divEquipamentos').show();
             $('#divFila').hide();
             $('#slctFila').attr('disabled', true);
             $('#divMensagem').show();
-            modalModeloMensagem($('#slctTipo').val(), fila_ant);
+            listaModelosMensagems($('#slctTipo').val(), fila_ant);
             break;
         case 'FECHAMENTO':
 
             break;
+    }
+
+    if (g_fila_chamado === 3) {
+        $("#slctTipo option[value='ATENDIMENTO']").remove();
     }
 }
 
@@ -719,20 +776,21 @@ function exibeModeloMensagem() {
     // Capturar o evento de alteração de valor
     var textoSelecionado = '<p>' + $("#slctModeloMensagem option:selected").text() + '</p>';
     // Retorna o valor para o summernote
+    // voltar aqui
     $('textarea[name=txtInteracao]').summernote('code', textoSelecionado);
 }
-async function modalModeloMensagem(tipo, id_fila) {
+async function listaModelosMensagems(tipo, id_fila) {
     // Seleciona o modelo de mensagem de acordo com o tipo
-    var modeloMensagens = await carregaModeloMensagem(tipo, id_fila);
+    let modeloMensagens = await carregaModeloMensagem(tipo, id_fila);
     $('#slctModeloMensagem').empty();
-    $('textarea[name=txtInteracao]').summernote('code', '');
+    $('textarea[name=txtInteracao]').summernote('code', texto_interacao)
     if (modeloMensagens === null) {
         // desativa campo para não alterar
-        $('#slctModeloMensagem').attr('disabled', true);
-        $('#slctModeloMensagem').append("<option value='2' disabled selected>Não possui nenhuma mensagem :(</option>");
+        $('#slctModeloMensagem').prop('disabled', true);
+        $('#slctModeloMensagem').append("<option disabled selected>Não possui nenhuma mensagem :(</option>");
     } else {
-        $('#slctModeloMensagem').attr('disabled', false);
-        $('#slctModeloMensagem').append("<option value='2' disabled selected>Selecione a mensagem</option>");
+        $('#slctModeloMensagem').removeAttr('disabled');
+        $('#slctModeloMensagem').append("<option disabled selected>Selecione a mensagem</option>");
 
         modeloMensagens.forEach(modeloMensagem => {
             $('#slctModeloMensagem').append('<option value=\"MENSAGEM\">'+modeloMensagem.mensagem_modelo_mensagem+'</option>');
@@ -740,7 +798,7 @@ async function modalModeloMensagem(tipo, id_fila) {
     }
 }
 async function carregaModeloMensagem(tipo, id_fila) {
-    var out = null;
+    let out = null;
     await $.ajax({
         url: base_url + `ModeloMensagem/listar_modelo_mensagem?tipo=${tipo}&id_fila=${id_fila}`,
         type: 'GET',
@@ -769,7 +827,7 @@ async function carregaFilas() {
 async function carregaSecretarias() {
     var out = null;
     await $.ajax({
-        url: base_url + "local/listar_secretarias/",
+        url: base_url + "secretaria/listar_secretarias/",
         type: 'GET',
         success: function(data) {
             out = data;
@@ -808,6 +866,11 @@ function criaFormRegistro(p_id_chamado, p_id_fila_ant) { //carregar o form no mo
         "</div>" +
         "<div class=\"row mb-3\">" +
         "<div class=\"col\">" +
+        "<div id=\"divServicos\">teste</div>" +
+        "</div>" +
+        "</div>" +
+        "<div class=\"row mb-3\">" +
+        "<div class=\"col\">" +
         "<textarea name=\"txtInteracao\"></textarea>" +
         "</div>" +
         "</div>" +
@@ -819,8 +882,12 @@ function criaFormRegistro(p_id_chamado, p_id_fila_ant) { //carregar o form no mo
 
 
 // --- MODAL INTERACAO
-
+var txt_interacao = null;
+var texto_interacao = "";
 $('#modalRegistro').on('show.bs.modal', function(event) { //modal de registro de interacao
+    $(this).on('mouseup keyup', () => {
+        texto_interacao = $('textarea[name=txtInteracao]').summernote("code");
+    });
 
     var link = $(event.relatedTarget);
     var p_id_chamado = link.data('chamado');
@@ -852,6 +919,7 @@ $('#modalRegistro').on('shown.bs.modal', function(event) {
         dialogsInBody: true,
         disableDragAndDrop: false,
     });
+    $('textarea[name=txtInteracao]').summernote('code', texto_interacao);
 
     $('#slctTipo').append("<option value=\"ATENDIMENTO\" selected>Atendimento</option>" +
         "<option value=\"OBSERVACAO\">Observação</option>" +
@@ -860,8 +928,7 @@ $('#modalRegistro').on('shown.bs.modal', function(event) {
     // if (g_requer_patri == true) {
     $('#slctTipo').append('<option value=\"ESPERA\">Deixar em espera</option>');
     $('#slctTipo').append('<option value=\"REM_ESPERA\">Remover da espera</option>');
-    $('#slctTipo').append('<option value=\"INSERVIVEL\">Classificar como inservível</option>');
-    
+   // $('#slctTipo').append('<option value=\"INSERVIVEL\">Classificar como inservível</option>');
 
 
     // } else {
@@ -1058,8 +1125,7 @@ var p_id_responsavel = null;
 
 var status_chamado = null;
 
-
-
+var botoes_chamado_equipamento = null;
 async function carregaChamado(p_id_chamado,sem_equipamentos) {
 
     //atualiza os dados do chamado
@@ -1087,6 +1153,12 @@ async function carregaChamado(p_id_chamado,sem_equipamentos) {
             item_antigo = args.previousItem;
 
         },
+
+        rowClick: function() {
+
+            
+
+        },
     
         fields: [
             {
@@ -1094,9 +1166,14 @@ async function carregaChamado(p_id_chamado,sem_equipamentos) {
                 title: "Núm. de identificação",
                 type: "text",
                 readOnly: true,
-                validate: [
+                
+               validate: [
                     "required",
-                    { validator: "pattern", param: /^[a-zA-Z0-9]+$/, message: "Atenção!\nCaracteres permitidos:\nA-Z, a-z e 0-1" },
+                    { 
+                        validator: "pattern", 
+                        param: /^[a-zA-Z0-9]+$/, 
+                        message: "Atenção!\nCaracteres permitidos:\nA-Z, a-z e 0-9" 
+                    },
                 ],
             }, 
             {
@@ -1108,18 +1185,20 @@ async function carregaChamado(p_id_chamado,sem_equipamentos) {
                     "required",
                     { validator: "pattern", param: /^[a-zA-Z0-9\s]+$/, message: "Atenção!\nCaracteres permitidos:\nA-Z, a-z e 0-1" },
                 ],
+                
             }, 
            
             {
                 name: "tag_equipamento",
                 type: "text",
                 align: "center",
+                readOnly: true,
                 inserting: false,
                 editing: false,
                 title: "Lacre",
-                validate: [
+                /* validate: [
                     { validator: "pattern", param: /^[a-zA-Z0-9]+$/, message: "Atenção!\nCaracteres permitidos:\nA-Z, a-z e 0-1" },
-                ],
+                ], */
             },
             {
                 name: "status_equipamento_chamado",
@@ -1127,6 +1206,23 @@ async function carregaChamado(p_id_chamado,sem_equipamentos) {
                 width: 50,
                 align: "center",
             }, 
+            {
+                title: "",
+                width: 110,
+                align: "center",
+                readOnly: true,
+                editing: false,
+                inserting: false,
+                itemTemplate: function(value, item) {
+                    botoes_chamado_equipamento = `<button type="button" class="btn btn-primary btn-sm mr-2" id="bnt-ficha-${item.num_equipamento}" title="Imprimir ficha do equipamento ${item.num_equipamento}" disabled><i class="fas fa-print"></i></button>`
+                    botoes_chamado_equipamento += `<a class="btn btn-primary btn-sm" href="${base_url}equipamento/${item.num_equipamento}" target="_BLANK" role="button" title="Ver informações do equipamento ${item.num_equipamento}"><i class="fas fa-search"></i></a>`;
+
+                    return botoes_chamado_equipamento
+                },
+                editTemplate: function(value) {
+                    return botoes_chamado_equipamento
+                },
+            },
             {
                 type:"control",
                 editButton: false,
@@ -1136,7 +1232,7 @@ async function carregaChamado(p_id_chamado,sem_equipamentos) {
 
         
 
-        rowClass: function(item) { return item.status_equipamento_chamado == 'ABERTO' ? 'bg-warning' : ''; },
+        rowClass: function(item) { return item.status_equipamento_chamado == 'ABERTO' || item.status_equipamento_chamado == 'REPARO' || item.status_equipamento_chamado == 'GARANTIA' ? 'bg-warning' : ''; },
     
         controller: {
             loadData: function() {
@@ -1150,18 +1246,18 @@ async function carregaChamado(p_id_chamado,sem_equipamentos) {
                 var d = $.Deferred();
                 var res = null;
                 var num_equip = item.num_equipamento.replace(/\s+/g, "");
-                await $.ajax({
-                    url: base_url + "json/status_equipamento",
-                    dataType: "json",
-                    method: "post",
-                    data: {e_status: num_equip},
-                }).done(function(data) {
-                    res = data;
-                });
-               
+                console.error(num_equip)
+                res = await verificaStatusEquip(num_equip);
+                
                 if(res !== null) {
-                    if (res.status_equipamento_chamado == 'ABERTO' && parseInt(res.id_chamado) !== g_id_chamado)  {
-                    alert("O item " + num_equip + " já está em atendimento!\nChamado: " + res.id_chamado + "\n" + res.ticket_chamado);
+                    if ((res.status_equipamento_chamado === "ABERTO" || 
+                        res.status_equipamento_chamado === "ENTREGA" ||
+                        res.status_equipamento_chamado === "ESPERA" ||
+                        res.status_equipamento_chamado === "INSERVIVEL" ||
+                        res.status_equipamento_chamado === "REMESSA" ||
+                        res.status_equipamento_chamado === "GARANTIA" ||
+                        res.status_equipamento_chamado === "REPARO") && parseInt(res.id_chamado) !== g_id_chamado)  {
+                    alert("O item " + num_equip + " já está em atendimento ou foi classificado como inservível!\nChamado: " + res.id_chamado + "\n" + res.ticket_chamado);
                     d.reject();
                     return d.promise();
                     }
@@ -1185,53 +1281,108 @@ async function carregaChamado(p_id_chamado,sem_equipamentos) {
                 var d = $.Deferred();
                 var res = null;
                 var num_equip = item.num_equipamento.replace(/\s+/g, "");
-                await $.ajax({
-                    url: base_url + "json/status_equipamento",
-                    dataType: "json",
-                    method: "post",
-                    data: {e_status:num_equip},
-                }).done(function(data) {
-                    res = data;
-                    
-                });
+                res = await verificaStatusEquip(num_equip);
+
                 if(res !== null){
-                    if (res.status_equipamento_chamado == 'ABERTO') {
-                        alert("O item " + num_equip + " já está em atendimento!\nChamado: " + res.id_chamado + "\n" + res.ticket_chamado);
-                        d.reject();
-                        return d.promise();
-                    } else if(res.status_equipamento_chamado == 'INSERVIVEL'){
-                        alert("O equipamento " + num_equip + " está inservivel!\nChamado: " + res.id_chamado + "\n" + res.ticket_chamado);
-                        d.reject();
-                        return d.promise();
+                    let Toast = Swal.mixin({
+                        icon: "error",
+                        title: 'Falha ao inserir equipamento ao chamado<hr style="margin-bottom: -5px;">',
+                        footer: `${res.ticket_chamado}<br>Chamado: <a href="${base_url}chamado/${res.id_chamado}" target="_BLANK">${res.id_chamado}</a>`,
+                        toast: true,
+                        position: "top-end",
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true,
+                        didOpen: (toast) => {
+                          toast.onmouseenter = Swal.stopTimer;
+                          toast.onmouseleave = Swal.resumeTimer;
+                        }
+                    });
+                    switch (res.status_equipamento_chamado) {
+                        case 'ABERTO':
+                            Toast.fire({
+                                text: `O equipamento ${num_equip} já está em atendimento!`
+                            });
+                            d.reject();
+                            break;
+
+                        case 'ESPERA':
+                            Toast.fire({
+                                text: `O equipamento ${num_equip}  está em espera!`
+                            });
+                            d.reject();
+                            break;
+
+                        case 'FALHA':
+                            Toast.fire({
+                                text: `O equipamento  ${num_equip} está em estado de falha!`
+                            });
+                            d.reject();
+                            break;
+                        
+                        case 'INSERVIVEL':
+                            Toast.fire({
+                                text: `O equipamento ${num_equip} está inservivel!`
+                            });
+                            d.reject();
+                            break;
+                            
+                        case 'REPARO':
+                            Toast.fire({
+                                text: `O equipamento ${num_equip} está em reparo!`
+                            });
+                            d.reject();
+                            break;
+
+                        case 'ENTREGA':
+                            Toast.fire({
+                                text: `O equipamento ${num_equip} está para entrega!`
+                            });
+                            d.reject();
+                            break;
+
+                        case 'REMESSA':
+                            Toast.fire({
+                                text: `O equipamento ${num_equip} está em remessa!`
+                            });
+                            d.reject();
+                            break;
+
+                        default:
+                            $.ajax({
+                                url: base_url + "add_equip_chamado",
+                                dataType: "json",
+                                method: "post",
+                                data: {item,g_id_chamado},
+                                success: async function() {
+                                    var historico = await carregaHistorico(p_id_chamado);
+                                    $("#historico").html(historico);
+                                    carregaChamado(p_id_chamado);
+                                }
+                            });
+                            break;
                     }
+                } else {
+                    return $.ajax({
+                        url: base_url + "add_equip_chamado",
+                        dataType: "json",
+                        method: "post",
+                        data: {item,g_id_chamado},
+                        success: async function() {
+                            var historico = await carregaHistorico(p_id_chamado);
+                            $("#historico").html(historico);
+                            carregaChamado(p_id_chamado);
+                        }
+                    });
                 }
 
-                return $.ajax({
-                    url: base_url + "add_equip_chamado",
-                    dataType: "json",
-                    method: "post",
-                    data: {item,g_id_chamado},
-                    success: async function() {
-                        var historico = await carregaHistorico(p_id_chamado);
-                        $("#historico").html(historico);
-                        carregaChamado(p_id_chamado);
-                    }
-                });
-                   
+                return d.promise();
             },
-    
             deleteItem: async function(item) {
                 var d = $.Deferred();
                 var res = null;
                 var num_equip = item.num_equipamento.replace(/\s+/g, "");
-                await $.ajax({
-                    url: base_url + "json/status_equipamento",
-                    dataType: "json",
-                    method: "post",
-                    data: {e_status: num_equip},
-                }).done(function(data) {
-                    res = data;
-                });
+                res = await verificaStatusEquip(num_equip);
                 if (res.status_equipamento_chamado === 'ABERTO') {
                     
                     return $.ajax({
@@ -1255,7 +1406,28 @@ async function carregaChamado(p_id_chamado,sem_equipamentos) {
         },
     });
 
-    $("#tblServicosChamado").jsGrid({
+    var servicos = null;
+
+    async function carregarServicos(){
+        let valor = '';
+        await $.ajax({
+            url: base_url + "listar_servicos/" + g_fila_chamado,
+            type: "GET",
+            success: function(data){
+                if(data !== null){
+                    valor = data;
+                }
+            },
+            error: function(){
+                console.log('houve um erro');
+            }
+        });
+        servicos = valor;
+    }
+    await carregarServicos();
+    var servicos_existentes = [];
+    
+    $("#tblServicosInfraChamado").jsGrid({
 
         height: "auto",
         width: "100%",
@@ -1269,21 +1441,64 @@ async function carregaChamado(p_id_chamado,sem_equipamentos) {
         noDataContent: "Vazio",
 
         onInit: function(args) {
-            tblServicosChamado = args.grid;
+            tblServicosInfraChamado = args.grid;
         },
 
         onItemUpdating: function(args) {
-
             item_antigo = null;
             item_antigo = args.previousItem;
-
+            if(args.item.quantidade < 1){
+                alert('O campo quantidade deve ser preenchido com um valor acima de zero!');
+                args.cancel = true;
+            }
         },
 
+        onItemInserting: function(args){
+            if(args.item.quantidade < 1){
+                alert('O campo quantidade deve ser preenchido com um valor acima de zero!');
+                args.cancel = true;
+            }
+        },
+       
         fields: [
             {
-                name: "nome_servico",
+                name: "id_servico",
                 title: "Nome do Serviço",
+                type: "select",
+                align: "center",
+                autosearch: true,
+                items: servicos,
+                valueField: "id_servico",
+                textField: "nome_servico",
+                selectedIndex: -1,
+                valueType: "number",
+                readOnly: false,
+                editing: false,
+             },
+             {
+                name: "quantidade",
+                title: "Quantidade",
+                width: 20,
                 type: "text",
+                insertTemplate: function() {
+                    let input = this.__proto__.insertTemplate.call(this); //original input
+                
+                    input.val(0);
+                    
+                    return input;
+                },
+                validate: [
+                    "required",
+                    { validator: "pattern", param: /^[0-9]+$/, message: "Atenção!\nEste campo aceita apenas números." },
+                ],
+                align: "center",
+                readOnly: false,
+            },
+            {
+                name: "unidade_medida",
+                title: "Unidade de medida",
+                width: 20,
+                align: "center",
                 readOnly: true,
             },  
             {
@@ -1291,22 +1506,109 @@ async function carregaChamado(p_id_chamado,sem_equipamentos) {
                 title: "Status",
                 width: 50,
                 align: "center",
-            }, 
+                readOnly: true,
+            },
+            {
+                type:"control",
+                editButton: false,
+                deleteButton: false,
+            },
         ],
 
         
 
-        rowClass: function(item) { return item.status_servico == 'ABERTO' ? 'bg-warning' : ''; },
+        rowClass: function(item) { 
+            servicos_existentes.push(item);
+            return item.status_servico == 'ABERTO' ? 'bg-warning' : ''; },
 
         controller: {
             loadData: function() {
                 return $.ajax({
                     url: base_url + "listar_servicos_chamado/" + g_id_chamado,
                     dataType: "json",
-                    method: "get",
+                    method: "post",
                 });
             },
-             
+            insertItem: function(item) {
+                let d = $.Deferred();
+                let existente = null;
+                item.status_servico = "ABERTO";
+                item.id_servico = item.id_servico.toString();
+                for(i=0; i<servicos.length; i++){
+                    if(item.id_servico == servicos[i]['id_servico']){
+                        item.nome_servico = servicos[i]['nome_servico'];
+                    }
+                }
+                for(i=0; i<servicos_existentes.length; i++){
+                    if(servicos_existentes[i]['id_servico'] == item.id_servico && servicos_existentes[i]['status_servico'] == 'ABERTO'){
+                        existente = servicos_existentes[i]['nome_servico'];
+                    }
+                }
+                if(existente != null){
+                    alert('O serviço ' + existente + ' já foi adicionado e está como o status ABERTO.');
+                    d.reject();
+                    return d.promise();
+                }else{
+                    $.ajax({
+                        url: base_url + "listar_servicos_chamado/" + g_id_chamado,
+                        dataType: "json",
+                        method: "post",
+                        data:{
+                            item
+                        },
+                        success: function(){
+                            carregaChamado(p_id_chamado);
+                        },
+                        error: function(){
+                            alert('Erro ao adicionar o serviço');
+                        }
+                    });
+                }
+                
+                
+            },
+            deleteItem: function (item){
+                let d = $.Deferred();
+                if(item.status_servico == 'FECHADO'){
+                    alert('Este serviço está fechado e não pode ser excluido.');
+                    d.reject();
+                    return d.promise();
+                }else{
+                    $.ajax({
+                        url: base_url + "excluir_servico/" + g_id_chamado,
+                        dataType: "json",
+                        method: "post",
+                        data:{
+                            item, g_id_chamado
+                        },
+                        success: function(){
+                            carregaChamado(p_id_chamado);
+                        },
+                        error: function(){
+                            alert('Erro ao excluir o serviço');
+                        }
+                    });
+                }
+            },
+            updateItem: function (item){
+                let valor = item.quantidade;
+                if (valor > 0){
+                    return $.ajax({
+                        url: base_url + "atualizar_servicos_chamado/" + g_id_chamado,
+                        dataType: "json",
+                        method: "post",
+                        data: {
+                            item
+                        },
+                        success: function(){
+                            carregaChamado(p_id_chamado);
+                        },
+                        error: function(){
+                            alert('Erro ao excluir o serviço');
+                        }
+                    });
+                }
+            }
         },
     });
    
@@ -1323,13 +1625,16 @@ async function carregaChamado(p_id_chamado,sem_equipamentos) {
    
 
     $('#botoesAtendimento').html("");
+    $('#botoesAtendimentoReparo').html("");
     $('#btnBloquearChamado').removeAttr("disabled");
+    $('#modalReparo').find('modal-footer').hide();
 
     botoes = "";
 
     $('#botoesChamado hr').hide();
 
    var status_equips = [];
+   var status_servicos = [];
    var id_responsavel = null;
 
     await $.ajax({
@@ -1338,6 +1643,10 @@ async function carregaChamado(p_id_chamado,sem_equipamentos) {
         async: true,
         data: {
             id_chamado: p_id_chamado
+        },
+        error: function(request, status, error) {
+            console.log(status)
+
         },
         success: function(data) {
 
@@ -1378,46 +1687,50 @@ async function carregaChamado(p_id_chamado,sem_equipamentos) {
                
             }
 
+            for (var i = 0; i < data.status_servicos.length; ++i) {
+
+                status_servicos.push(data.status_servicos[i].status_servico_chamado);
+   
+               
+            }
 
             // -------------------- PERMISSOES ----------------------------
-            
-            
-            
-    
-
+        
             if (data.id_responsavel == g_id_usuario) {
+
+               // if (!fila_atual > 1)
 
                 tblEquipsChamado.option("editing",true);
                 tblEquipsChamado.option("inserting",true);
-                tblEquipsChamado.fieldOption(4,"editButton",true);
-                tblEquipsChamado.fieldOption(4,"deleteButton",true);
+                if(g_fila_chamado == 5 || g_fila_chamado == 6 || g_fila_chamado == 7){//somente serviços de infraestrutura
+                    tblServicosInfraChamado.option("inserting", true);
+                    tblServicosInfraChamado.option("editing", true);
+                    tblServicosInfraChamado.fieldOption(4, "deleteButton", true);
+                    tblServicosInfraChamado.fieldOption(4, "editButton", true);
+                } 
+                tblEquipsChamado.fieldOption(5,"editButton",true);
+                tblEquipsChamado.fieldOption(5,"deleteButton",true);
                 tblEquipsChamado.fieldOption(1,"readOnly",false);
                 tblEquipsChamado.fieldOption(0,"readOnly",false);
                 tblEquipsChamado.fieldOption(0,"editing",false);
                 tblEquipsChamado.fieldOption(0,"inserting",true);
-               // tblEquipsChamado.fieldOption(2,"editing",true);
                 
-               
+            
+                
                 if (data.id_fila == 3) {
-
+                    // exibir
                     tblEquipsChamado.fieldOption(2,"editing",true);
-                
                 }
 
                 if (g_auto_usuario > 3) {
-
-                   
                     tblEquipsChamado.fieldOption(1,"readOnly",false);
                     tblEquipsChamado.fieldOption(4,"deleteButton",true);
 
                 }
             }
            
-            
-            
-
             if (data.status_chamado != 'ABERTO') { //se o chamado não estiver ABERTO, remover o botao Registrar Atendimento e Editar Chamado
-
+                $('#btnModalEmail').hide();
                 $('#btnEditarChamado').hide();
                 $('#btnDesbloquearChamado').hide();
                 $('#botoesChamado hr').hide();
@@ -1432,23 +1745,21 @@ async function carregaChamado(p_id_chamado,sem_equipamentos) {
 
             } else {
                 if ((g_auto_usuario >= 3 && data.id_responsavel != null) || data.id_responsavel == g_id_usuario) {
-
+                    $('#btnModalEmail').show();
                     $('#btnDesbloquearChamado').show();
                     $('#btnEditarChamado').show();
                     $('#botoesChamado hr').show();
 
-
                 }
 
                 if (data.id_responsavel == null && g_auto_usuario >= 3) { //se não houver responsavel e o usuario for ADM+
-
+                    $('#btnModalEmail').hide();
                     $('#btnEditarChamado').show();
                     $('#btnDesbloquearChamado').hide();
                     $('#botoesChamado hr').show();
                 }
 
                 if (data.id_responsavel == null && g_auto_usuario <= 2) { //Tecnico
-
                     $('#btnBloquearChamado').show();
                     $('#btnEditarChamado').hide();
                     $('#btnDesbloquearChamado').hide();
@@ -1480,46 +1791,130 @@ async function carregaChamado(p_id_chamado,sem_equipamentos) {
         }
     });
 
-   
+    var reparos = null
 
+    await $.ajax({
+        method: "POST",
+        url: base_url + 'reparo/listar_reparos',
+        data: {
+            id_chamado: g_id_chamado,
+        }
+    })
+    .done((data) => {
+       
+
+        reparos = data
+
+    })
+
+
+    if (reparos.length > 0) {
+
+        $("#tblReparosChamado tbody").html("")
+
+        reparos.forEach((r) => {
+            var data_fim = r.data_fim_reparo == null ? '' : r.data_fim_reparo
+
+            var bg = null
+
+            switch (r.status_reparo) {
+                case "ABERTO":
+                    bg = "table-warning"
+                    break
+                case "FINALIZADO":
+                    bg = "table-success"
+                    break
+                case "CANCELADO":
+                    bg = "table-secondary"
+                    break
+                case "GARANTIA":
+                    bg = "table-primary"
+                    break
+            }
+
+            $("#tblReparosChamado tbody").append(
+                `<tr class=${bg}>
+                    <td>${r.num_equipamento_reparo}</td>
+                    <td>${r.status_reparo == "GARANTIA" ? '-' : r.nome_bancada}</td>
+                    <td>${r.status_reparo}</td>
+                    <td>${r.data_inicio_reparo}</td>
+                    <td>${data_fim}</td>
+                    <td>
+                        <button type="button" class="btn btn-primary btn-modal-reparo" 
+                            data-toggle="modal" data-reparo="${r.id_reparo}" 
+                            data-target="#modalReparo">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </td>
+                </tr>`
+            );
+            
+        })
+    }
 
     if (g_auto_usuario >= 3 && g_auto_usuario_enc == 1  && status_chamado == 'FECHADO') {//somente ADM+ encerra o chamado
 
         botoes = '<button id="btnEncerrarChamado" onclick="encerrarChamado()" class="btn btn-success"><i class=\"far fa-check-circle\"></i> Encerrar chamado</button>';
     }
 
-    
-
     for (var i = 0; i < status_equips.length; ++i) {
-
         if ((p_id_responsavel == g_id_usuario && 
-            (status_equips[i] == 'ABERTO' || status_equips[i] == 'ESPERA' || status_equips[i] == 'FALHA' || status_equips[i] == 'ENTREGA'))) {
-
+            
+            (status_equips[i] == 'ABERTO' || 
+            status_equips[i] == 'ESPERA' || 
+            status_equips[i] == 'FALHA' || 
+            status_equips[i] == 'ENTREGA' ||
+            status_equips[i] == 'REPARO'))) {
+           
             botoes = "<button type=\"button\" id=\"btnModalRegistro\" class=\"btn btn-primary\"" +
-            " data-toggle=\"modal\" data-target=\"#modalRegistro\" data-chamado=\"" + p_id_chamado +
+            " data-toggle=\"modal\" data-target=\"#modalRegistro\" data-chamado=\"" + g_id_chamado +
             "\"><i class=\"fas fa-asterisk\"></i> Nova Ação</button> ";
     
             break;
         }
+    }
 
-        
-
-       
+    for (var i = 0; i < status_servicos.length; ++i) {
+        if ((p_id_responsavel == g_id_usuario && 
+            
+            (status_servicos[i] == 'ABERTO' || 
+            status_servicos[i] == 'ESPERA' || 
+            status_servicos[i] == 'FALHA' || 
+            status_servicos[i] == 'ENTREGA' ||
+            status_servicos[i] == 'REPARO'))) {
+           
+            botoes = "<button type=\"button\" id=\"btnModalRegistro\" class=\"btn btn-primary\"" +
+            " data-toggle=\"modal\" data-target=\"#modalRegistro\" data-chamado=\"" + g_id_chamado +
+            "\"><i class=\"fas fa-asterisk\"></i> Nova Ação</button> ";
+    
+            break;
+        }
     }
 
     var pendentes = 0;
     
     for (var i = 0; i < status_equips.length; ++i) {
 
-        
-
-        if (status_equips[i] == 'ABERTO' || status_equips[i] == 'ESPERA' || status_equips[i] == 'FALHA' || status_equips[i] == 'ENTREGA') {
+        if (status_equips[i] == 'ABERTO' || status_equips[i] == 'ESPERA' || 
+        status_equips[i] == 'FALHA' || status_equips[i] == 'ENTREGA' ||
+        status_equips[i] == 'REPARO'
+        ) {
 
             pendentes++;
 
         }
+    }
 
-       
+    for (var i = 0; i < status_servicos.length; ++i) {
+
+        if (status_servicos[i] == 'ABERTO' || status_servicos[i] == 'ESPERA' || 
+        status_servicos[i] == 'FALHA' || status_servicos[i] == 'ENTREGA' ||
+        status_servicos[i] == 'REPARO'
+        ) {
+
+            pendentes++;
+
+        }
     }
 
     if (p_id_responsavel == g_id_usuario && pendentes == 0 && status_chamado == 'ABERTO') {
@@ -1531,9 +1926,7 @@ async function carregaChamado(p_id_chamado,sem_equipamentos) {
 
     if (entrega == 1 && p_id_responsavel == g_id_usuario && status_chamado == 'ABERTO' ) {
 
-               
-
-        botoes = botoes +  "<button type=\"button\" id=\"btnModalRegistroEntrega\" class=\"btn btn-success\" data-toggle=\"modal\" data-chamado=\"" +
+        botoes +=  "<button type=\"button\" id=\"btnModalRegistroEntrega\" class=\"btn btn-success\" data-toggle=\"modal\" data-chamado=\"" +
                             p_id_chamado + "\" data-target=\"#modalRegistroEntrega\"><i class=\"fas fa-file-signature\"></i> Registrar Entrega</button> " +
                             "<a href=\"" + base_url + "chamado/gerar_termo/" +
                             p_id_chamado + "\" id=\"baixarTermoEntrega\" role=\"button\" class=\"btn btn-info\">" +
@@ -1543,16 +1936,92 @@ async function carregaChamado(p_id_chamado,sem_equipamentos) {
                             "<i class=\"fas fa-file-download\"></i> Termo de Responsabilidade</a>"
     
     }
+
+    var botoesReparo = null
+
+    if (fila_atual == 3 && p_id_responsavel == g_id_usuario && status_chamado == 'ABERTO') {
+
+        botoesReparo =  "<button type=\"button\" id=\"btnModalIniciarReparo\" class=\"btn btn-primary\" data-toggle=\"modal\" data-chamado=\"" +
+                            p_id_chamado + "\" data-target=\"#modalIniciarReparo\"><i class=\"fas fa-wrench\"></i> Iniciar reparo</button>"
+    
+    }
     $('#botoesAtendimento').html(botoes);
+    $('#botoesAtendimentoReparo').html(botoesReparo);
     $("#spnStatusChamado").fadeOut();
-
-
     
 }
 
+$('#btnPingEquipamento').on('click', function() {
+    let spinner = 
+    `<span class=" ml-1 spinner-border text-light spinner-border-sm"           role="status">
+                <span class="sr-only">Carregando...</span>
+            </span>`;
+
+    let ok = `<i class="far fa-check-circle"></i>`;
+
+    let erro = `<i class="fas fa-exclamation-triangle"></i>`;
+    
+       
+        let aux = $('#txtEquipamento').html();
+        let num_equipamento = aux.split(' ');
+        $(this).prop('disabled', 'true');
+        $(this).append(spinner);
+        
+
+        $.ajax({
+            url: base_url + `Ping/exec_ping`,
+            type: 'GET',
+            data: `patrimonio=${num_equipamento[198]}`,
+            dataType: 'json',
+            success: dados => {
+                $(this).html('');
+                $(this).removeAttr('disabled');
+                if(dados.status === true){
+                    $(this).html('Resposta OK! ');
+                    $(this).append(ok);
+                }else{
+                    $(this).removeClass('btn-success');
+                    $(this).addClass('btn-danger');
+                    $(this).html('Sem resposta! ');
+                    $(this).append(erro);
+                }
+            },
+            error: erro => { alert('Erro ao processar Ping!'); } 
+        });
+        
+});
+async function ping(patrimonio) {   
+    let spinner = `
+        <div class="d-flex justify-content-center">
+            <div class="spinner-border text-secondary spinner-border-sm" role="status">
+                <span class="sr-only">Carregando...</span>
+            </div>
+        </div>`
+    $(`#bnt-ping-${patrimonio}`).prop('disabled', 'true');
+    $(`#icon-ping-${patrimonio}`).html(spinner);
+
+    $.ajax({
+        url: base_url + `Ping/exec_ping?patrimonio=${patrimonio}`,
+        type: 'GET',
+    }).then((data) => {
+        let status = data.status;
+        if (status === true) {
+            $(`#icon-ping-${patrimonio}`).html("");
+            $(`#icon-ping-${patrimonio}`).html('<i class="fa fa-check" style="color: #11ff00;"></i>');
+        } else {
+            $(`#icon-ping-${patrimonio}`).html("");
+            $(`#icon-ping-${patrimonio}`).html('<i class="fa fa-times" style="color: #ff0000;"></i>');
+        }
+        $(`#bnt-ping-${patrimonio}`).removeAttr('disabled', 'true');
+    }).catch((err) => {
+        alert(err);
+        $(`#icon-ping-${patrimonio}`).html('<i class="fa fa-exclamation-triangle" style="color: #ff0000;"></i>');
+    })
+    
+}
+
+
 function finalizaManual(p_id_chamado) {
-
-
 
     $.ajax({
         url: base_url + "chamado/finalizar_manual_chamado",
@@ -1568,6 +2037,16 @@ function finalizaManual(p_id_chamado) {
     })
 }
 
+$('#comunicacao-tab').on('click', function(){
+    if(g_id_usuario == p_id_responsavel){
+        $.ajax({
+            url: base_url + "chamado/zerar_nao_lidos/" + g_id_chamado,
+            type: 'GET',
+            async: true,
+            dataType: 'json',
+        });
+    }
+});
 
 // ---------------- INTERACOES --------------------
 
@@ -1618,15 +2097,25 @@ $('#frmInteracao').on('submit', function(e) { //submit da interacao
     var p_id_fila = $('select[name=id_fila]').val();
 
     var p_equips_atendidos = [];
-
+    var p_servicos_atendidos = [];
+    var p_id_servicos_atendidos = [];
+    
     $('input[class=chkPatri]').each(function() {
 
         if ($(this).is(':checked')) {
-            p_equips_atendidos.push($(this).val());
+            p_equips_atendidos.push($(this).attr('id'));
         }
 
     });
-
+   
+    $('input[class=chkServ]').each(function() {
+        
+        if ($(this).is(':checked')) {
+            p_servicos_atendidos.push($(this).attr('id'));
+            p_id_servicos_atendidos.push($(this).attr('id_servico'));
+        }
+        
+    });
     $.ajax({
 
         url: script_url,
@@ -1638,6 +2127,8 @@ $('#frmInteracao').on('submit', function(e) { //submit da interacao
             id_fila: p_id_fila,
             id_fila_ant: p_id_fila_ant,
             equipamentos_atendidos: p_equips_atendidos,
+            servicos_atendidos: p_servicos_atendidos,
+            id_servicos_atendidos: p_id_servicos_atendidos,
             id_usuario: g_id_usuario
         },
         beforeSend: function() {
@@ -1695,8 +2186,6 @@ $('#frmInteracao').on('submit', function(e) { //submit da interacao
     return false;
 
 });
-
-
 
 
 function atualizaInteracoes(id_chamado) { //carrega as interacoes
@@ -2199,20 +2688,20 @@ $('#frmEditarChamado').on('submit', function(e) {
 
 // ----------- ADMIN -------------------
 
-// ----------- USUARIOS ---------------
+// ----------- USUARIOS ----------------
 
-var autorizacoes = [{
-    Name: "Técnico",
+const autorizacoes = [{
+    Name: "Operação",
     Id: "2"
 }, {
-    Name: "Administrador",
+    Name: "Supervisão",
     Id: "3"
 }, {
     Name: "Master",
     Id: "4"
 }];
 
-var estados = [{
+const estados = [{
     Name: "ATIVO",
     Id: "ATIVO"
 }, {
@@ -2221,7 +2710,10 @@ var estados = [{
 }];
 
 //--------------------
+
+
 $("#usuarios-grid").jsGrid({
+    
     width: "100%",
     height: "auto",
 
@@ -2230,7 +2722,7 @@ $("#usuarios-grid").jsGrid({
     editing: true,
     sorting: true,
     paging: true,
-    filtering: false,
+    filtering: true,
 
     loadMessage: "Carregando...",
 
@@ -2238,18 +2730,53 @@ $("#usuarios-grid").jsGrid({
 
     insertRowLocation: "top",
 
-    finishInsert: function(insertedItem) {
-        var grid = this._grid;
-        grid.option("data").unshift(insertedItem);
-        grid.refresh();
+    onDataLoaded: function(args)
+    {
+        args.grid.sort(6,"desc")
+
+    },
+
+    onItemInserted: function(args){
+        alert(`${args.item.nome_usuario} cadastrado.`)
+        args.grid.sort(6,"desc")
+      
+    },
+    rowClick: function(args) {
+
+        // Disable row click
+        let id_usuario = args.item.id_usuario
+        window.location.href = `${base_url}usuario/${id_usuario}`;
+                
+    // args.event.preventDefault();
     },
 
     controller: {
-        loadData: function() {
-            return $.ajax({
+        loadData: async function(filter) 
+        {
+            var d = $.Deferred()
+
+            const usuarios = await $.ajax({
                 url: base_url + "usuario/listar_usuarios",
                 dataType: "json"
-            });
+            }).done(function(response) {
+
+                d.resolve(response)
+
+            })
+
+            return $.grep(usuarios, function(u) {
+                    
+                return (!filter.nome_usuario ||
+                    u.nome_usuario.indexOf(filter.nome_usuario) > -1) && 
+                    (!filter.login_usuario ||
+                        u.login_usuario.indexOf(filter.login_usuario) > -1) &&
+                    (filter.autorizacao_usuario === "TODOS" ||
+                    u.autorizacao_usuario === filter.autorizacao_usuario) &&
+                    (filter.status_usuario === undefined || 
+                        u.status_usuario === filter.status_usuario)
+                })
+
+
         },
         updateItem: function(item) {
             return $.ajax({
@@ -2269,44 +2796,35 @@ $("#usuarios-grid").jsGrid({
         },
     },
 
-    
-
     fields: [
         //{ name: "id_usuario", type: "text", readOnly:true },
         {
             name: "nome_usuario",
             type: "text",
             validate: "required",
-            title: "Nome"
+            title: "Nome completo",
         }, {
             name: "login_usuario",
             type: "text",
             validate: "required",
-            title: "Login"
-        }, {
-            name: "data_usuario",
-            type: "text",
-            readOnly: true,
-            title: "Data de criação"
-        }, {
-            name: "status_usuario",
-            type: "select",
-            items: estados,
-            textField: "Name",
-            valueField: "Id",
-            title: "Situação"
+            title: "Login de rede"
         }, {
             name: "autorizacao_usuario",
             type: "select",
             items: autorizacoes,
             textField: "Name",
             valueField: "Id",
-            title: "Autorização"
-        },
-        {
+            title: "Autorização",
+            filterTemplate: function() {
+                var $select = jsGrid.fields.select.prototype.filterTemplate.call(this);
+                $select.prepend($("<option>").prop("value", "TODOS").prop("selected","true").text("Todas"));
+                return $select;
+            },
+        }, {
             name: "triagem_usuario",
             type: "checkbox",
             title: "Triagem",
+            filtering: false,
             // itemTemplate: function(value, item) {
             //     return item.triagem_usuario == 1 ? 
             //     "<input type=\"checkbox\" checked>" : "<input type=\"checkbox\">"
@@ -2314,178 +2832,275 @@ $("#usuarios-grid").jsGrid({
         }, {
             name: "encerramento_usuario",
             type: "checkbox",
-            title: "Encerramento Chamado",
+            title: "Encerramento de chamados",
+            filtering: false,
+        },
+
+        {
+            name: "status_usuario",
+            type: "checkbox",
+            title: "Ativo?",
+            insertTemplate: function() {
+                return $("<input>").attr("type", "checkbox").prop("checked", true).prop("disabled", true); // Set to true for checked, false for unchecked
+            },
+            insertValue: function() {
+                return true;
+            }
         },
 
         {
             name: "alteracao_usuario",
             type: "text",
             readOnly: true,
-            title: "Última alteração"
-        }, {
+            title: "Última alteração",
+            filtering: false,
+            inserting: false,
+            updating: false,
+        }, 
+
+        {
+            name: "data_usuario",
+            type: "text",
+            readOnly: true,
+            title: "Data de cadastro",
+            filtering: false,
+            inserting: false,
+            updating: false,
+        },
+        
+        {
+            name: "id_usuario",
+            type: "text",
+            readOnly: true,
+            title: "Id_usuario",
+            visible: false,
+            filtering: false,
+        },
+        
+        {
             type: "control",
             deleteButton: false
-        }
+        },/*{ //botão para visualizar usuário
+            name: "visualizar_usuario",
+            type: "button",
+            editButton: "false",
+            readOnly: true,
+            title: "Visualizar Usuário"
+        }*/
     ]
 });
+
+$('#CheckTriagem').on('click' , function(){
+    p_id_usuario = $(this).attr("id_usuario");
+    permissao = 'triagem';
+    registrarPermissoes(permissao, p_id_usuario);
+});
+
+$('#CheckEncerramento').on('click' , function(){
+    p_id_usuario = $(this).attr("id_usuario");
+    permissao = 'encerramento';
+    registrarPermissoes(permissao, p_id_usuario);
+});
+
+$('#CheckInserviveis').on('click' , function(){
+    p_id_usuario = $(this).attr("id_usuario");
+    permissao = 'inserviveis';
+    registrarPermissoes(permissao, p_id_usuario);
+});
+
+function registrarPermissoes(p_permissao, p_id_usuario){
+    
+    $.ajax({
+
+        url: base_url + 'usuario/ativar_permissoes',
+        
+        type: 'POST',
+        async: true,
+        data: {
+            id_usuario: p_id_usuario,
+            permissao: p_permissao
+        },
+        success: function(data) {
+            alert('Permissão de ' + p_permissao + ' alterada');
+        },
+        error: function(error) {
+            alert('Erro ao atualizar a permissão do usuário.');
+        }
+    });
+}
 
 // ------------ FIM USUARIOS ---------------
 
 
 // ------------- MODELO MENSAGENS --------------------
-let Filas = Promise.resolve(carregaFilas());
-Filas.then(value => {
-    var tipo = [
-        {
-            Name: "Atendimento",
-            Id: "ATENDIMENTO"
-        }, {
-            Name: "Observação",
-            Id: "OBSERVACAO"
-        }, {
-            Name: "Classificar como inservível",
-            Id: "INSERVIVEL"
-        }, {
-            Name: "Alteração de fila",
-            Id: "ALT_FILA"
-        }, {
-            Name: "Remover da espera",
-            Id: "REM_ESPERA"
-        }, {
-            Name: "Deixar em espera",
-            Id: "ESPERA"
-        }
-    ];
-    /*
-        $.ajax({
-        url: 'tipo.json',
-        dataType: 'json',
-        success: function(data) {
-            console.log(data); // Aqui você pode acessar o objeto JSON
-        },
-        error: function(jqXHR, textStatus, errorThrown) {
-            console.error('Erro ao carregar o arquivo JSON:', textStatus, errorThrown);
-        }
-        });
-    */
-
-    //var filas = [{
-    //    Name: "Remoto",
-    //    Id: "1"
-    //}, {
-    //    Name: "Presencial",
-    //    Id: "2"
-    //}, {
-    //    Name: "Laboratório",
-    //    Id: "3"
-    //}, {
-    //    Name: "Almoxarifado",
-    //    Id: "4"
-    //}, {
-    //    Name: "Rede",
-    //    Id: "5"
-    //}, {
-    //    Name: "Telefonia",
-    //    Id: "6"
-    //}];
-    console.log(value)
-    $("#modelos-mensagens-grid").jsGrid({
-        width: "100%",
-        height: "auto",
-
-        autoload: true,
-        inserting: true,
-        editing: true,
-        sorting: true,
-        paging: true,
-        filtering: false,
-
-        loadMessage: "Carregando...",
-
-        noDataContent: "(vazio)",
-
-        controller: {
-            loadData: function() {
-                return $.ajax({
-                    url: base_url + "ModeloMensagem/listar_modelo_mensagem/",
-                    dataType: "json"
-                });
-            },
-            updateItem: function(item) {
-                return $.ajax({
-                    type: "POST",
-                    url: base_url + "modeloMensagem/atualizar_modelo_mensagem",
-                    data: item,
-                    dataType: "json"
-                });
-            },
-            insertItem: function(item) {
-                console.log(item)
-                return $.ajax({
-                    type: "POST",
-                    url: base_url + "modeloMensagem/inserir_modelo_mensagem",
-                    data: item,
-                    dataType: "json"
-                });
-            },
-            
-        },
-
-        fields: [
+if ($('#pills-modelos-mensagens-tab').is(":visible")) {
+    Promise.resolve(carregaFilas()).then(value => {
+        let tipo = [
             {
-                name: "mensagem_modelo_mensagem",
-                type: "text",
-                validate: "required",
-                title: "Mensagem"
+                Name: "Atendimento",
+                Id: "ATENDIMENTO"
             }, {
-                name: "tipo_modelo_mensagem",
-                type: "select",
-                items: tipo,
-                textField: "Name",
-                valueField: "Id",
-                title: "Tipo da mensagem"
+                Name: "Observação",
+                Id: "OBSERVACAO"
             }, {
-                name: "status_modelo_mensagem",
-                type: "checkbox",
-                title: "Status",
-                insertTemplate: function() {
-                    return $("<input>").attr("type", "checkbox").prop("checked", true).prop("disabled", true); // Set to true for checked, false for unchecked
-                },
-                insertValue: function() {
-                    return "true"; // Set to true for checked
-                }
-                
+                Name: "Inservível",
+                Id: "INSERVIVEL"
             }, {
-                name: "data_modelo_mensagem",
-                type: "text",
-                readOnly: true,
-                title: "Data de criação"
+                Name: "Alteração de fila",
+                Id: "ALT_FILA"
             }, {
-                name: "fila_modelo_mensagem",
-                type: "select",
-                items: value,
-                textField: "nome_fila",
-                valueField: "id_fila",
-                title: "Fila"
+                Name: "Remover da espera",
+                Id: "REM_ESPERA"
             }, {
-                name: "alterado_modelo_mensagem",
-                type: "text",
-                readOnly: true,
-                title: "Última alteração",
-            }, {
-                type: "control",
-                deleteButton: false
+                Name: "Deixar em espera",
+                Id: "ESPERA"
             }
-        ]
+        ];
+
+        $("#modelos-mensagens-grid").jsGrid({
+            width: "100%",
+            height: "auto",
+    
+            autoload: true,
+            inserting: true,
+            editing: true,
+            sorting: true,
+            paging: true,
+            filtering: true,
+    
+            loadMessage: "Carregando...",
+    
+            noDataContent: "(vazio)",
+
+            onDataLoaded: function(args)
+            {
+                args.grid.sort(5,"desc")
+
+            },
+
+            onItemInserted: function(args){
+                alert(`Modelo cadastrado.`)
+                args.grid.sort(5,"desc")
+            },
+    
+            controller: {
+                loadData: async function(filter) {
+                    var d = $.Deferred();
+
+                    const msgs = await $.ajax({
+                        url: base_url + "ModeloMensagem/listar_modelo_mensagem/",
+                        dataType: "json"
+                    }).done(function(response) {
+                        d.resolve(response);
+                    });
+
+                    return $.grep(msgs, function(mm) {
+                        return (filter.fila_modelo_mensagem === "TODOS" ||
+                            mm.fila_modelo_mensagem == filter.fila_modelo_mensagem) && 
+                            (filter.tipo_modelo_mensagem === "TODOS" ||
+                                mm.tipo_modelo_mensagem === filter.tipo_modelo_mensagem) &&
+                            (!filter.mensagem_modelo_mensagem || 
+                                mm.mensagem_modelo_mensagem.indexOf(filter.mensagem_modelo_mensagem) > -1) &&
+                            (filter.status_modelo_mensagem === undefined || 
+                                mm.status_modelo_mensagem === filter.status_modelo_mensagem);
+                    });
+                   
+                },
+                updateItem: function(item) {
+                    return $.ajax({
+                        type: "POST",
+                        url: base_url + "modeloMensagem/atualizar_modelo_mensagem",
+                        data: item,
+                        dataType: "json"
+                    });
+                },
+                insertItem: function(item) {
+                    return $.ajax({
+                        type: "POST",
+                        url: base_url + "modeloMensagem/inserir_modelo_mensagem",
+                        data: item,
+                        dataType: "json"
+                    });
+                },
+                
+                
+            },
+    
+            fields: [
+                {
+                    name: "mensagem_modelo_mensagem",
+                    type: "text",
+                    validate: "required",
+                    title: "Texto",
+                   
+                }, 
+                {
+                    name: "fila_modelo_mensagem",
+                    type: "select",
+                    items: value,
+                    textField: "nome_fila",
+                    valueField: "id_fila",
+                    title: "Fila",
+                    filterTemplate: function() {
+                        var $select = jsGrid.fields.select.prototype.filterTemplate.call(this);
+                        $select.prepend($("<option>").prop("value", "TODOS").prop("selected","true").text("Todas"));
+                        return $select;
+                    },
+                    
+                },
+                {
+                    name: "tipo_modelo_mensagem",
+                    type: "select",
+                    items: tipo,
+                    textField: "Name",
+                    valueField: "Id",
+                    title: "Tipo",
+                    filterTemplate: function() {
+                        var $select = jsGrid.fields.select.prototype.filterTemplate.call(this);
+                        $select.prepend($("<option>").prop("value", "TODOS").prop("selected","true").text("Todos"));
+                        return $select;
+                    },
+                    
+                    
+                }, {
+                    name: "status_modelo_mensagem",
+                    type: "checkbox",
+                    title: "Ativo?",
+                    insertTemplate: function() {
+                        return $("<input>").attr("type", "checkbox").prop("checked", true).prop("disabled", true); // Set to true for checked, false for unchecked
+                    },
+                    insertValue: function() {
+                        return "true"; // Set to true for checked
+                    }
+                }, {
+                    name: "data_modelo_mensagem",
+                    type: "text",
+                    readOnly: true,
+                    title: "Data de criação",
+                    filtering: false,
+                    inserting: false,
+                },  {
+                    name: "alterado_modelo_mensagem",
+                    type: "text",
+                    readOnly: true,
+                    title: "Última alteração",
+                    filtering: false,
+                    inserting: false,
+                }, {
+                    type: "control",
+                    deleteButton: false
+                }
+            ]
+        });
     });
-});
+}
 
 //------------- FIM MODELO MENSAGENS ------------------
 
 // ------------- LOCAIS --------------------
 const secretarias = Promise.resolve(carregaSecretarias());
 secretarias.then(value => {
-    let regiao = [
+    const regiao = [
         {
             NAME: "INTERNA",
             ID: "INTERNA"
@@ -2521,18 +3136,54 @@ secretarias.then(value => {
         editing: true,
         sorting: true,
         paging: true,
-        filtering: false,
+        filtering: true,
     
         loadMessage: "Carregando...",
     
         noDataContent: "(vazio)",
+
+        onDataLoaded: function(args)
+        {
+            args.grid.sort(5,"desc")
+
+        },
+
+        onItemInserted: function(args){
+            
+            alert(`${args.item.nome_local} cadastrado.`)
+            args.grid.sort(5,"desc")
+        
+        },
+
+        
+
+     
     
         controller: {
-            loadData: function() {
-                return $.ajax({
+            loadData: async function(filter) {
+                var d = $.Deferred();
+
+                const locais = await $.ajax({
                     url: base_url + "local/listar_locais/",
                     dataType: "json"
+                }).done(function(response) {
+                    d.resolve(response);
                 });
+
+                return $.grep(locais, function(l) {
+                    
+                    return (!filter.nome_local ||
+                        l.nome_local.indexOf(filter.nome_local) > -1) && 
+                        (!filter.endereco_local ||
+                            l.endereco_local.indexOf(filter.endereco_local) > -1) &&
+                        (filter.secretaria_local === "TODOS" ||
+                        l.secretaria_local === filter.secretaria_local) &&
+                        (filter.status_local === undefined || 
+                            l.status_local === filter.status_local) &&
+                        (filter.regiao_local === "TODOS" ||
+                            l.regiao_local === filter.regiao_local);
+                });
+                
             },
             updateItem: function(item) {
                 return $.ajax({
@@ -2551,13 +3202,42 @@ secretarias.then(value => {
                 });
             },
         },
+        rowClick: function(args) {
+
+            // Disable row click
+            let id_local = args.item.id_local;
+            window.location.href = `${base_url}local/${id_local}`;
+                    
+        // args.event.preventDefault();*/
+        },
+
+        onItemInserting: function(args){
+            // console.log(args.item);
+            for(i=0; i < args.grid.data.length; i++){
+                if(args.item.nome_local == args.grid.data[i].nome_local){
+                    args.cancel = true;
+                    alert('O local ' + args.item.nome_local + ' já existe');
+                }
+            }
+        },
+        
+        onItemUpdating: function(args) {
+            for(i=0; i < args.grid.data.length; i++){
+                if(args.item.nome_local == args.grid.data[i].nome_local && args.item.id_local != args.grid.data[i].id_local){
+                    args.cancel = true;
+                    alert('O local ' + args.item.nome_local + ' já existe');
+                }
+            }
+        
+        },
+
     
         fields: [
             {
                 name: "nome_local",
                 type: "text",
                 validate: "required",
-                title: "Local"
+                title: "Nome",
             }, {
                 name: "endereco_local",
                 type: "text",
@@ -2568,18 +3248,70 @@ secretarias.then(value => {
                 items: value,
                 textField: "sigla_secretaria",
                 valueField: "id_secretaria",
-                title: "Secretaria"
+                title: "Secretaria",
+               
+                insertTemplate: function() {
+                    let secretariasAtivas = value.filter((objeto) => {
+                        return objeto.status_secretaria === true;
+                    });
+
+                    let select = $("<select id='sigla-secretaria-locais'>");
+                    secretariasAtivas.forEach(secretaria => {
+                        select.append($("<option>", {
+                            value: secretaria.id_secretaria,
+                            text: secretaria.sigla_secretaria
+                        }));
+                    });
+                    return select;
+                },
+
+                filterTemplate: function() {
+                    var $select = jsGrid.fields.select.prototype.filterTemplate.call(this);
+                    $select.prepend($("<option>").prop("value", "TODOS").prop("selected","true").text("Todas"));
+                    return $select;
+                },
+                
+                insertValue: function() {
+                    return $("#sigla-secretaria-locais").val();
+                },
+                
+                editTemplate: function() {
+                    let secretariasAtivas = value.filter((objeto) => {
+                        return objeto.status_secretaria === true;
+                    });
+
+                    let select = $("<select id='sigla-secretaria-locais'>");
+                    //let select = $('#sigla-secretaria-locais select');
+                    secretariasAtivas.forEach(secretaria => {
+                        select.append($("<option>", {
+                            value: secretaria.id_secretaria,
+                            text: secretaria.sigla_secretaria
+                        }));
+                    });
+                    return select;
+                },
+                editValue: function() {
+                
+                    return $("#sigla-secretaria-locais").val();
+                
+                }
+                
             }, {
                 name: "regiao_local",
                 type: "select",
                 items: regiao,
                 textField: "NAME",
                 valueField: "ID",
-                title: "Região"
+                title: "Região",
+                filterTemplate: function() {
+                    var $select = jsGrid.fields.select.prototype.filterTemplate.call(this);
+                    $select.prepend($("<option>").prop("value", "TODOS").prop("selected","true").text("Todas"));
+                    return $select;
+                },
             }, {
                 name: "status_local",
                 type: "checkbox",
-                title: "Status",
+                title: "Ativo?",
                 insertTemplate: function() {
                     return $("<input>").attr("type", "checkbox").prop("checked", true).prop("disabled", true); // Set to true for checked, false for unchecked
                 },
@@ -2587,7 +3319,16 @@ secretarias.then(value => {
                     return "true"; // Set to true for checked
                 }
                 
-            }, {
+            },
+            {
+                name: "alteracao_local",
+                type: "text",
+                readOnly: true,
+                title: "Última alteração",
+                filtering: false,
+                inserting: false,
+            },
+            {
                 type: "control",
                 deleteButton: false
             }
@@ -2600,7 +3341,440 @@ secretarias.then(value => {
 
 //------------- FIM LOCAIS ------------------
 
+// ------------- SECRETARIAS -----------------
+$("#secretarias-grid").jsGrid({
+    width: "100%",
+    height: "auto",
 
+    autoload: true,
+    inserting: true,
+    editing: true,
+    sorting: true,
+    paging: true,
+    filtering: true,
+
+    
+
+    loadMessage: "Carregando...",
+
+    noDataContent: "(vazio)",
+
+    onDataLoaded: function(args)
+    {
+        args.grid.sort(3,"desc")
+
+    },
+
+    onItemInserted: function(args){
+        alert(`${args.item.nome_secretaria} cadastrada.`)
+        args.grid.sort(3,"desc")
+      
+    },
+
+    controller: {
+        loadData: async function(filter) {
+
+            const _sect = await Promise.resolve(secretarias)
+          
+
+            return $.grep(_sect, function(s) {
+                
+                return (!filter.nome_secretaria ||
+                    s.nome_secretaria.indexOf(filter.nome_secretaria) > -1) && 
+                    (!filter.sigla_secretaria ||
+                        s.sigla_secretaria.indexOf(filter.sigla_secretaria) > -1) &&
+                    (filter.status_secretaria === undefined || 
+                        s.status_secretaria === filter.status_secretaria)
+            });
+           
+            
+        },
+        updateItem: function(item) {
+            return $.ajax({
+                type: "POST",
+                url: base_url + "secretaria/atualizar_secretaria",
+                data: item,
+                dataType: "json"
+            });
+        },
+        insertItem: function(item) {
+            return $.ajax({
+                type: "POST",
+                url: base_url + "secretaria/inserir_secretaria",
+                data: item,
+                dataType: "json"
+            });
+        },
+    },
+
+    
+
+    fields: [
+        {
+            name: "nome_secretaria",
+            type: "text",
+            validate: "required",
+            title: "Nome",
+            
+        }, {
+            name: "sigla_secretaria",
+            type: "text",
+            validate: "required",
+            title: "Sigla"
+        }, {
+            name: "status_secretaria",
+            type: "checkbox",
+            title: "Ativa?",
+            insertTemplate: function() {
+                return $("<input>").attr("type", "checkbox").prop("checked", true).prop("disabled", true); // Set to true for checked, false for unchecked
+            },
+            insertValue: function() {
+                return "true"; // Set to true for checked
+            }
+        },
+        {
+            name: "ultima_alteracao",
+            type: "text",
+            readOnly: true,
+            title: "Última alteração",
+            filtering: false,
+            inserting: false
+        },
+        {
+            type: "control",
+            deleteButton: false
+        }
+    ]
+});
+
+//------------- FIM SECRETARIAS ------------------
+
+//------------ SERVICOS --------------------------
+async function carregarTodosServicos() {
+    var d = $.Deferred();
+
+    const servicos = await $.ajax({
+        url: base_url + "servico/listar_servicos_triagem/",
+        dataType: 'json',
+    }).done(function(response) {
+        d.resolve(response);
+    });
+
+    return servicos
+}
+
+Promise.resolve(carregaFilas()).then(filas => {
+    $("#servicos-grid").jsGrid({
+        width: "100%",
+        height: "auto",
+    
+        autoload: true,
+        inserting: true,
+        editing: true,
+        sorting: true,
+        paging: true,
+        invalidMessage: "Erro!",
+        filtering: true,
+    
+        loadMessage: "Carregando...",
+    
+        noDataContent: "(vazio)",
+
+        onDataLoaded: function(args) {
+            args.grid.sort(6,"DESC")
+        },
+
+        onItemInserting: function(args){
+            for(i=0; i < args.grid.data.length; i++){
+                if(args.item.nome_servico == args.grid.data[i].nome_servico){
+                    args.cancel = true;
+                    alert('O servico ' + args.item.nome_servico + ' já existe');
+                }
+            }
+        },
+
+        onItemInserted: function(args){
+            alert(`Serviço ${args.item.nome_servico} cadastrado.`)
+            args.grid.sort(6,"DESC")
+        },
+
+        onItemUpdating: function(args){
+            for(i=0; i < args.grid.data.length; i++){
+                if(args.item.nome_servico == args.grid.data[i].nome_servico && args.item.id_servico != args.grid.data[i].id_servico){
+                    args.cancel = true;
+                    alert('O servico ' + args.item.nome_servico + ' já existe');
+                }
+            }
+        },
+    
+        controller: {
+            loadData: async function(filter) {
+
+                var d = $.Deferred();
+
+                const servicos = await $.ajax({
+                    url: base_url + "servico/listar_servicos_triagem/",
+                    dataType: 'json',
+                }).done(function(response) {
+                    d.resolve(response);
+                });
+
+               
+               
+
+                return $.grep(servicos, function(s) {
+                    
+                    return (!filter.nome_servico ||
+                        s.nome_servico.indexOf(filter.nome_servico) > -1) && 
+                        (filter.id_fila_servico === 0 ||
+                        s.id_fila_servico == filter.id_fila_servico) &&
+                        (filter.status_servico === undefined || 
+                            s.status_servico === filter.status_servico)
+                });
+            },
+            updateItem: function(item) {
+                return $.ajax({
+                    type: "POST",
+                    url: base_url + "servico/atualizar_servico",
+                    dataType: "json",
+                    data: item,
+                });
+            },
+            insertItem: function(item) {
+                return $.ajax({
+                    type: "POST",
+                    url: base_url + "servico/inserir_servico",
+                    data: item,
+                    dataType: "json"
+                });
+            },
+        },
+    
+        fields: [
+            {
+                name: "nome_servico",
+                type: "text",
+                validate: [
+                    { validator: "pattern", message: "Atenção!\nDigite um nome para o serviço.", param: "[a-zA-Z0-9]+.+" },
+                ],
+                title: "Serviço"
+            }, {
+                name: "id_fila_servico",
+                title: "Fila",
+                type: "select",
+                align: "center",
+                autosearch: true,
+                items: filas,
+                valueField: "id_fila",
+                textField: "nome_fila",
+                selectedIndex: -1,
+                valueType: "number",
+                readOnly: false,
+                filterTemplate: function() {
+                    var $select = jsGrid.fields.select.prototype.filterTemplate.call(this);
+                    $select.prepend($("<option>").prop("value", 0).prop("selected","true").text("Todas"));
+                    return $select;
+                },
+            }, 
+            {
+                name: "unidade_medida",
+                type: "text",
+                validate: [
+                    "required",
+                    { validator: "maxLength", param: 3, message: "Atenção!\nEste campo deve ser preenchido e conter no máximo 3 caracteres." },
+                ],
+                title: "Unidade de medida",
+                filtering: false,
+                insertTemplate: function() {
+                    var $input = jsGrid.fields.text.prototype.insertTemplate.call(this);
+                    $input.attr("type", "text").val("UN");
+                    return $input
+                },
+                
+                
+            },
+            
+            {
+                name: "pontuacao_servico",
+                type: "text",
+                validate: [
+                    "required",
+                    { validator: "pattern", param: /^[12345]+$/, message: "Atenção!\nEste campo aceita um dígito de 1 a 5." },
+                ],
+                title: "Complexidade (1 a 5)",
+                filtering: false,
+            },
+            {
+                name: "valor_servico",
+                type: "text",
+                validate: [
+                    "required",
+                    { validator: "pattern", param: /^\d+(\.\d{1,2})?$/, message: "Atenção!\nNão utilize a virgula \",\" Utilize apanes o ponto \".\"\nExemplo: 99.99" },
+                ],
+                title: "Valor unitário (R$)",
+                filtering: false,
+            },
+            {
+                name: "status_servico",
+                type: "checkbox",
+                title: "Ativo?",
+                insertTemplate: function() {
+                    return $("<input>").attr("type", "checkbox").prop("checked", true).prop("disabled", true); // Set to true for checked, false for unchecked
+                },
+                insertValue: function() {
+                    return "true"; // Set to true for checked
+                }
+            },
+            {
+                name: "data_ultima_alteracao",
+                type: "text",
+                readOnly: true,
+                title: "Última alteração",
+                filtering: false,
+                inserting: false
+            },
+            {
+                type: "control",
+                deleteButton: false
+            }
+        ]
+    });
+});
+
+
+//------------ FIM SERVICOS --------------------------
+
+//------------ BANCADAS--------------------------
+async function carregarBancadas(){
+
+    let lista_bancadas = [];
+    let status = 1;
+    await $.ajax({
+
+        url: base_url + "bancada/lista_bancadas/",
+        type: 'POST',
+        async: true,
+        dataType: 'json',
+        data:{
+            status
+        },
+        success: function(data) {
+            lista_bancadas = data;
+        }
+    });
+    return lista_bancadas;
+}
+
+
+    $("#bancadas-grid").jsGrid({
+        width: "100%",
+        height: "auto",
+    
+        autoload: true,
+        inserting: true,
+        editing: true,
+        sorting: true,
+        paging: true,
+        invalidMessage: "Erro!",
+        filtering: false,
+    
+        loadMessage: "Carregando...",
+    
+        noDataContent: "(vazio)",
+        
+        onItemInserting: function(args){
+            let ultimo = '';
+            for(i=0; i < args.grid.data.length; i++){
+                ultimo = parseInt(args.grid.data[i].nome_bancada.slice(1));
+            }
+            args.item.nome_bancada = '#' + (ultimo + 1);
+            
+            console.log(args.item);
+        },
+        onItemEditing: function(args){
+            args.grid.fields[1].editing = true;
+            if(args.item.ocupado_bancada == true){
+                args.grid.fields[1].editing = false;
+            }
+        },
+
+        onItemInserted: function(args){
+            alert(`Bancada ${args.item.nome_bancada} cadastrada.`)
+        },
+
+        controller: {
+            loadData: function() {
+                //console.log(carregarBancadas());
+                return carregarBancadas();
+            },
+            updateItem: function(item) {
+                console.log(item);
+                if(item.ocupado_bancada == false){
+                    return $.ajax({
+                        type: "POST",
+                        url: base_url + "bancada/atualizar_bancada",
+                        dataType: "json",
+                        data: item,
+                    });
+                }
+                
+            },
+            insertItem: function(item) {
+                return $.ajax({
+                    type: "POST",
+                    url: base_url + "bancada/inserir_bancada",
+                    data: item,
+                    dataType: "json"
+                });
+            },
+        },
+    
+        fields: [
+            {
+                name: "nome_bancada",
+                type: "text",
+                insertTemplate: function() {
+                    let input = this.__proto__.insertTemplate.call(this); //original input
+                
+                    input.val('#');
+                    input.prop("disabled", true);
+                
+                    return input;
+                },
+                title: "Identificação",
+                editing: false,
+            }, {
+                name: "status_bancada",
+                type: "checkbox",
+                title: "Ativa?",
+                insertTemplate: function() {
+                    return $("<input>").attr("type", "checkbox").prop("checked", true).prop("disabled", true); // Set to true for checked, false for unchecked
+                },
+                insertValue: function() {
+                    return "true"; // Set to true for checked
+                }
+            },{
+                name: "ocupado_bancada",
+                type: "checkbox",
+                title: "Ocupada?",
+                editing: false,
+                insertTemplate: function() {
+                    return $("<input>").attr("type", "checkbox").prop("checked", true).prop("disabled", true); // Set to true for checked, false for unchecked
+                },
+                insertValue: function() {
+                    return "true"; // Set to true for checked
+                }
+            },
+            {
+                type: "control",
+                //editButton: false,
+                deleteButton: false
+            }
+        ]
+    });
+
+
+//------------ FIM BANCADA --------------------------
 
 // ---------------- LOG DE EVENTOS --------------
 
@@ -2770,29 +3944,19 @@ async function carregaTriagem(p_id_ticket) {
         },
     });
 
-    var _grupo = null
-
-    switch(id_fila_sigat) {
-        case 5:
-            _grupo = "infra"
-            break
-        case 6:
-            _grupo = "telefonia"
-    }
-
     await $.ajax({
-        url: base_url + 'servico/listar_servicos_triagem',
+        url: base_url + 'servico/listar_servicos_triagem/1',
         dataType: 'json',
         async: true,
         type: "POST",
         data: {
-            grupos: _grupo
+            filas: id_fila_sigat
         },
         success: function(data) {
             servicos = data
         },
     });
-
+    
     $("#tblServicos").jsGrid({
         width: '100%',
         autoload: false,
@@ -2822,18 +3986,28 @@ async function carregaTriagem(p_id_ticket) {
         ],
         onItemInserting: function(args) {
 
-            var s = args.item.id_servico
-
+            var s = args.item.id_servico;
+            
             var info_servico = servicos.find(e => e.id_servico == s)
 
             args.item.grupo_servico = info_servico.grupo_servico
+            args.item.quantidade = 1;
+            
+           
+            
             // args.item.timestamp = Date.now().toString()
             
 
         },
 
         onItemInserted: function(args) {
-            
+            let servicos = args.grid.data[args.grid.data.length - 1];
+            for(i=0; i< args.grid.data.length - 1; i++){
+                if(args.grid.data[i].id_servico == servicos.id_servico){
+                     alert('Este serviço já foi cadastrado');
+                     args.grid.data.pop();
+                }
+             }
 
         },
 
@@ -2876,16 +4050,19 @@ function uniq_fast(a) {
 
 var g_equips = [];
 
-async function verificaStatusEquip(p_e) {
+async function verificaStatusEquip(p_e, return_array = false) {
     out = null;
     await $.ajax({
         method: "post",
         url: base_url + "json/status_equipamento",
-        data: { e_status: p_e}
-      })
-        .done(function( res ) {
-            out = res;
-        });
+        data: { 
+            e_status: p_e,
+            isArray: return_array
+        }
+    }).done(function( res ) {
+        out = res;
+    });
+
     return out;
 }
 
@@ -2934,7 +4111,12 @@ async function verificaAutoEquip() {
                 if (status !== null) {
                     if (status.status_equipamento_chamado === "ABERTO" || 
                         status.status_equipamento_chamado === "ENTREGA" ||
-                        status.status_equipamento_chamado === "INSERVIVEL") {
+                        status.status_equipamento_chamado === "ESPERA" ||
+                        status.status_equipamento_chamado === "REPARO" ||
+                        status.status_equipamento_chamado === "REMESSA" ||
+                        status.status_equipamento_chamado === "GARANTIA" ||
+                        status.status_equipamento_chamado === "INSERVIVEL"
+                        ) {
                         ocorrencias.push({"Número":nums_equip[i],"Status":status.status_equipamento_chamado,"ID":status.id_chamado,"Ticket":status.ticket_chamado})
                     }
                 }
@@ -3025,12 +4207,20 @@ $("#btnValidaEquip").on('click', async function() {
                     erros.push("O item "+grid_equips[i].Descrição+" está sem número!\n");
                 }
                 else {
-                    var status = await verificaStatusEquip(grid_equips[i].Número);
+                    var status = await 
+                    verificaStatusEquip(grid_equips[i].Número, true);
                     if (status !== null) {
-                        if (status.status_equipamento_chamado === "ABERTO" || 
-                            status.status_equipamento_chamado === "ENTREGA" ||
-                            status.status_equipamento_chamado === "INSERVIVEL") {
-                            ocorrencias.push({"Número":grid_equips[i].Número,"Status":status.status_equipamento_chamado,"ID":status.id_chamado,"Ticket":status.ticket_chamado})
+                        for(j=0; j < status.length; j++){
+                            if (status[j].status_equipamento_chamado === "ABERTO" || 
+                            status[j].status_equipamento_chamado === "ENTREGA" ||
+                            status[j].status_equipamento_chamado === "ESPERA" ||
+                            status[j].status_equipamento_chamado === "INSERVIVEL" ||
+                            status[j].status_equipamento_chamado === "REPARO" ||
+                            status[j].status_equipamento_chamado === "GARANTIA" ||
+                            status[j].status_equipamento_chamado === "REMESSA") {
+                                ocorrencias.push({"Número":grid_equips[i].Número,"Status":status[j].status_equipamento_chamado,"ID":status[j].id_chamado,"Ticket":status[j].ticket_chamado})
+                               
+                            }
                         }
                     }
                 }
@@ -3423,11 +4613,31 @@ $('#frmImportarChamado').on('submit',
             dados.append('listaServicos', JSON.stringify($("#tblServicos").jsGrid("option","data")));
 
         }
-        
+       
         dados.append('num_ticket',g_num_ticket);
         dados.append('g_anexos', JSON.stringify($("#tblAnexos").jsGrid("option","data")));
         dados.append('id_ticket', g_id_ticket);
-
+        let existe = false;
+        await $.ajax({
+            url: base_url + 'triagem/consultar_chamado_aberto',
+            type: 'GET',
+            data: `id_ticket_chamado=${g_id_ticket}`,
+            datatype: 'json',
+            success: dados => {
+                if(dados != null){
+                    alert(`O chamado ${dados[0].id_chamado} já está aberto`);
+                    existe = true;
+                }
+            },
+            error: erro => {
+                console.log(erro);
+            }
+        });
+        if(existe == true){
+            window.location.href = base_url + "painel#triagem";
+            return true;
+        }
+        
         $.ajax({
 
             url: script_url,
@@ -3544,9 +4754,9 @@ $("#modalBuscaRapida").on("shown.bs.modal", function() {
      });
 
 
-     $("#tblEquipsBr tbody tr td:nth-child(4)").on("click", function() {
+     $("#tblEquipsBr tbody tr ").on("click", function() {
  
-        window.open(base_url + "chamado/" + $(this).text());
+        window.open(base_url + "equipamento/" + $(this).find("td").first().text());
      });
 
 
@@ -3586,7 +4796,7 @@ $("#chkPrioridade").on('click', async function() {
 })
 
 
-$('#modalEndereco').on('show.bs.modal', async function (e) {
+/*$('#modalEndereco').on('show.bs.modal', async function (e) {
    var id_chamado = $(e.relatedTarget).attr("data-chamado");
    var endereco = null
    await $.ajax({
@@ -3601,4 +4811,1697 @@ $('#modalEndereco').on('show.bs.modal', async function (e) {
     });
    $(this).find(".modal-body").html("<h5>" + $("input[name=nome_local]").val() + "</h5><p>" + endereco + "</p>")
 })
+*/
 
+$('#modalEmail').on('shown.bs.modal', function() {
+    $('#titleEmail').val(`Re: [Chamado: #${g_id_chamado}]`);
+
+    $('textarea[name=txtEmail]').summernote({ //inicialização do SummerNote 
+        toolbar: [
+            ['style', ['bold', 'italic', 'underline', 'clear']],
+            ['font', ['strikethrough', 'superscript', 'subscript']],
+            ['fontsize', ['fontsize']],
+            ['color', ['color']],
+            ['para', ['ul', 'ol', 'paragraph']],
+            ['height', ['height']],
+            ['insert', ['link', 'picture']],
+        ],
+        height: 300,
+        lang: 'pt-BR',
+        dialogsInBody: true,
+        disableDragAndDrop: false,
+    });
+});
+
+$('#frmEmail').on('submit', function(e) { //submit da interacao
+    e.preventDefault();
+    
+    let p_txtEmail = $('textarea[name=txtEmail]').summernote('code');
+    let spinner = 
+        `<span class=" ml-1 spinner-border text-light spinner-border-sm" role="status">
+            <span class="sr-only">Carregando...</span>
+        </span>`;
+    $('#modalEmail').append(spinner);
+
+    let dados = new FormData($(this)[0]);
+    dados.append("conteudo", p_txtEmail);
+    dados.append("id_ticket_chamado", g_id_ticket_chamado);
+    dados.append("id_chamado", g_id_chamado);
+    //dados.append("anexoEmail", $('textarea[name=txtEmail]'));
+    $('input[id="fileAnexosEmail"]').val() !== "" ? dados.append("anexos",1) : dados.append("anexos",0);
+
+    if(p_txtEmail.toLowerCase().indexOf('anexo') !== -1 && $('input[id="fileAnexosEmail"]').val() === "") {
+        let confirm_anexo = confirm('Você pode ter esquecido de anexar um arquivo.\nDeseja enviar este email mesmo assim?');
+
+        if(!confirm_anexo) {
+            return false;
+        }
+    }
+
+    if ($('textarea[name=txtEmail]').summernote('isEmpty')) {
+        $('#modalEmail .modal-body').prepend(
+            "<div class=\"alert alert-warning fade show\" role=\"alert\">" +
+                "O texto não pode ficar em branco!" +
+                "<button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\">" +
+                    "<span aria-hidden=\"true\">&times;</span>" +
+                "</button>" +
+            "</div>");
+
+        return false;
+    }
+    
+
+    return $.ajax({
+        url: base_url + "interacao/enviar_email",
+        dataType: "json",
+        contentType: false,
+        processData: false,
+        method: "post",
+        data : dados,
+        beforeSend: () => {
+            $('#btnEnviarEmail').prop("disabled", true);
+        },
+        success: (() => {
+            $('textarea[name=txtEmail]').summernote('reset');
+            $('#fileAnexosEmail').val('');
+            alert("Email enviado com sucesso");
+            $('#modalEmail').modal('hide');
+            window.location.reload(false);
+        }),
+        complete: () => {
+            $('#btnEnviarEmail').removeAttr("disabled");
+        },
+        error: (response, status, error) => {
+            $('#modalEmail .modal-body').prepend(
+                "<div class=\"alert alert-danger fade show\" role=\"alert\">" +
+                    "Erro ao enviar e-mail!<br>" +
+                    response.responseJSON.message +
+                    "<button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\">" +
+                        "<span aria-hidden=\"true\">&times;</span>" +
+                    "</button>" +
+                "</div>"
+            );
+            alert("Erro ao enviar email!");
+            $('#btnEnviarEmail').removeAttr("disabled");
+        }
+    });
+});
+
+
+//------------- VIEW LOCAL ---------------//
+
+$("#chkLocal").on('click', async function() {
+
+    p_id_local = $(this).attr("id_local");
+    
+
+    await $.ajax({
+
+        url: base_url + 'local/ativar_local',
+        
+        type: 'POST',
+        async: true,
+        data: {
+            id_local: p_id_local
+        },
+        success: function(data) {
+            if(document.getElementById("chkLocal").checked == false){
+                alert('Local desativado: Este local não será mais listado.');
+            }else{
+                alert('Local Ativado');
+            }
+        },
+        error: function(error) {
+            alert('Erro ao atualizar status do local');
+        }
+    });
+
+});
+$('#btnSalvarLocal').hide();
+$('#btnEditarLocal').on("click", function(){
+    let dados = [];
+    dados.push($('#nome_local').val(), $('#secretaria_local').val(), $('#endereco_local').val(), $('#regiao_local').val());
+    $('#btnSalvarLocal').show();
+    $('#btnCancelarEdicaoLocal').removeAttr('hidden');
+    $('input').removeAttr('disabled');
+    $('select').removeAttr('disabled');
+
+    $('#btnCancelarEdicaoLocal').on('click', function(){
+        $('#nome_local').val(dados[0]);
+        $('#secretaria_local').val(dados[1]);
+        $('#endereco_local').val(dados[2]);
+        $('#regiao_local').val(dados[3]);
+        $('#btnSalvarLocal').hide();
+        $('#frmEditarLocal input').prop('disabled', true);
+        $('#frmEditarLocal select').prop('disabled', true);
+        $('#btnCancelarEdicaoLocal').prop('hidden', true);
+    });
+});
+
+function editarTelefone(id){ 
+
+    $('button').attr('disabled', 'disabled');
+    let telefone = $('#tel'+id).html();
+    let setor = $('#set' +id).html();
+    let btnSalvar = '<button onclick="inserirTelefone('+id+')" type="button" class="btn btn-success mr-2 mb-2"><i class="fas fa-save"></i> Salvar</button>';
+    let btnCancelar = '<button id="btnCancelarTel" type="button" class="btn btn-danger mb-2"><i class="fas fa-window-close"></i> Cancelar</button>';
+    let btnEditar = '<button id="btnEditarTel" type="button" class="btn btn-info mr-2 mb-2" onclick="editarTelefone('+id+')"><i class="fas fa-edit"></i> Editar</button>';
+    let btnExcluir = '<button type="button" onclick="excluirTelefone('+id+')" class="btn btn-danger mr-2 mb-2"><i class="fas fa-trash"></i> Excluir</button>'
+    $('#tel'+id).html('');
+    $('#tel'+id).append(`<input onkeyup="handlePhone(event)" class="form-control" name="telefone" id="telEd${id}" type="text" value="${telefone}" maxlength="15"></input>`);
+    $('#set'+id).html('');
+    $('#set'+id).append(`<input name="setor" type="text" id="setEd${id}" class="form-control" value="${setor}" maxlength="100"></input>`);
+    $('#edit'+id).html('');
+    $('#edit'+id).append(btnSalvar);
+    $('#edit'+id).append(btnCancelar);
+
+    $('#btnCancelarTel').on('click', function(){
+        $('#tel'+id).html(telefone);
+        $('#set'+id).html(setor);
+        $('#edit'+id).html('');
+        $('#edit'+id).append(btnEditar);
+        $('#edit'+id).append(btnExcluir);
+        $('button').removeAttr('disabled');
+    });
+};
+
+function excluirTelefone(id){
+    let text = "Deseja realmente excluir este telefone?";
+    let idLocal = $('#IdLocal').val();
+    let acao = 'excluir';
+    let telefone = 'z'; //telefone não pdoe ser nulo
+    if (confirm(text) == true) {
+        $.ajax({
+    
+            url: base_url + 'local/' + idLocal,
+                
+            type: 'POST',
+            async: true,
+            data: {
+                telefone: telefone,
+                acao: acao,
+                id: id
+            },
+            success: function(data) {
+                location.replace(base_url + '/local/' + idLocal + '?tel=true');
+            },
+            error: function(error) {
+                alert('Erro ao inserir ou editar um telefone. ');
+            }
+        });
+    } else {
+        //ao cancelar não se faz nada
+    }
+}
+
+$('#addTelLocal').on('click', function(){
+    $('button').attr('disabled', 'disabled');
+    let novaLinha = '<tr id="addLinha"> <td id="campoTelAdd"><input id="telAdd" name="telefone" class="form-control" onkeyup="handlePhone(event)" type="text" value="" maxlength="15"></input></td> <td id="campoSetAdd"><input class="form-control" id="setAdd" name="setor" maxlength="100" type="text" value=""></input></td><td id="edit"><button onclick="inserirTelefone()" type="button" class="btn btn-success mr-2"><i class="fas fa-save"></i> Salvar</button><button id="btnCancelarAdd" type="button" class="btn btn-danger"><i class="fas fa-window-close"></i> Cancelar</button></td></tr>';
+
+    $('#tabela_telefones tbody').append(novaLinha);
+   
+    $('#addTelLocal').hide();
+
+    $('#btnCancelarAdd').on('click', function(){
+        $('#addLinha').remove();
+        $('#addTelLocal').show();
+        $('button').removeAttr('disabled');
+    });
+});
+
+function inserirTelefone(id = 0){
+    $('spam').remove();
+    $('br').remove();
+    let campoVazio = '<spam class="text-danger">Este campo é obrigatório</spam><br/>';
+    let campoCurto = '<spam class="text-danger">Este campo deve ter no mínimo 4 caracteres</spam><br/>';
+    let idLocal = $('#IdLocal').val();   
+    let telefone = '';
+    let setor = '';
+    let acao = ''
+    if(id == 0){
+        telefone = $('#telAdd').val();
+        setor = $('#setAdd').val();
+        acao = 'inserir';
+    }else{
+        telefone = $('#telEd'+id).val();
+        setor = $('#setEd'+id).val();
+        acao = 'editar';
+    }
+     
+    let valido = false;
+    
+    if(telefone != '' && setor != '' && setor.length >= 4 && telefone.length >= 4){
+        valido = true;
+    }else{
+        valido = false;
+        if(telefone == ''){
+            $('#campoTelAdd').append(campoVazio);
+            $('#tel'+id).append(campoVazio);
+        }if(setor == ''){
+            $('#campoSetAdd').append(campoVazio);
+            $('#set'+id).append(campoVazio);
+        }if(setor.length < 4){
+            $('#campoSetAdd').append(campoCurto);
+            $('#set'+id).append(campoCurto);
+        }if(telefone.length < 4){
+            $('#campoTelAdd').append(campoCurto);
+            $('#tel'+id).append(campoCurto);
+        }
+    }
+        
+    if(valido == true){
+        $.ajax({
+    
+            url: base_url + 'local/' + idLocal,
+                
+            type: 'POST',
+            async: true,
+            data: {
+                telefone: telefone,
+                setor: setor,
+                acao: acao,
+                id: id
+            },
+            success: function(data) {
+                location.replace(base_url + '/local/' + idLocal + '?tel=true');
+            },
+            error: function(error) {
+                alert('Erro ao inserir ou editar um telefone. ');
+            }
+        });
+    }
+    
+}
+
+
+const handlePhone = (event) => {
+    let input = event.target;
+    input.value = phoneMask(input.value);
+  }
+  
+  const phoneMask = (value) => {
+    if (!value) return "";
+    value = value.replace(/\D/g,'');
+    if (value.length >9) value = value.replace(/(\d{2})(\d)/,"($1) $2");
+    value = value.replace(/(\d)(\d{4})$/,"$1-$2");
+    return value;
+  }
+
+  
+
+
+// ------------------------ REPAROS ---------------------------------- //
+
+
+$('#modalIniciarReparo').on('show.bs.modal', async function (event) {
+
+    var modal = $(this)
+
+    var button = $(event.relatedTarget) // Button that triggered the modal
+    var p_id_chamado = button.data('chamado')
+
+    var listaEquip = null
+    var listaBancadas = null
+
+    $(this).find("#alerta-reparo").remove()
+
+    await $.ajax({
+        "method": "POST",
+        "url": base_url + "json/equipamentos_pendentes",
+        "data": {
+            id_chamado: p_id_chamado,
+            espera: false
+        }
+    })
+    .done((data) => {
+        listaEquip = data
+    })
+
+    await $.ajax({
+        "method": "POST",
+        "url": base_url + "bancada/lista_bancadas",
+        "data": {
+            status: 0,
+        }
+    })
+    .done((data) => {
+        listaBancadas = data
+    })
+
+    if (listaBancadas.length == 0) {
+
+        $("#btnIniciarReparo").prop("disabled","true")
+        $("#listaBancadas").prop("disabled","true")
+        $("#listaEquipReparo").prop("disabled","true")
+
+        $('#modalIniciarReparo').find('.modal-body')
+            .prepend(
+                `<div id="alerta-reparo" class="alert alert-warning" role="alert">
+                Não existem bancadas disponíveis!
+              </div>`
+            )
+
+        return false
+    }
+
+    if (listaEquip.equipamentos.length == 0) {
+
+        $("#btnIniciarReparo").prop("disabled","true")
+        $("#listaBancadas").prop("disabled","true")
+        $("#listaEquipReparo").prop("disabled","true")
+
+        $('#modalIniciarReparo').find('.modal-body')
+            .prepend(
+                `<div id="alerta-reparo" class="alert alert-warning" role="alert">
+                Não existem equipamentos disponíveis!
+              </div>`
+            )
+
+        return false
+
+    }
+
+    listaEquip.equipamentos.forEach((equip) => {
+        modal.find('.modal-body #listaEquipReparo')
+        .append(
+        `<option value="${equip.num_equipamento_chamado}">
+        ${equip.num_equipamento_chamado}
+        </option>`)
+
+    })
+
+    listaBancadas.forEach((b) => {
+        modal.find('.modal-body #listaBancadas')
+        .append(
+        `<option value="${b.id_bancada}">
+        ${b.nome_bancada}
+        </option>`)
+
+    })
+
+    
+  })
+
+$('#modalIniciarReparo').on('hide.bs.modal', function (event) {
+
+
+    $(this).find('.modal-body #listaBancadas').html("")
+    $(this).find('.modal-body #listaBancadas').removeAttr("disabled")
+    $(this).find('.modal-body #listaEquipReparo').html("")
+    $(this).find('.modal-body #listaEquipReparo').removeAttr("disabled")
+    $("#btnIniciarReparo").removeAttr("disabled")
+
+})
+
+var p_id_reparo = null
+
+async function carregaReparo(p_id_reparo) {
+
+    var reparo = null
+
+    await $.ajax({
+        url: base_url + 'reparo/buscar_reparo',
+        method: "POST",
+        data: {
+            id_reparo: p_id_reparo
+        }
+    })
+    .done((data) => {
+        reparo = data
+    })
+
+    return reparo
+
+}
+
+async function carregaServicos(id_reparo) {
+
+    let servicos = [];
+
+    await $.ajax({
+        url: base_url + 'reparo/buscar_servicos',
+        method: "POST",
+        data: {
+            id_reparo: id_reparo
+        },
+    })
+    .done((data) => {
+        servicos = data
+    })
+
+    return servicos
+
+}
+
+async function carregaReparoServicos(p_id_reparo) {
+
+    var servicos = null
+
+    await $.ajax({
+        url: base_url + 'reparo/buscar_reparo_servico',
+        method: "POST",
+        data: {
+            id_reparo: p_id_reparo
+        }
+    })
+    .done((data) => {
+        servicos = data
+    })
+
+    return servicos
+
+}
+
+$('#slctListaModeloLaudo').on('change', function(e) {
+
+    $("#txtLaudoInservivelEquip").val($(this).val())
+})
+
+$('#modalLaudoInservivelEquip').on('show.bs.modal', async function (e) {
+   
+    
+    
+    $(this).find('.modal-footer #btnInservivelEquip').attr("data-equip",num_equip_reparo_atual)
+    $(this).find('.modal-footer #btnInservivelEquip').attr("data-reparo",p_id_reparo)
+
+    $(this).find(" .modal-title").html(
+    `<i class="fas fa-ban"></i> ${num_equip_reparo_atual} - Classificar como inservível`
+    )
+
+    
+
+    const mensagens = await carregaModeloMensagem('INSERVIVEL',3)
+
+    mensagens.forEach(msg => {
+
+        let string = msg.mensagem_modelo_mensagem.slice(0,50) + "..."
+
+        $(this).find('.modal-body #slctListaModeloLaudo').append(
+            `<option
+            value="${msg.mensagem_modelo_mensagem}"
+            >${string}</option>`
+        )
+    })
+})
+
+$('#modalLaudoInservivelEquip').on('hide.bs.modal', function (e) {
+    $(this).find('.modal-body #slctListaModeloLaudo').html(`<option
+    value="">Escolha...</option>`)
+
+   
+    
+
+    
+})
+
+$("#btnInservivelEquip").on("click", async function(e) { //classificar como inservível
+
+    e.preventDefault();
+
+    if ($("#txtLaudoInservivelEquip").val().length < 143) {
+        alert("Laudo técnico muito curto!")
+        return false
+    }
+
+    const this_btn = $(this)
+
+
+    await $.ajax({
+        method: "POST",
+        url: base_url + "/interacao/registrar_interacao_reparo",
+        data: {
+            id_usuario: g_id_usuario,
+            id_chamado: g_id_chamado,
+            tipo: 'INSERVIVEL_REPARO',
+            id_reparo: $(this).attr("data-reparo"),
+            num_equipamento: $(this).attr("data-equip"),
+            txtInteracaoReparo: $("#txtLaudoInservivelEquip").val()
+        },
+        beforeSend: function() {
+            this_btn.prop("disabled","true")
+            this_btn.html(`<span class="spinner-border spinner-border-sm"></span> Enviando...`)
+            $("#txtLaudoInservivelEquip").prop("disabled","true");
+            $("#slctListaModeloLaudo").prop("disabled","true");
+            $('#modalReparo').modal('hide')
+            $(".btn-modal-reparo").prop("disabled", true);
+        }
+    }).done((res) => {
+        if (res.error == false) {
+            Swal.fire({
+                icon: "success",
+                title: `Sucesso!`,
+                text: `Equipamento ${$(this).attr("data-equip")} enviado para remessa de inservíveis!`
+            });
+
+            $('#modalLaudoInservivelEquip').modal('hide')
+            $('#modalReparo').modal('hide')
+        }
+    })
+
+    carregaChamado(g_id_chamado)
+})
+
+$('#modalLaudoInservivelEquip').on('hidden.bs.modal', function() {
+
+    $("#btnInservivelEquip").html(`<i class="far fa-arrow-alt-circle-right"></i> Enviar</button>`)
+
+    $("#txtLaudoInservivelEquip").removeAttr("disabled");
+    $("#slctListaModeloLaudo").removeAttr("disabled");
+
+    $("#btnInservivelEquip").removeAttr("disabled");
+    $("#btnEncerrarReparo").removeAttr("disabled");
+    $("#btnGarantiaReparo").removeAttr("disabled");
+
+   
+
+
+
+})
+
+var num_equip_reparo_atual = null
+
+$('#modalReparo').on('show.bs.modal', async function (event) {
+
+   
+    $('#btnGarantiaReparo').hide();
+    $('#btnLaudoInservivelEquip').hide();
+    
+    
+    $('#btnEncerrarReparo').hide();
+    $('#btnJustificativaCancelamento').hide();
+    $('#btnLaudoGarantiaEquip').hide();
+    
+    $(this).find('.modal-footer #btnJustificativaCancelamento').prop("disabled","true")
+    $(this).find('.modal-footer #btnLaudoInservivelEquip').prop("disabled","true")
+
+    const btn = $(event.relatedTarget)
+    p_id_reparo = btn.data('reparo')
+    var reparo = null
+    var garantia_bool = false;
+
+    const modal = $(this)
+
+    $(this).find('.modal-body').html('')
+
+    res = await carregaReparo(p_id_reparo);
+    res.reparo.servicos = await carregaReparoServicos(p_id_reparo);
+
+    num_equip_reparo_atual = res.reparo.num_equipamento_reparo
+    
+    modal.find('.modal-title').html(
+        `<i class="fas fa-wrench"></i>
+        ${res.reparo.num_equipamento_reparo} -
+        ${res.desc_equip}
+        <small>(Reparo #${p_id_reparo})</small>`)
+    if (p_id_responsavel == g_id_usuario && g_fila_chamado === 3) {
+        $(this).find('.modal-footer').show();
+    } else {
+        $(this).find('.modal-footer').hide();
+    }
+
+    if (res.reparo.status_reparo == "ABERTO") {
+        $(this).find('.modal-footer #btnGarantiaReparo').removeAttr("disabled")
+        $(this).find('.modal-footer #btnJustificativaCancelamento').removeAttr("disabled")
+        $(this).find('.modal-footer #btnLaudoInservivelEquip').removeAttr("disabled")
+        $(this).find('.modal-footer #btnEncerrarReparo').removeAttr("disabled")
+        $(this).find('.modal-footer #btnLaudoInservivelEquip').attr("data-equip",res.reparo.num_equipamento_reparo)
+        $(this).find('.modal-footer #btnLaudoInservivelEquip').attr("data-reparo",p_id_reparo)
+        $('#btnGarantiaReparo').show();
+       
+        $('#btnLaudoInservivelEquip').show();
+        $('#btnEncerrarReparo').show();
+        $('#btnJustificativaCancelamento').show();
+        $('#btnLaudoGarantiaEquip').hide();
+
+        
+        $(this).find('.modal-body').html(`
+            <h5>Lista de serviços</h5>
+            <div id="conteudo-reparo-servico">
+                <div class="form-check">
+
+                </div>
+            </div>
+            ${p_id_responsavel == g_id_usuario && g_fila_chamado === 3 ? `
+                <div class="input-group mt-3" id="divSlctListaServicoEquip">
+                    <select class="custom-select" id="slctListaServicoEquip">
+                        
+                    </select>
+                    <div class="input-group-append">
+                        <button class="btn btn-primary btn-sm" id="btn-add-servico" type="button">
+                            <i class="fas fa-plus"></i> Adicionar
+                        </button>
+                    </div>
+                </div>` : ''
+            }
+        `);
+
+        
+        res.servicos = await carregaServicos(p_id_reparo);
+        res.reparo.servicos.forEach(reparo_servico => {
+            if(reparo_servico.realizado_reparo_servico == true) {
+                $('#conteudo-reparo-servico').find(".form-check").append(`
+                    <div id="check-servico-${reparo_servico.id_reparo_servico}">
+                       
+                        <label class="form-check-label">
+                            <s>${reparo_servico.nome_servico}</s>
+                        </label>
+                        <input class="form-check-input check-servico" type="checkbox" value="${reparo_servico.id_reparo_servico}" disabled checked>
+                    </div>
+                `);
+            } else {
+                $('#conteudo-reparo-servico').find(".form-check").append(`
+                    <div id="check-servico-${reparo_servico.id_reparo_servico}">
+                        <input class="form-check-input check-servico" id="checkbox-servico-${reparo_servico.id_reparo_servico}" type="checkbox" value="${reparo_servico.id_reparo_servico}" onclick="realizaServico(${reparo_servico.id_reparo_servico}, '${reparo_servico.nome_servico}', ${reparo_servico.id_servico})">
+                        <label for="check-servico-${reparo_servico.id_reparo_servico}" class="form-check-label">
+                            ${reparo_servico.nome_servico}
+                            <span class="badge badge-danger" onclick="cancelaServico(${reparo_servico.id_reparo_servico}, '${reparo_servico.nome_servico}', ${reparo_servico.id_servico})"><i class="fas fa-times"></i></span>    
+                        </label>
+                       
+                        
+                    </div>
+                `);
+            }
+        });
+
+        if (res.servicos.length === 0) {
+            $('#slctListaServicoEquip').append(
+                `<option value="0">Não existe nenhum serviço para realizar, caso deseje adicionar consulte o administrador!</option>`
+            );
+            $('#slctListaServicoEquip').prop('disabled', true);
+            $('#btn-add-servico').prop('disabled', true);
+
+        } else {
+            res.servicos.forEach(servico => {
+                $('#slctListaServicoEquip').append(
+                    `<option value="${servico.id_servico}">${servico.nome_servico}</option>`
+                );
+            });
+        }
+
+        $('#btn-add-servico').on('click',(e) => {
+            let select = {
+                id_reparo_servico: 0,
+                id_servico: $('#slctListaServicoEquip').val(),
+                nome: $('#slctListaServicoEquip option:selected').text()
+            };
+            $.ajax({
+                url: base_url + 'reparo/adicionar_reparo_chamado',
+                type: 'POST',
+                data: {
+                    id_chamado: g_id_chamado,
+                    id_reparo: p_id_reparo,
+                    id_servico: select.id_servico
+                },
+                beforeSend: (/* jqXHR, settings */) => {
+                    $('#btn-add-servico').prop('disabled', true);
+                }
+            }).done((data) => {
+                // caso sucesso
+                select.id_reparo_servico = data.id_reparo_servico;
+
+                if (data !== null) {
+                    $('#btn-add-servico').removeAttr('disabled');
+                    // coloca o reparo na lista como aberto
+                    $('#conteudo-reparo-servico').find(".form-check").append(`
+                        <div id="check-servico-${select.id_reparo_servico}">
+                            <input class="form-check-input check-servico" id="checkbox-servico-${select.id_reparo_servico}" type="checkbox" value="${select.id_reparo_servico}" onclick="realizaServico(${select.id_reparo_servico}, '${select.nome}', ${select.id_servico})">
+                            <label for="check-servico-${select.id_reparo_servico}" class="form-check-label">
+                                ${select.nome}
+                                <span class="badge badge-danger" onclick="cancelaServico(${select.id_reparo_servico}, '${select.nome}', ${select.id_servico})"><i class="fas fa-times"></i></span>
+                            </label>
+                        </div>
+                    `);
+
+                    // ação no histórico
+                    // $('#conteudo-historico-modal').prepend(`
+                    //     <p class="border rounded p-2 my-3">
+                    //         <span class="badge badge-info">${new Date().toLocaleString('pt-BR')}</span> <strong>SISTEMA</strong> <strong class="text-info">adicionou</strong> o serviço <b>${select.nome}</b> ao reparo
+                    //     </p>
+                    // `);
+
+                    // remove o option do select
+                    $(`#slctListaServicoEquip option[value='${select.id_servico}']`).remove();
+
+                    // if para quando acabar os options para desativar o select e colocar uma mensagem de erro
+                    if ($('#slctListaServicoEquip option').length == 0) {
+                        $('#slctListaServicoEquip').append(
+                            `<option value="0">Não existe nenhum serviço para realizar, caso deseje adicionar consulte o administrador!</option>`
+                        );
+                        $('#slctListaServicoEquip').prop('disabled', true);
+                        $('#btn-add-servico').prop('disabled', true);
+                    }
+                }
+                else {
+                    Swal.fire({
+                        toast: true,
+                        position: "top-end",
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true,
+                        icon: "success",
+                        title: "Erro ao adicionar serviço!",
+                        didOpen: (toast) => {
+                          toast.onmouseenter = Swal.stopTimer;
+                          toast.onmouseleave = Swal.resumeTimer;
+                        }
+                    });
+
+                    return false
+                }
+            })
+        });
+    }
+
+    else if (res.reparo.status_reparo == "FINALIZADO") {
+        $.ajax({
+            url: base_url + "reparo/buscar_garantia",
+            type: 'POST',
+            data: {
+                id_reparo: p_id_reparo,
+            }
+        }).done((data) => {
+            $('#btn-laudo-garantia').remove();
+            if(data !== null) {
+                $(this).find('.modal-body').append(`
+                    <a class="btn btn-primary" id="btn-laudo-garantia" href="${base_url}termos/${data.nome_laudo_garantia}" target="_BLANK" role="button">Laudo técnico da garantia</a>
+                `)
+                garantia_bool = true;
+            }
+        });
+
+        $.ajax({
+            url: base_url + "reparo/buscar_equipamento_reparo",
+            type: 'POST',
+            data: {
+                id_reparo: p_id_reparo,
+            }
+        }).done((data) => {
+            console.log(data)
+            if (data.status_equipamento_chamado === "REMESSA" || data.status_equipamento_chamado === "INSERVIVEL")
+            $(this).find('.modal-body').append(`
+                    <p>Este equipamento foi classificado como ${data.status_equipamento_chamado} e foi incluído na remessa 
+                    <a href="${base_url}inservivel/${data.id_remessa}">#${data.id_remessa}</a></p>
+                    <a href="${base_url}inservivel/gerartermo/${data.num_equipamento_reparo}" role="button" class="btn btn-primary" target="_blank">
+                    <i class="fas fa-file-download"></i> Laudo técnico
+                    </a>
+                `)
+        });
+
+        $(this).find('.modal-body').html(
+            `<p>O reparo foi finalizado.</p>`
+        )
+    }
+
+    else if (res.reparo.status_reparo == "GARANTIA") {
+        $('#btnLaudoGarantiaEquip').show();
+        $('#btnJustificativaCancelamento').show();
+        $('#btnJustificativaCancelamento').removeAttr('disabled');
+        $('#btnLaudoGarantiaEquip').removeAttr('disabled');
+
+        $(this).find('.modal-body').html(
+            `<p>O reparo foi para garantia pelo(s) seguinte(s) motivo(s):</p>
+            <p>${res.reparo.justificativa_reparo}</p>
+            `
+        )
+        $.ajax({
+            url: base_url + "reparo/buscar_garantia",
+            type: 'POST',
+            data: {
+                id_reparo: p_id_reparo,
+            }
+        }).done((data) => {
+            $('#btn-laudo-garantia').remove();
+            if(data !== null) {
+                $(this).find('.modal-body').append(`
+                    <p>Ticket da garantia: <strong>${data.ticket_garantia}</strong></p>
+                `)
+                garantia_bool = true;
+            }
+        });
+
+
+        $('#frmLaudoGarantiaEquip').on("submit", function(e) {
+            e.preventDefault();
+
+            let dados = new FormData($(this)[0]);
+            dados.append("id_reparo", p_id_reparo);
+
+            $.ajax({
+                url: base_url + "reparo/registrar_laudo",
+                dataType: "json",
+                contentType: false,
+                processData: false,
+                method: "post",
+                data : dados,
+                beforeSend: () => {
+                    $('#fileLaudo').val("");
+                    $('#btnGarantiaEquip').prop("disabled", true);
+                }
+            }).done((data) => {
+                Swal.fire({
+                    toast: true,
+                    position: "top-end",
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    icon: "success",
+                    title: data.mensagem,
+                    didOpen: (toast) => {
+                      toast.onmouseenter = Swal.stopTimer;
+                      toast.onmouseleave = Swal.resumeTimer;
+                    }
+                    
+                });
+
+                $('#btnGarantiaEquip').removeAttr("disabled");
+                $('#modalLaudoGarantiaEquip').modal('hide');
+                $('#modalReparo').modal('hide');
+                carregaChamado(g_id_chamado);
+            }).fail((data) => {
+                Swal.fire({
+                    toast: true,
+                    position: "top-end",
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    icon: "error",
+                    title: data.responseJSON.mensagem,
+                    didOpen: (toast) => {
+                        toast.onmouseenter = Swal.stopTimer;
+                        toast.onmouseleave = Swal.resumeTimer;
+                    }
+                });
+                $('#btnGarantiaEquip').removeAttr("disabled");
+            });
+        });
+    }
+    
+    else {
+        $(this).find('.modal-body').html(
+            `<p>O reparo foi cancelado pelo(s) seguinte(s) motivo(s):</p>
+            <p>${res.reparo.justificativa_reparo}</p>
+            `
+        )
+    }
+
+    $.ajax({
+        url: base_url + 'reparo/lista_historico',
+        type: 'POST',
+        data: {
+            id_reparo: p_id_reparo,
+        },
+        /* beforeSend: function() {
+            $("#btnIniciarReparo").prop("disabled","true")
+            $("#listaBancadas").prop("disabled","true")
+            $("#listaEquipReparo").prop("disabled","true")
+        } */
+    }).done((data) => {
+        if (data !== null) {
+            $('#conteudo-historico-modal').empty();
+            let reparo = data.reparo[0];
+
+            $('#conteudo-historico-modal').prepend(`
+                <p class="border rounded p-2 my-3">
+                    <span class="badge badge-info">${reparo.data_inicio_reparo}</span> <strong>${reparo.nome_abertura_usuario}</strong> <b>iniciou</b> o reparo <b>#${reparo.id_reparo}</b>.
+                </p>
+            `);
+
+            data.servicos.forEach(servico => {
+                if (servico.realizado_reparo_servico == true && servico.subquery == 1) {
+                    $('#conteudo-historico-modal').prepend(`
+                        <p class="border rounded p-2 my-3">
+                            <span class="badge badge-info">${servico.data_encerramento_reparo_servico}</span> <strong>${servico.nome_fechamento_usuario}</strong> <strong class="text-success">finalizou</strong> o serviço <b>${servico.nome_servico}</b>.
+                        </p>
+                    `);
+                } else if (servico.status_reparo_servico == false) {
+                    $('#conteudo-historico-modal').prepend(`
+                        <p class="border rounded p-2 my-3">
+                            <span class="badge badge-info">${servico.data_encerramento_reparo_servico}</span> <strong>${servico.nome_fechamento_usuario}</strong> <strong class="text-danger">removeu</strong> o serviço <b>${servico.nome_servico}</b>.
+                        </p>
+                    `);
+                } else {
+                    $('#conteudo-historico-modal').prepend(`
+                        <p class="border rounded p-2 my-3">
+                            <span class="badge badge-info">${servico.data_reparo_servico}</span> <strong>${servico.nome_abertura_usuario}</strong> <strong class="text-primary">adicionou</strong> o serviço <b>${servico.nome_servico}</b>.
+                        </p>
+                    `);
+                }
+            });
+
+            if(reparo.status_reparo == "CANCELADO") {
+                $('#conteudo-historico-modal').prepend(`
+                    <p class="border rounded p-2 my-3">
+                        <span class="badge badge-info">${reparo.data_fim_reparo}</span> <strong>${reparo.nome_encerramento_usuario}</strong> <strong class="text-danger">cancelou</strong> o reparo <b>#${reparo.id_reparo}</b> - <b>${reparo.num_equipamento_reparo}</b>
+                    </p>
+                `);
+            } else if (reparo.data_fim_reparo !== null) {
+                $('#conteudo-historico-modal').prepend(`
+                    <p class="border rounded p-2 my-3">
+                        <span class="badge badge-info">${reparo.data_fim_reparo}</span> <strong>${reparo.nome_encerramento_usuario}</strong> <strong>encerrou</strong> o reparo <b>#${reparo.id_reparo}</b>.
+                    </p>
+                `);
+            }
+        } else {
+            $('#modalIniciarReparo').find('.modal-body')
+            .prepend(
+                `<div id="alerta-reparo" class="alert alert-danger" role="alert">
+                    Erro ao criar o reparo!
+              </div>`
+            )
+
+            return false;
+        }
+    })
+})
+$('#btnEncerrarReparo').on('click', function () {
+    if ($('#conteudo-reparo-servico').find('.check-servico').is(':not(:checked)')) {
+        $('#modalReparo').find('.modal-body')
+        .prepend(
+            `<div id="alerta-reparo" class="alert alert-danger" role="alert">
+                Existem serviços pendentes que impedem o encerramento do reparo!
+            </div>`
+        );
+        return false;
+    } else if ($('#conteudo-reparo-servico').find('.check-servico').length === 0) {
+        $('#modalReparo').find('.modal-body')
+        .prepend(
+            `<div id="alerta-reparo" class="alert alert-danger" role="alert">
+                Realize pelo menos um serviço para encerrar ou cancele o reparo!
+            </div>`
+        );
+        return false;
+    }
+
+    $.ajax({
+        url: base_url + 'reparo/finaliza_reparo',
+        type: 'POST',
+        data: {
+            id_chamado: g_id_chamado,
+            id_reparo: p_id_reparo,
+        }
+    }).done((data) => {
+        if (data !== null) {
+            Swal.fire({
+                toast: true,
+                position: "top-end",
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                icon: "success",
+                title: data.mensagem,
+                didOpen: (toast) => {
+                  toast.onmouseenter = Swal.stopTimer;
+                  toast.onmouseleave = Swal.resumeTimer;
+                }
+            });
+
+            $('#modalReparo').modal('hide')
+            carregaChamado(g_id_chamado);
+        } else {
+            $('#modalReparo').find('.modal-body')
+            .prepend(
+                `<div id="alerta-reparo" class="alert alert-danger" role="alert">
+                    Erro ao criar o reparo!
+                </div>`
+            );
+
+            return false;
+        }
+    })
+
+    carregaChamado(g_id_chamado);
+});
+
+$('#btnGarantiaEquip').on(('click'), () => {
+    let ticket_garantia = $('#txtTicketGarantia').val();
+    let justicativa = $('#txtJustificativaGarantia').val();
+
+    if (ticket_garantia && justicativa) {
+        $.ajax({
+            url: base_url + 'reparo/acionar_garantia',
+            type: 'POST',
+            dataType: "json",
+            data: {
+                id_reparo: p_id_reparo,
+                ticket_garantia: ticket_garantia,
+                justificativa_reparo: justicativa
+            },
+            beforeSend: () => {
+                $('#txtTicketGarantia').val("");
+                $('#txtJustificativaGarantia').val("");
+                $('#btnGarantiaEquip').prop("disabled", true);
+            }
+        }).done((data) => {
+            Swal.fire({
+                toast: true,
+                position: "top-end",
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                icon: "success",
+                title: data.mensagem,
+                didOpen: (toast) => {
+                  toast.onmouseenter = Swal.stopTimer;
+                  toast.onmouseleave = Swal.resumeTimer;
+                }
+            });
+
+            $('#btnGarantiaEquip').removeAttr("disabled");
+            $('#modalGarantiaReparo').modal('hide');
+            $('#modalReparo').modal('hide');
+            carregaChamado(g_id_chamado);
+        });
+    }
+})
+
+async function realizaServico(id_reparo_servico, texto_reparo_servico, id_servico) {
+    if (confirm(`Tem certeza que o serviço ${texto_reparo_servico} foi realizado?`)) {
+        // id do servico (5): lacre
+        if (id_servico === 5) {
+            const lacre = prompt("Digite o lacre do equipamento:");
+            if (/^[a-zA-Z0-9]+$/.test(lacre) && lacre !== null) {
+                let num_equipamento = await carregaReparo(p_id_reparo);
+                num_equipamento = num_equipamento.reparo.num_equipamento_reparo;
+    
+                $.ajax({
+                    url: base_url + 'equipamento/controller/registra_lacre',
+                    type: 'POST',
+                    dataType: "json",
+                    data: {
+                        id_reparo_servico: id_reparo_servico,
+                        num_equipamento: num_equipamento,
+                        tag_equipamento: lacre,
+                    }
+                });
+            } else if(lacre !== null){
+                alert(`Dados inválidos inseridos!\nAtenção!\nCaracteres permitidos:\nA-Z, a-z, 0-9`);
+                $(`#checkbox-servico-${id_reparo_servico}`).prop('checked', false);
+    
+                return false;
+            } else {
+                $(`#checkbox-servico-${id_reparo_servico}`).prop('checked', false);
+                return false;
+            }
+        }
+    
+        $.ajax({
+            url: base_url + 'reparo/realizar_servico',
+            type: 'POST',
+            data: {
+                id_reparo_servico: id_reparo_servico,
+            }
+        }).done((data) => {
+            // caso sucesso adiciona um serviço aberto a lista
+            if (data !== null) {
+                $(`#check-servico-${id_reparo_servico}`).html(`
+                    <div id="check-servico-${id_reparo_servico}">
+                        <input class="form-check-input check-servico" type="checkbox" value="${id_reparo_servico}" disabled checked>
+                        <label class="form-check-label">
+                            <s>${texto_reparo_servico}</s>
+                        </label>
+                    </div>
+                `);
+            } else {
+                Swal.fire({
+                    title: "Ocorreu um erro!",
+                    text: "Erro ao criar o reparo!",
+                    icon: "error"
+                  });
+
+                return false
+            }
+        })
+        
+    } else {
+        $(`#checkbox-servico-${id_reparo_servico}`).prop('checked', false);
+        return false;
+    }
+}
+
+async function cancelaServico(id_reparo_servico, texto_servico, id_servico) {
+    // let id_reparo_servico = $(this).val();
+    // let texto_reparo_servico = $(this).siblings('label').text();
+    $.ajax({
+        url: base_url + 'reparo/cancelar_servico',
+        type: 'POST',
+        data: {
+            id_reparo_servico: id_reparo_servico,
+        }
+    }).done((data) => {
+        // caso sucesso
+        if (data !== null) {
+            if ($('#slctListaServicoEquip').val() == 0) {
+                $('#slctListaServicoEquip').removeAttr('disabled');
+                $('#btn-add-servico').removeAttr('disabled');
+                $('#slctListaServicoEquip').empty();
+            }
+            $('#slctListaServicoEquip').append(
+                `<option value="${id_servico}">${texto_servico}</option>`
+            );
+            $(`#check-servico-${id_reparo_servico}`).remove();
+        } else {
+            Swal.fire({
+                title: "Ocorreu um erro!",
+                text: "Erro ao cancelar serviço",
+                icon: "error"
+            });
+
+            return false;
+        }
+    })
+}
+
+$("#frmIniciarReparo").on('submit',(e) => {
+
+    e.preventDefault()
+
+    const p_num_equipamento = $("#listaEquipReparo").val()
+    const p_id_bancada = $("#listaBancadas").val()
+
+    $.ajax({
+
+        url: base_url + 'reparo/criar_reparo',
+        type: 'POST',
+        data: {
+            id_chamado: g_id_chamado,
+            id_bancada: p_id_bancada,
+            num_equipamento: p_num_equipamento
+        },
+        beforeSend: function() {
+            $("#btnIniciarReparo").prop("disabled","true")
+            $("#listaBancadas").prop("disabled","true")
+            $("#listaEquipReparo").prop("disabled","true")
+        }
+    })
+    .done((data) => {
+        if (data !== null) {
+            $('#modalIniciarReparo').find('.modal-body')
+            .prepend(
+                `<div id="alerta-reparo" class="alert alert-success" role="alert">
+                    ${data.mensagem}
+                </div>`
+            )
+
+        carregaChamado(g_id_chamado)
+
+        }
+        else {
+            $('#modalIniciarReparo').find('.modal-body')
+            .prepend(
+                `<div id="alerta-reparo" class="alert alert-danger" role="alert">
+                Erro ao criar o reparo!
+              </div>`
+            )
+
+
+            return false
+        }
+
+    })
+  })
+
+
+ 
+
+$("#btnCancelarReparo").on('click', async (e) => {
+
+
+    e.preventDefault();
+
+    const btn = $(this)
+
+    const txtJustificativaCancelamento = $('#txtJustificativaCancelamento').val()
+    var cancelamento = null
+    res = await carregaReparo(p_id_reparo);
+    if (res.reparo.status_reparo == 'ABERTO') {
+        res.reparo.status_reparo = 'REPARO';
+    }
+
+    await $.ajax({
+        method: "POST",
+        url: base_url + 'reparo/cancelar_reparo',
+        data: {
+            id_reparo: p_id_reparo,
+            texto_justificativa: txtJustificativaCancelamento,
+            tipo_servico: res.reparo.status_reparo
+        },
+        beforeSend: () => {
+            btn.prop("disabled","true")
+        }
+    }).done((data) => {
+        cancelamento = data
+        Swal.fire({
+            toast: true,
+            position: "top-end",
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            icon: "success",
+            title: "Reparo cancelado com sucesso!",
+            didOpen: (toast) => {
+              toast.onmouseenter = Swal.stopTimer;
+              toast.onmouseleave = Swal.resumeTimer;
+            }
+        });
+        btn.removeAttr("disabled")
+    })
+
+    if (cancelamento == true) {
+
+        $("#modalJustificativaCancelamento").modal('hide')
+        $("#modalReparo").modal('hide')
+        $("#txtJustificativaCancelamento").val('')
+
+    }
+
+    carregaChamado(g_id_chamado)
+})
+
+// ------- REMESSA INSERVIVEL -------
+$("#painel-inservivel").jsGrid({
+    width: "100%",
+    height: "auto",
+
+    autoload: true,
+    inserting: false,
+    editing: false,
+    sorting: true,
+    paging: false,
+    filtering: true,
+    loadMessage: "Carregando...",
+    noDataContent: "(vazio)",
+    controller: {
+        loadData: function (filter) {
+            let dadosJsGrid = $("#painel-inservivel").data("JSGrid").data;
+
+            if(!filter.numero_equipamento && !filter.descricao_equipamento && !filter.nome_local && !filter.texto_interacao && !filter.id_chamado) {
+                return $.ajax({
+                    url: base_url + "listar_detalhado/" + $(location).attr('pathname').split('/')[2],
+                    dataType: "json"
+                }).done(function (data) {
+                    // Ordenar os dados pela coluna 'numero_equipamento'
+                    data.sort(function (a, b) {
+                        return a.numero_equipamento - b.numero_equipamento;
+                    });
+    
+                    // Atualizar os dados no jsGrid
+                    $("#painel-inservivel").jsGrid("option", "data", data);
+                    // Ativa os botões após o load
+                    $("#realizar-entrega").prop("disabled", false);
+                    $("#btn-impressao").prop("disabled", false);
+                });
+            }
+
+            return $.grep(dadosJsGrid, function(item) {
+                return (
+                    !filter.numero_equipamento || item.numero_equipamento.indexOf(filter.numero_equipamento) > -1)
+                    && (!filter.descricao_equipamento || item.descricao_equipamento.indexOf(filter.descricao_equipamento) > -1)
+                    && (!filter.nome_local || item.nome_local.indexOf(filter.nome_local) > -1)
+                    && (!filter.texto_interacao || item.texto_interacao.indexOf(filter.texto_interacao) > -1
+                )
+            });
+        },
+    },
+
+    fields: [
+        {
+            type: "checkbox",
+            title: "",
+            filtering: false,
+            width: 5,
+            align: "center",
+            itemTemplate: function(item, value) {
+                return `<input type="checkbox" id="checkbox_${value.numero_equipamento} value="${value.numero_equipamento}" name="checkbox_inservivel">`
+            }
+        }, {
+            name: "numero_equipamento",
+            type: "text",
+            filtering: true,
+            title: "Nº equipamento"
+        }, {
+            name: "descricao_equipamento",
+            type: "text",
+            filtering: true,
+            title: "Descrição"
+        }, {
+            name: "nome_local",
+            type: "text",
+            filtering: true,
+            title: "Local"
+        }, {
+            name: "texto_interacao",
+            type: "text",
+            title: "Laudo",
+            width: 180,
+        }, {
+            name: "id_chamado",
+            type: "text",
+            title: "Nº chamado",
+            filtering: false,
+            width: 40,
+            align: "center",
+            itemTemplate: function(item) {
+                return `<a href=${base_url}chamado/${item} target="blank">#${item}</a>`
+            }
+        }, {
+            type: "control",
+            deleteButton: false,
+            editButton: false,
+        }
+    ]
+});
+
+$("#fechar_lista").click(function() {
+    $.ajax({
+        url: `${base_url}inservivel/fecharRemessa`,
+        type: 'POST',
+        async: true,
+        data: {
+            id_remessa: $(location).attr('pathname').split('/')[2],
+        },
+        success: function() {
+            window.location.href = `${base_url}/inservivel`;
+        },
+        error: function(error) {
+            alert(error.responseJSON.mensagem);
+        }
+    });
+});
+
+$("#btn-impressao").click(function(){
+    let checkboxs = $("input[name='checkbox_inservivel']:checked");
+    if(checkboxs.length == 0) {
+        alert("Nenhum patrimônio selecionado!");
+    } else {
+        let equipamentos = [];
+        // Para cada checkbox em 'checkboxs' selecionado
+        checkboxs.each(function () {
+            let row = $(this).closest("tr");
+            let rowData = $("#painel-inservivel").jsGrid("option", "data")[row.index()];
+            equipamentos.push(rowData);
+        });
+
+        equipamentos.forEach(function (equipamento) {
+            linha = `<tr>
+                <td>${equipamento.numero_equipamento}</td>
+                <td>${equipamento.descricao_equipamento}</td>
+                <td class="text-left">${equipamento.nome_local}</td>
+                <td class="text-left">${equipamento.texto_interacao}</td>
+            </tr>`;
+
+            tableBody = $("table #tbody-impressao");
+            tableBody.append(linha);
+        });
+
+        window.print();
+        $("table #tbody-impressao td").remove();
+    }
+});
+
+$(document).ready(function () {
+    $("#realizar-entrega").click(function(){
+        // momento que clicar no sim ou não entra na função
+        $('.custom-control-input').on('click', function() {
+            // limpa todo conteudo e button
+            $('#formEntregaInservivel').empty();
+            $('#button-submit-remessa').remove();
+            let botao = null;
+            
+            // irá executar quando o radio estiver em sim
+            if ($('#rdSim').is(":checked")) {
+                $('#formEntregaInservivel').append(`
+                    <div class="form-group">
+                        <div class="mb-3">
+                            <label for="termo">Termo de entrega assinado</label>
+                            <input type="file" class="form-control-file" id="termo-entrega" name="termo_remessa" accept="application/pdf" required>
+                        </div>
+                        <div class="mb-3" id="input-nome-recebedor">
+                            <label for="nome_recebedor">Nome do recebedor</label>
+                            <input type="text" class="form-control" id="nome-recebedor-remessa">
+                            <div class="invalid-feedback">
+                                Por favor, insira um nome válido. Certifique-se de utilizar apenas caracteres alfabéticos e verifique se a formatação está correta.
+                            </div>
+                        </div>
+                        <div class="mb-3" id="input-data-entrega">
+                            <label for="data_entrega">Data de recebimento no almoxarifado</label>
+                            <input type="date" class="form-control" id="data-recebimento" required>
+                            <div class="invalid-feedback">
+                                Data fora do prazo permitido. Por favor, entre em contato com o administrador para obter assistência.
+                            </div>
+                        </div>
+                    </div>
+                `);
+                botao = `<div class="text-right"><button type="submit" class="btn btn-success" id="button-submit-remessa"><i class="fas fa-check"></i> Registrar entrega</button></div>`;
+            }else {
+                $('#formEntregaInservivel').append(`
+                    <div class="form-group">
+                        <div class="mb-3">
+                            <h6>Selecione os equipamentos que voltaram</h6>
+                            <input type="checkbox" class="mr-2" id="selecionar_todos">
+                            <label for="selecionar_todos">Selecionar todos equipamentos</label>
+                            <div id="equipamentos-remessa"></div>
+                        </div>
+                    </div>
+                `);
+
+                $('#painel-inservivel tbody tr').each(function() {               
+                    // Objeto para armazenar os dados da linha atual
+                    let dadosLinha = {};
+
+                    // Iterar sobre cada célula da linha
+                    $(this).find('td').each(function(index, cell) {
+                        // Adicionar o valor da célula ao objeto com base no índice da coluna
+                        dadosLinha['coluna' + index] = $(cell).text();
+                    });
+
+                    $('#equipamentos-remessa').append(`
+                        <input type=checkbox value="${dadosLinha['coluna1']}" class="checkbox-falha-entrega-remessa mr-2" id="checkbox-falha-entrega-remessa-${dadosLinha['coluna1']}">
+                        <label for="checkbox-falha-entrega-remessa-${dadosLinha['coluna1']}">${dadosLinha['coluna1']} - ${dadosLinha['coluna2']}</label><br>
+                    `);
+                });
+                botao = `<div class="text-right"><button type="submit" class="btn btn-danger" id="button-submit-remessa"><i class="fas fa-times-circle"></i> Registrar falha de entrega</button></div>`;
+                $('#selecionar_todos').click(function () {
+                    if ($('#selecionar_todos').is(':checked')) {
+                        $('.checkbox-falha-entrega-remessa').each(function () {
+                            // Adicionar o valor do checkbox marcado ao array
+                            // selecione no máximo 5 equipamentos caso contrário remessa será colocada como erro
+                            $(this).prop("disabled", true);
+                            $(this).prop("checked", true);
+                        });
+                    } else {
+                        // Iterar sobre todos os checkboxes com a classe 'checkbox-selecao'
+                        $('.checkbox-falha-entrega-remessa').each(function () {
+                            // Adicionar o valor do checkbox marcado ao array
+                            // selecione no máximo 5 equipamentos caso contrário remessa será colocada como erro
+                            $(this).prop("checked", false);
+                            $(this).prop("disabled", false);
+                        });
+                    }
+                });
+            }
+            $('#formEntregaInservivel').append(botao);
+        });
+    });
+});
+
+// quando der submit no form chama a function
+$('#frm-remessa-entrega').on('submit', function(e) {
+    e.preventDefault();
+    let dados = new FormData($(this)[0]);
+    let erro_remessa = false;
+
+    if ($('#rdSim').is(":checked")) {
+        let nomeRegex = /^[a-zA-ZÀ-ÖØ-öø-ÿ\s']+$/;
+        let nome_recebedor = $('#nome-recebedor-remessa').val();
+        let data_recebimento = $('#data-recebimento').val();
+        let submitErro = false;
+        let termo_entrega = $('#termo-entrega').val();
+
+        // Converte a entrada para um objeto Date
+        let dataInserida = new Date(data_recebimento);
+        // Obtém a data atual
+        let dataAtual = new Date();
+        // Obtém a data um mês atrás
+        let dataUmMesAtras = new Date();
+        dataUmMesAtras.setMonth(dataAtual.getMonth() - 1);
+        // caso data inserida seja inválida (data inserida maior que data atual)
+        if(dataInserida >= dataAtual && dataInserida != 'Invalid Date') {
+            submitErro = true;
+            $('#data-recebimento').addClass('is-invalid');
+        // caso usuario não seja administrador a data não pode ser maior que 1 mês
+        }else if (g_auto_usuario != 4 && !(dataInserida > dataUmMesAtras)) {
+            submitErro = true;
+            $('#data-recebimento').addClass('is-invalid');
+        }else {
+            $('#data-recebimento').removeClass('is-invalid');
+            $('#data-recebimento').addClass('is-valid');
+        }
+
+        if (!nomeRegex.test(nome_recebedor)) {
+            submitErro = true;
+            $('#nome-recebedor-remessa').addClass('is-invalid');
+        } else {
+            $('#nome-recebedor-remessa').removeClass('is-invalid');
+            $('#nome-recebedor-remessa').addClass('is-valid');
+        }
+
+        dados.append("nome_recebedor", nome_recebedor);
+        dados.append("data_recebimento", data_recebimento);
+    }else {
+        let equipamentos_selecionados = [];
+        erro_remessa = true;
+
+        if (!$('#selecionar_todos').is(':checked')) {
+            // Iterar sobre todos os checkboxes com a classe 'checkbox-selecao'
+            $('.checkbox-falha-entrega-remessa:checked').each(function() {
+                // Adicionar o valor do checkbox marcado ao array
+                equipamentos_selecionados.push($(this).val());
+            });
+
+            // validação para erro dos selecionados se for acima de 5 ou esvaziar a lista
+            if(equipamentos_selecionados.length > 5) {
+                return alert("O limite máximo de equipamentos é de 5");
+            }
+            if(!equipamentos_selecionados.length || $('.checkbox-falha-entrega-remessa').length == equipamentos_selecionados.length) {
+                return alert("Por favor, selecione pelo menos um equipamentos ou todos.");
+            }
+
+            dados.append("equipamentos", JSON.stringify(equipamentos_selecionados));
+        }else {
+            dados.append("equipamentos", null);
+        }
+    }
+    dados.append("erro_remessa", erro_remessa);
+    dados.append("id_remessa", $(location).attr('pathname').split('/')[2]);
+
+    
+    $.ajax({
+        url: base_url + "/inservivel/registrarEntrega",
+        dataType: "json",
+        contentType: false,
+        processData: false,
+        method: "post",
+        data: dados,
+        error: function (jqXHR, textStatus, errorThrown) {
+            console.error("Erro na solicitação AJAX:", textStatus, errorThrown);
+        },
+        success: function () {
+            let mensagem = "";
+            if ($('#rdNao').is(":checked")) {
+                if ($('#selecionar_todos').is(':checked')) {
+                    mensagem = "Falha registrada!\nA remessa permanecerá aberta com estado de erro!"
+                } else {
+                    mensagem = "Os equipamentos selecionados foram alocados na remessa seguinte."
+                }
+            } else {
+                mensagem = "Entrega registrada com sucesso!";
+            }
+            
+            alert(mensagem)
+            window.location.reload();
+        }
+    });
+    
+});
+
+let dados = [];
+
+if (window.location.href.includes("inservivel")) {
+    $.ajax({
+        url: `${base_url}inservivel/listarRemessas`,
+        type: 'GET'
+    }).done(function (data) {
+        dados = data;
+        exibirDados(); // Chame a função exibirDados após obter os dados
+    });
+
+    const itensPorPagina = 10;
+    let paginaAtual = 1;
+
+    function exibirDados() {
+        const tbody = $('#tabela tbody');
+        tbody.empty();
+
+        const totalPages = Math.ceil(dados.length / itensPorPagina);
+
+        // Garante que a página atual está dentro dos limites
+        paginaAtual = Math.max(1, Math.min(paginaAtual, totalPages));
+
+        // Calcula os índices de início e fim
+        const inicio = (paginaAtual - 1) * itensPorPagina;
+        const fim = Math.min(inicio + itensPorPagina, dados.length);
+
+        // Se a página atual for menor que 1, define como 1
+        if (paginaAtual < 1) {
+            paginaAtual = 1;
+        }
+
+        const dadosPagina = dados.slice(inicio, fim);
+
+        dadosPagina.forEach(dado => {
+            let status = {};
+            dado.data_abertura = (dado.data_abertura == null) ? "" : dado.data_abertura;
+            dado.data_fechamento = (dado.data_fechamento == null) ? "" : dado.data_fechamento;
+            dado.data_entrega = (dado.data_entrega == null) ? "" : dado.data_entrega;
+            if (typeof dado.pool_equipamentos === 'string' || dado.pool_equipamentos == null) {
+                dado.pool_equipamentos = (dado.pool_equipamentos == "" || dado.pool_equipamentos == null) ? 0 : dado.pool_equipamentos.split("::").length;
+            }
+
+            if (dado.data_entrega) {
+                status = {
+                    mensagem: "Entregue",
+                    class: "active"
+                }
+            } else if (dado.falha_envio == true) {
+                status = {
+                    mensagem: "Erro",
+                    class: "warning"
+                }
+            } else if (dado.data_fechamento) {
+                status = {
+                    mensagem: "Fechada",
+                    class: "danger"
+                }
+            } else {
+                status = {
+                    mensagem: "Aberta",
+                    class: "success"
+                }
+            }
+
+            const linhas = $(`
+                <tr class='table-${status.class}' onclick="location.href='${base_url}inservivel/${dado.id_remessa_inservivel}'" style="cursor: pointer;">
+                    <td><strong>${dado.id_remessa_inservivel}</strong></td>
+                    <td>${dado.pool_equipamentos}</td>
+                    <td>${dado.data_abertura}</td>
+                    <td>${dado.data_fechamento}</td>
+                    <td>${dado.data_entrega}</td>
+                    <td>${dado.nome_usuario}</td>
+                    <td><strong>${status.mensagem}</strong></td>
+                </tr>
+            `);
+            tbody.append(linhas);
+        });
+
+        $('#paginaAtual').text(paginaAtual);
+    }
+
+    function proximaPagina() {
+        const totalPages = Math.ceil(dados.length / itensPorPagina);
+        if (paginaAtual < totalPages) {
+            paginaAtual++;
+            exibirDados();
+        }
+    }
+
+    function paginaAnterior() {
+        if (paginaAtual > 1) {
+            paginaAtual--;
+            exibirDados();
+        }
+    }
+
+    // Inicializar exibição
+    exibirDados();
+}
+// ------- FIM REMESSA INSERVIVEL -------

@@ -71,14 +71,12 @@ function Header()
         $this->Cell(0,10,utf8_decode('Secretaria de Administração'),0,0,'C');
         $this->Ln(5);
         $this->SetFont('Arial','B',12);
-        $this->Cell(0,10,utf8_decode('Divisão de Gestão de Tecnologia da Informação'),0,0,'C');
-        $this->Ln(5);
-        $this->SetFont('Arial','',11);
-        $this->Cell(0,10,utf8_decode('Seção de Suporte Técnico'),0,0,'C');
+        $this->Cell(0,10,utf8_decode('Coordenadoria Geral de Tecnologia da Informação'),0,0,'C');
         $this->Ln(5);
         $this->SetFont('Arial','I',10);
-        $this->Cell(0,10,'Prefeitura Municipal de Sorocaba',0,0,'C');
+        $this->Cell(0,10,'Prefeitura de Sorocaba',0,0,'C');
         $this->Ln(20);
+        $this->Image(base_url('img/logo-cgti-preto.png'),170,10,17,17);
 
 
 		

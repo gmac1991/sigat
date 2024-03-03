@@ -66,8 +66,8 @@
 								<input type="radio" onclick="mudaFila(<?= $fila['id_fila'] ?>)"><i class="<?= $fila['icone_fila'] ?>"></i> <?= $fila['nome_fila'] ?>
 							</label>
 						<?php endforeach; ?>
-							<label data-fila="7" class="btn btn-success btn-sm mr-1">
-								<input type="radio" onclick="mudaFila(7)"><i class="fas fa-truck"></i> Entrega
+							<label data-fila="99" class="btn btn-success btn-sm mr-1">
+								<input type="radio" onclick="mudaFila(99)"><i class="fas fa-truck"></i> Entrega
 							</label>
 							<label data-fila="0" class="btn btn-info btn-sm mr-1">
 								<input type="radio" onclick="mudaFila(0)"><i class="fas fa-search"></i> Todos

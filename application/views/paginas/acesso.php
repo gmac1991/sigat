@@ -38,7 +38,7 @@
             <div class="card" style="margin-top:75%">
                 <article class="card-body">
                     <div class="text-center">
-                        <img id="img-logo" src="<?= base_url("img/logo_pms.png") ?>" width="100" height="100">
+                        <img id="img-logo" src="<?= base_url("img/logo-cgti-sem-letra.png") ?>" width="100" height="100">
                         <h1>SIGAT</h1>
                     </div>
                     
@@ -57,7 +57,7 @@
                         </div> <!-- form-group// -->                                                           
                     </form>
                 </article>
-                <p style="font-size: 12px" class="p-0 m-1 text-right">DGTI - v<?= $this->config->item('versao');?></p>
+                <p style="font-size: 12px" class="p-0 m-1 text-right">CGTI - v<?= $this->config->item('versao');?></p>
             </div> <!-- card.// -->
         </div> 
         <script src="<?= base_url("js/jquery-3.4.1.min.js") ?>"></script>
