@@ -1,6 +1,21 @@
 SIGAT Changelog
 ===============
-[1.9.0a] - 2024-03-04
+[1.9.0b] - 2024-03-03
+
+== Corrigido ==
+
+[Busca]
+Erro quando não é encontrado nenhum equipamento através do termo pesquisado
+
+[Admin]
+Erro ao mostrar permissões na seção 'Usuários'
+
+[Outros]
+Arquivo amostra de configuração
+
+-----FIM------
+
+[1.9.0a] - 2024-03-03
 
 == Corrigido ==
 
@@ -8,7 +23,7 @@ Arquivo amostra de configuração
 
 -----FIM------
 
-[1.9.0] - 2024-03-04
+[1.9.0] - 2024-03-03
 
 == Adicionado ==
 

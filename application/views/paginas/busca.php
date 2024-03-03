@@ -2,10 +2,12 @@
 
 
 
-if (!isset($result["equip"])  && count($result["chamado"]) == 0 ): 
+if (array_key_exists('equip',$result) == FALSE && count($result["chamado"]) == 0 ): 
     echo "Sem resultados." ;
 else :
-    if (count($result["equip"]) > 0):
+    
+    if (array_key_exists('equip',$result) == TRUE):
+        if (count($result["equip"]) > 0):
 ?>
         <p class="h5"><i class="fas fa-desktop"></i> Equipamentos</p> <!-- TABELA EQUIPS -->
         <table id="tblEquipsBr" class="table table-hover table-sm">
@@ -39,6 +41,7 @@ else :
             
             endforeach;
 
+            endif;
         endif;
     endif;
 ?>

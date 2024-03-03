@@ -70,11 +70,13 @@ class Usuario extends CI_Controller {
     public function listar_usuarios() {
 
         $usuarios = $this->usuario_model->buscaUsuarios();
-        foreach($usuarios as $usuario) {
+        foreach($usuarios as &$usuario) {
             $usuario["triagem_usuario"] = $usuario["triagem_usuario"] === "0" ? FALSE : TRUE;
             $usuario["encerramento_usuario"] = $usuario["encerramento_usuario"] === "0" ? FALSE : TRUE;
-            $usuario["status_usuario"] = $usuario["status_usuario"] === "0" ? FALSE : TRUE;
+            $usuario["status_usuario"] = $usuario["status_usuario"] == "0" ? FALSE : TRUE;
         }
+
+        
         header("Content-Type: application/json");
         echo json_encode($usuarios);
     }
