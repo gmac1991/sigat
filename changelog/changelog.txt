@@ -1,6 +1,19 @@
 SIGAT Changelog
 ===============
-[1.9.0b] - 2024-03-03
+[1.9.0c] - 2024-03-03
+
+== Corrigido ==
+
+[Usuário]
+Erro de não persistir permissões na tela de 'Usuário'
+
+[Admin]
+Erro ao mostrar permissões na seção 'Usuários'
+
+[Outros]
+Arquivo amostra de configuração
+
+-----FIM------
 
 == Corrigido ==
 

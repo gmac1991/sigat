@@ -163,17 +163,17 @@ class Usuario_model extends CI_Model {
 
         if($permissao == 'triagem'){
             $sql = "UPDATE usuario SET triagem_usuario = (CASE triagem_usuario  WHEN 0 THEN 1 ELSE 0 END)
-            WHERE id_usuario = '{$id_usuario }'";
+            WHERE id_usuario = {$id_usuario }";
         }
 
         if($permissao == 'encerramento'){
             $sql = "UPDATE usuario SET encerramento_usuario = (CASE encerramento_usuario  WHEN 0 THEN 1 ELSE 0 END)
-            WHERE id_usuario = '{$id_usuario}'";
+            WHERE id_usuario = {$id_usuario}";
         }
 
         if($permissao == 'inserviveis'){
             $sql = "UPDATE usuario SET inservivel_usuario = (CASE inservivel_usuario  WHEN 0 THEN 1 ELSE 0 END)
-            WHERE id_usuario = '{$id_usuario}'";
+            WHERE id_usuario = {$id_usuario}";
         }
         
         if($sql != ''){
