@@ -1,5 +1,12 @@
 SIGAT Changelog
 ===============
+[1.9.0a] - 2024-03-04
+
+== Corrigido ==
+
+Arquivo amostra de configuração
+
+-----FIM------
 
 [1.9.0] - 2024-03-04
 
