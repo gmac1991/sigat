@@ -527,24 +527,45 @@ $config['rewrite_short_tags'] = FALSE;
 $config['proxy_ips'] = '';
 
 $config['caminho_termos'] = 'termos/';
+
 $config['api_sim'] = "";
+
+$config['api_ldap'] = "";
+
 $config['url_ticketsys_api'] = "";
+
 $config['url_ticketsys'] = "";
+
 $config['ticketsys_login'] = "";
+
 $config['ticketsys_pwd'] = "";
-$config['changelog_url'] = "";
+
+$config['changelog_url'] = $config['base_url'] .'/changelog/changelog.txt';
+
+$config['limit_size_file'] = 8388608;//8mb
 
 $config['conversao_id_filas'] = array(
-
     37 => 1,      //Fila Remoto       id_fila_otobo => id_fila_sigat
     45 => 6,      //Fila Telefonia    
     46 => 5,      //Fila Redes
 );
 
 $config['id_filas'] = array(
-    1 => "REMOTO",              // id_fila_sigat => rotulo
-    2 => "PRESENCIAL",
-    3 => "MANUTENCAO",
+    1 => "SUPORTE",       // id_fila_sigat => rotulo
     5 => "REDES",
     6 => "TELEFONIA",
+
 );
+
+// tabela: servico, id_servico
+// config para atrelar serviços padrões quando criado
+$config['id_servicos_equipamento_padrao'] = array(
+    1, // Limpeza
+    2, // Bateria CMOS
+    3, // Backup
+    4, // Atualizar S.O.
+    5, // Instalar / Trocar Lacre
+);
+
+$config['tempo_medio_atendimento'] = 6;
+$config['tempo_max_atendimento'] = 24;
