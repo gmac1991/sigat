@@ -569,3 +569,6 @@ $config['id_servicos_equipamento_padrao'] = array(
 
 $config['tempo_medio_atendimento'] = 6;
 $config['tempo_max_atendimento'] = 24;
+
+$config['id_fila_sigat_otobo'] = 43; //id da fila do Sigat no Otobo
+$config['id_fila_nivel0_otobo'] = 5; //id da fila Nível 0 no Otobo

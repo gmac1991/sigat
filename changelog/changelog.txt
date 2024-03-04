@@ -1,5 +1,19 @@
 SIGAT Changelog
 ===============
+[1.9.0d] - 2024-03-04
+
+== Modificado ==
+
+[Outros]
+Apontados dos IDs das filas do Otobo para ficarem no arquivo de configuração
+
+== Corrigido ==
+
+[Outros]
+Erro no changelog
+
+-----FIM------
+
 [1.9.0c] - 2024-03-03
 
 == Corrigido ==
@@ -14,6 +28,8 @@ Erro ao mostrar permissões na seção 'Usuários'
 Arquivo amostra de configuração
 
 -----FIM------
+
+[1.9.0b] - 2024-03-03
 
 == Corrigido ==
 
