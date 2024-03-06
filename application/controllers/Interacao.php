@@ -741,7 +741,65 @@ class Interacao extends CI_Controller {
 
     public function enviar_email() {
         if (isset($_SESSION['id_usuario'])) {
+            $this->load->library('email');
+            $config = array();
+            $config['protocol'] = 'smtp';
+            $config['smtp_host'] = 'sandbox.smtp.mailtrap.io';
+            $config['smtp_user'] = '3dbd34bfe8bd33';
+            $config['smtp_pass'] = '********ec9f';
+            $config['smtp_port'] = 2525;
+            $config['protocol'] = 'sendmail';
+            $config['crlf'] = "\r\n";
+            $config['newline'] = "\r\n";
+            $config['charset']='utf-8';
+            $config['wordwrap'] = TRUE;
+            $config['mailtype'] = 'html';
+
+            /* $config['mailpath'] = '/usr/sbin/sendmail'; */
+            /* $config['charset'] = 'iso-8859-1'; */
+            /* $config['wordwrap'] = TRUE; */
+
+            $this->email->initialize($config);
+            $this->email->from('sigat@sorocaba.sp.gov.br', 'Sigat');
+            $this->email->to('jopedro@sorocaba.sp.gov.br');
+            $this->email->cc('joao_pedro01@terra.com.br');
+            /* $this->email->bcc('them@their-example.com'); */
             
+            $this->email->subject('Email Test');
+            $this->email->message('Testing the email class.');
+            $this->email->send();
+            show_error($this->email->print_debugger());
+            $this->dd->dd('');
+
+            
+            
+            
+            /* $this->load->library('Mailer');
+            $mail = $this->Mailer->load();
+            //$mail = $this->Mailer->Mailer();
+            //$mail = new Mailer(true);
+            $mail->addAddress('jopedro@sorocaba.sp.gov.br');
+            $mail->Subject = 'Send Email via SMTP using PHPMailer in CodeIgniter';
+            
+            // Set email format to HTML
+            $mail->isHTML(true);
+
+            // Email body content
+            $mailContent = "<h1>Send HTML Email using SMTP in CodeIgniter</h1>
+                <p>This is a test email sending using SMTP mail server with PHPMailer.</p>";
+            $mail->Body = $mailContent;
+    
+            // Send email
+            if(!$mail->send()){
+                echo 'Message could not be sent.';
+                echo 'Mailer Error: ' . $mail->ErrorInfo;
+                $this->dd->dd($mail);
+            }else{
+                $this->dd->dd('Ok');
+                echo 'Message has been sent';
+            } */
+            $this->dd->dd('Não Entrou');
+            exit();
             // validação para caso envie arquivo maior que o servidor PHP aceita            
             $this->form_validation->set_rules('conteudo', 'Conteudo', 'required');
             if ($this->form_validation->run() == TRUE) {

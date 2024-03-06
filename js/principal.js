@@ -4892,7 +4892,7 @@ $('#frmEmail').on('submit', function(e) { //submit da interacao
         method: "post",
         data : dados,
         beforeSend: () => {
-            $('#btnEnviarEmail').prop("disabled", true);
+            //$('#btnEnviarEmail').prop("disabled", true);
         },
         success: (() => {
             $('textarea[name=txtEmail]').summernote('reset');

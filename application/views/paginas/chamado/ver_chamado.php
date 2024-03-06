@@ -425,9 +425,9 @@
                     <div class="col-0 my-3 mb-5">
                         <div class="accordion" id="accordionArticles">
                             <div class="d-flex justify-content-end">
-                                <!-- 
+                                
                                     <button class="btn btn-primary mb-3 ms-auto" type="button" data-toggle="modal" data-target="#modalEmail" id="btnModalEmail"><i class="fa fa-envelope" aria-hidden="true"></i> Enviar e-mail</button>
-                                 -->
+                                
                                 <button class="btn btn-primary mb-3 ms-auto" type="button" disabled><i class="fa fa-envelope" aria-hidden="true"></i> Enviar e-mail</button>
                             </div>
                             <?php $count = count($ticket['t_articles']); ?>
