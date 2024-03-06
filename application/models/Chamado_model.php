@@ -56,12 +56,13 @@ class Chamado_model extends CI_Model {
                 //$id_ticket_otrs = $this->db->query("select id_ticket_triagem from triagem where id_triagem = " .$dados['id_triagem'])->row()->id_ticket_triagem;
 
                 $q_insereChamado = 
-                "INSERT INTO `db_sigat`.`chamado` (`id_local_chamado`, `nome_solicitante_chamado`, `telefone_chamado`, 
+                "INSERT INTO `db_sigat`.`chamado` (`id_local_chamado`, `nome_solicitante_chamado`, `telefone_chamado`, `celular_chamado`,
                 `id_usuario_abertura_chamado`, `status_chamado`, `id_fila_chamado`, `data_chamado`, `ticket_chamado`, 
                 `id_ticket_chamado`,`complemento_chamado`, `resumo_chamado`, `data_encerramento_chamado`) values(" . 
                 $id_local . ",'" .
                 $dados['nome_solicitante'] . "','" .
-                $dados['telefone'] . "'," .
+                $dados['telefone'] . "','" .
+                $dados['celular'] . "'," .
                 $dados['id_usuario'] . ", 'ABERTO', ".
                 $dados['id_fila'] .", NOW(),'" .
                 $dados['num_ticket'] . "'," .
@@ -185,21 +186,23 @@ class Chamado_model extends CI_Model {
 
         $chamado_original = $this->db->query('select id_usuario_responsavel_chamado, 
         (select nome_usuario from usuario where id_usuario = id_usuario_responsavel_chamado) as nome_responsavel, 
-        nome_solicitante_chamado, telefone_chamado, 
+        nome_solicitante_chamado, telefone_chamado, celular_chamado,
         id_local_chamado, (select nome_local from local where id_local = id_local_chamado) as nome_local from chamado
         where id_chamado = ' . $dados['id_chamado'])->row();
 
         if ($dados['id_responsavel'] != NULL) { //se foi enviado algum id_responsavel...
             $q_alteraChamado = 
             "update chamado set nome_solicitante_chamado = '" . $dados['nome_solicitante'] . 
-            "', telefone_chamado = " . $dados['telefone'] . ", id_local_chamado = " . $id_local . ", id_usuario_responsavel_chamado = "
+            "', telefone_chamado = " . $dados['telefone'] . 
+            "', celular_chamado = '" . $dados['celular'] . "', id_local_chamado = " . $id_local . ", id_usuario_responsavel_chamado = "
             . $dados['id_responsavel'] . " where id_chamado = " . $dados['id_chamado'];
 
 
         } else { //se nao...
             $q_alteraChamado = 
             "update chamado set nome_solicitante_chamado = '" . $dados['nome_solicitante'] . 
-            "', telefone_chamado = " . $dados['telefone'] . ", id_local_chamado = " . $id_local . 
+            "', telefone_chamado = '" . $dados['telefone'] . 
+            "', celular_chamado = '" . $dados['celular'] . "', id_local_chamado = " . $id_local . 
             " where id_chamado = " . $dados['id_chamado'];
 
             
@@ -223,6 +226,11 @@ class Chamado_model extends CI_Model {
 
             $texto_alteracao .= 'alterou o telefone de <strong>' . $chamado_original->telefone_chamado . '</strong>';
             $texto_alteracao .= ' para <strong>' . $dados['telefone'] . '</strong>; ';
+        }
+
+        if ($chamado_original->celular_chamado != $dados['celular']) {
+            $texto_alteracao .= 'alterou o celular de <strong>' . $chamado_original->celular_chamado . '</strong>';
+            $texto_alteracao .= ' para <strong>' . $dados['celular'] . '</strong>; ';
         }
 
         if ($chamado_original->nome_solicitante_chamado != $dados['nome_solicitante']) {
@@ -391,7 +399,7 @@ class Chamado_model extends CI_Model {
 
     public function buscaChamado($id_chamado, $status = "") {
 
-	   $q_buscaChamado = "select complemento_chamado, id_ticket_chamado, ticket_chamado, id_chamado, id_fila, nome_solicitante_chamado, id_local, endereco_local, nome_local, regiao_local, DATE_FORMAT(data_chamado, '%d/%m/%Y - %H:%i:%s') as data_chamado, telefone_chamado,
+	   $q_buscaChamado = "select complemento_chamado, id_ticket_chamado, ticket_chamado, id_chamado, id_fila, nome_solicitante_chamado, id_local, endereco_local, nome_local, regiao_local, DATE_FORMAT(data_chamado, '%d/%m/%Y - %H:%i:%s') as data_chamado, telefone_chamado, celular_chamado,
         (select usuario.id_usuario from usuario where usuario.id_usuario = chamado.id_usuario_responsavel_chamado) as id_responsavel, 
         (select fila.nome_fila from fila where fila.id_fila = chamado.id_fila_chamado) as nome_fila_chamado, prioridade_chamado, resumo_chamado, email_nao_lido_chamado
         from local, fila, chamado

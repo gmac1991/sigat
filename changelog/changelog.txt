@@ -1,5 +1,26 @@
 SIGAT Changelog
 ===============
+
+[1.9.0f] - 2024-03-05
+
+== Modificado ==
+
+[Chamado]
+Adicionado campo para celular no chamado
+
+== Corrigido ==
+
+[Admin]
+Redundancia de ordenção ao editar itens nas tabelas
+
+[Equipamento]
+Erro no ping do equipamento
+
+[Reparo]
+Problema que permitia realizar ou cancelar serviço sem estar o chamado bloqueado pelo usuário autenticado no momento
+
+-----FIM------
+
 [1.9.0e] - 2024-03-04
 
 == Removido ==

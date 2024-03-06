@@ -72,6 +72,7 @@ class Chamado extends CI_Controller {
     $dados['nome_solicitante'] =    str_replace(array("'","\""),"",$this->input->post("nome_solicitante"));
     $dados['resumo_solicitacao'] =  str_replace(array("'","\""),"",$this->input->post("resumo_solicitacao"));
     $dados['telefone'] =            $this->input->post("telefone");
+    $dados['celular'] =            $this->input->post("celular");
     $dados['nome_local'] =          $this->input->post("nome_local");
     $dados['comp_local'] =          str_replace(array("'","\""),"",$this->input->post("comp_local"));
 
@@ -211,6 +212,7 @@ class Chamado extends CI_Controller {
     $dados['nome_solicitante'] =  $this->input->post("nome_solicitante");
     $dados['nome_local'] =        $this->input->post("nome_local");
     $dados['telefone'] =          $this->input->post("telefone");
+    $dados['celular'] =          $this->input->post("celular");
     $dados['id_responsavel'] =    $this->input->post("id_responsavel");
     $dados['id_usuario'] =        $_SESSION['id_usuario'];
 

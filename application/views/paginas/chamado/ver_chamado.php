@@ -380,9 +380,14 @@
                             </div>
                         </div>
                         <div class="row">
-                            <div class="form-group col-8">
+                            <div class="form-group col-7">
                                 <label for="nome_solicitante">Solicitante</label>
                                 <input type="text" class="form-control" name="nome_solicitante" aria-describedby="" placeholder="" disabled>
+                            </div>
+                            <div class="form-group col">
+                                <label for="celular">Celular <a href="#" class="badge badge-info"><i class="fas fa-phone"></i></a></label>
+                                <input type="text" class="form-control" name="celular" aria-describedby="" placeholder=""  disabled>
+                                
                             </div>
                             <div class="form-group col">
                                 <label for="telefone">Telefone <a href="#" id="sipLink" class="badge badge-info"><i class="fas fa-phone"></i></a></label>

@@ -1649,7 +1649,7 @@ async function carregaChamado(p_id_chamado,sem_equipamentos) {
 
         },
         success: function(data) {
-
+            g_fila_chamado = parseInt(data.id_fila);
             //preencher os campos conforme o json
 
             $('input[name=fila]').val(data.nome_fila_chamado);
@@ -1658,6 +1658,7 @@ async function carregaChamado(p_id_chamado,sem_equipamentos) {
             $('input[name=data_chamado]').val(data.data_chamado);
             $('input[name=status]').val(data.status_chamado);
             $('input[name=nome_solicitante]').val(data.nome_solicitante_chamado);
+            $('input[name=celular]').val(data.celular_chamado);
             $('input[name=telefone]').val(data.telefone_chamado);
             $('input[name=nome_local]').val(data.nome_local);
             $('input[name=id_fila_ant]').val(data.id_fila);
@@ -1962,8 +1963,7 @@ $('#btnPingEquipamento').on('click', function() {
     let erro = `<i class="fas fa-exclamation-triangle"></i>`;
     
        
-        let aux = $('#txtEquipamento').html();
-        let num_equipamento = aux.split(' ');
+        let num_equipamento = $('#patrimonio').val();
         $(this).prop('disabled', 'true');
         $(this).append(spinner);
         
@@ -1971,7 +1971,7 @@ $('#btnPingEquipamento').on('click', function() {
         $.ajax({
             url: base_url + `Ping/exec_ping`,
             type: 'GET',
-            data: `patrimonio=${num_equipamento[198]}`,
+            data: `patrimonio=${num_equipamento}`,
             dataType: 'json',
             success: dados => {
                 $(this).html('');
@@ -2542,6 +2542,7 @@ $('#btnEditarChamado').on('click', function(e) {
 
                 $('#frmEditarChamado input[name=nome_solicitante]').removeAttr('disabled');
                 $('#frmEditarChamado input[name=telefone]').removeAttr('disabled');
+                $('#frmEditarChamado input[name=celular]').removeAttr('disabled');
                 $('#frmEditarChamado input[name=nome_local]').removeAttr('disabled');
                 $('#frmEditarChamado button[type=submit]').removeAttr('hidden');
                 $('#frmEditarChamado button[type=submit]').removeAttr("disabled");
@@ -2575,6 +2576,7 @@ $('#btnCancelarEdicao').on('click', function(e) {
 
     $('#frmEditarChamado input[name=nome_solicitante]').prop('disabled', 'true');
     $('#frmEditarChamado input[name=telefone]').prop('disabled', 'true');
+    $('#frmEditarChamado input[name=celular]').prop('disabled', 'true');
     $('#frmEditarChamado input[name=nome_local]').prop('disabled', 'true');
     $('#frmEditarChamado button[type=submit]').prop('hidden', 'true');
     $('#frmEditarChamado select[name=id_responsavel]').attr('disabled', 'true');
@@ -2599,6 +2601,11 @@ $('#frmEditarChamado').on('submit', function(e) {
             digits: true,
             minlength: 3,
         },
+        celular: {
+            required: false,
+            digits: true,
+            minlength: 9,
+        },
 
     },
     messages: {
@@ -2608,6 +2615,11 @@ $('#frmEditarChamado').on('submit', function(e) {
             required: "Campo obrigatório!",
             digits: "Somente dígitos (0-9)!",
             minlength: "Mínimo 3 dígitos!"
+        },
+        celular: {
+            required: "Campo obrigatório!",
+            digits: "Somente dígitos (0-9)!",
+            minlength: "Mínimo 9 dígitos!"
         },
     },
     submitHandler: function(form) {
@@ -2667,6 +2679,7 @@ $('#frmEditarChamado').on('submit', function(e) {
                 $('#frmEditarChamado input[name=nome_solicitante]').prop('disabled', 'true');
                 $('#frmEditarChamado select[name=id_responsavel]').prop('disabled', 'true');
                 $('#frmEditarChamado input[name=telefone]').prop('disabled', 'true');
+                $('#frmEditarChamado input[name=celular]').prop('disabled', 'true');
                 $('#frmEditarChamado input[name=nome_local]').prop('disabled', 'true');
                 $('#frmEditarChamado button[type=submit]').prop('hidden', 'true');
                 $('#frmEditarChamado #btnEditarChamado').show();
@@ -2730,11 +2743,11 @@ $("#usuarios-grid").jsGrid({
 
     insertRowLocation: "top",
 
-    onDataLoaded: function(args)
+    /* onDataLoaded: function(args)
     {
         args.grid.sort(6,"desc")
 
-    },
+    }, */
 
     onItemInserted: function(args){
         alert(`${args.item.nome_usuario} cadastrado.`)
@@ -2972,11 +2985,11 @@ if ($('#pills-modelos-mensagens-tab').is(":visible")) {
     
             noDataContent: "(vazio)",
 
-            onDataLoaded: function(args)
+            /* onDataLoaded: function(args)
             {
                 args.grid.sort(5,"desc")
 
-            },
+            }, */
 
             onItemInserted: function(args){
                 alert(`Modelo cadastrado.`)
@@ -3142,11 +3155,11 @@ secretarias.then(value => {
     
         noDataContent: "(vazio)",
 
-        onDataLoaded: function(args)
+        /* onDataLoaded: function(args)
         {
             args.grid.sort(5,"desc")
 
-        },
+        }, */
 
         onItemInserted: function(args){
             
@@ -3359,11 +3372,11 @@ $("#secretarias-grid").jsGrid({
 
     noDataContent: "(vazio)",
 
-    onDataLoaded: function(args)
+    /* onDataLoaded: function(args)
     {
         args.grid.sort(3,"desc")
 
-    },
+    }, */
 
     onItemInserted: function(args){
         alert(`${args.item.nome_secretaria} cadastrada.`)
@@ -3480,9 +3493,9 @@ Promise.resolve(carregaFilas()).then(filas => {
     
         noDataContent: "(vazio)",
 
-        onDataLoaded: function(args) {
+        /* onDataLoaded: function(args) {
             args.grid.sort(6,"DESC")
-        },
+        }, */
 
         onItemInserting: function(args){
             for(i=0; i < args.grid.data.length; i++){
@@ -5078,6 +5091,7 @@ function inserirTelefone(id = 0){
             async: true,
             data: {
                 telefone: telefone,
+                celular: celular,
                 setor: setor,
                 acao: acao,
                 id: id
@@ -5412,7 +5426,10 @@ $('#modalReparo').on('show.bs.modal', async function (event) {
         `<i class="fas fa-wrench"></i>
         ${res.reparo.num_equipamento_reparo} -
         ${res.desc_equip}
-        <small>(Reparo #${p_id_reparo})</small>`)
+        <small>(Reparo #${p_id_reparo})</small>`
+    )
+
+    // se esta como responsavel do chamado irá exibir os controles do reparo
     if (p_id_responsavel == g_id_usuario && g_fila_chamado === 3) {
         $(this).find('.modal-footer').show();
     } else {
@@ -5471,15 +5488,27 @@ $('#modalReparo').on('show.bs.modal', async function (event) {
             } else {
                 $('#conteudo-reparo-servico').find(".form-check").append(`
                     <div id="check-servico-${reparo_servico.id_reparo_servico}">
-                        <input class="form-check-input check-servico" id="checkbox-servico-${reparo_servico.id_reparo_servico}" type="checkbox" value="${reparo_servico.id_reparo_servico}" onclick="realizaServico(${reparo_servico.id_reparo_servico}, '${reparo_servico.nome_servico}', ${reparo_servico.id_servico})">
+                        <input class="form-check-input check-servico" id="checkbox-servico-${reparo_servico.id_reparo_servico}" type="checkbox" value="${reparo_servico.id_reparo_servico}">
                         <label for="check-servico-${reparo_servico.id_reparo_servico}" class="form-check-label">
                             ${reparo_servico.nome_servico}
-                            <span class="badge badge-danger" onclick="cancelaServico(${reparo_servico.id_reparo_servico}, '${reparo_servico.nome_servico}', ${reparo_servico.id_servico})"><i class="fas fa-times"></i></span>    
                         </label>
-                       
-                        
                     </div>
                 `);
+                
+                // verifica se o chamado está bloqueado pelo usuario
+                if (p_id_responsavel == g_id_usuario && g_fila_chamado === 3) {
+                    // coloca o onclick no checkbox
+                    $(`#checkbox-servico-${reparo_servico.id_reparo_servico}`).attr('onclick', `realizaServico(${reparo_servico.id_reparo_servico}, '${reparo_servico.nome_servico}', ${reparo_servico.id_servico})`);
+
+                    // coloca o botão de cancelar reparo
+                    $(`#check-servico-${reparo_servico.id_reparo_servico} > label`).append(`
+                        <span class="badge badge-danger" onclick="cancelaServico(${reparo_servico.id_reparo_servico}, '${reparo_servico.nome_servico}', ${reparo_servico.id_servico})"><i class="fas fa-times"></i></span>
+                    `);
+                } else {
+                    // coloca disable no botão de realizar serviço
+                    $(`#checkbox-servico-${reparo_servico.id_reparo_servico}`).prop('disabled', true);
+                }
+                
             }
         });
 

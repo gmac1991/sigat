@@ -334,7 +334,7 @@ class Json extends CI_Controller {
             $id_chamado = $this->input->get('id_chamado');
 
    
-            $q_buscaChamado = "select complemento_chamado, resumo_chamado, ticket_chamado, id_chamado, id_fila, status_chamado, nome_solicitante_chamado, nome_local, DATE_FORMAT(data_chamado, '%d/%m/%Y - %H:%i:%s') as data_chamado, telefone_chamado,
+            $q_buscaChamado = "select complemento_chamado, resumo_chamado, ticket_chamado, id_chamado, id_fila, status_chamado, nome_solicitante_chamado, nome_local, DATE_FORMAT(data_chamado, '%d/%m/%Y - %H:%i:%s') as data_chamado, telefone_chamado, celular_chamado,
                 (select usuario.nome_usuario from usuario where usuario.id_usuario = chamado.id_usuario_responsavel_chamado) as nome_responsavel,
                 (select usuario.id_usuario from usuario where usuario.id_usuario = chamado.id_usuario_responsavel_chamado) as id_responsavel,  
                 (select fila.nome_fila from fila where fila.id_fila = chamado.id_fila_chamado) as nome_fila_chamado, entrega_chamado

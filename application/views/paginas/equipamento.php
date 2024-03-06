@@ -11,7 +11,7 @@
                     <?php echo $id . " - ". $descricao ?></h4>           
                 </div>
                  
-                
+                <input type="hidden" id="patrimonio" value="<?=$id?>">
 
                 <hr />
 

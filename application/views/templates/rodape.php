@@ -31,7 +31,7 @@ if (isset($chamado)) {
  
   echo "<script type=\"text/javascript\">const g_id_chamado = " . $chamado->id_chamado . "</script>";
   echo "<script type=\"text/javascript\">const g_id_ticket_chamado = " . $chamado->id_ticket_chamado . "</script>";
-  echo "<script type=\"text/javascript\">const g_fila_chamado = " . $chamado->id_fila . "</script>"; 
+  echo "<script type=\"text/javascript\">var g_fila_chamado = " . $chamado->id_fila . "</script>"; 
 }
 
 ?>
