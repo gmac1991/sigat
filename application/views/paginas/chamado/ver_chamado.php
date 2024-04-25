@@ -137,11 +137,26 @@
                         <i class="fas fa-ban"></i> Inservível
                         </button>
                         <button class="btn btn-success" id="btnEncerrarReparo">
-                        <i class="fas fa-check-circle" disabled></i> Encerrar Reparo
+                        <i class="fas fa-check-circle" disabled></i> Encerrar
+                        </button>
+                        <button class="btn btn-secondary" id="btnRmEsperaReparo" disabled>
+                        <i class="fas fa-times-circle"></i> Remover da espera
+                        </button>
+                        <button class="btn btn-secondary btnEsperaReparo" data-toggle="collapse" href="#collapseEspera" role="button" aria-expanded="false" aria-controls="collapseEspera">
+                        <i class="fas fa-times-circle"></i> Espera
                         </button>
                         <button class="btn btn-danger" id="btnJustificativaCancelamento" data-toggle="modal" data-target="#modalJustificativaCancelamento" disabled>
-                        <i class="fas fa-times-circle"></i> Cancelar Reparo
+                        <i class="fas fa-times-circle"></i> Cancelar
                         </button>
+                    </div>
+                    <div class="container collapse mb-2" id="collapseEspera">
+                        <strong><label>Justificativa da espera: </label></strong>
+                        <textarea class="form-control" id="justificativaEspera"  rows="2"></textarea>
+                        <div class="invalid-feedback">
+                            Somente letras e números.
+                        </div>
+
+                        <button class="btn btn-success mt-3" id="btnEsperaReparo" type="button">Colocar em espera</button>
                     </div>
                     <div class="container modal-historico">
                         
@@ -150,6 +165,30 @@
                             
                         </div>
 
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="modalVerificarBateria" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title"><i class="fas fa-wrench"></i> Voltagem da bateria</h5>
+                    </div>
+                    <div class="modal-body">
+                        <form id="frmbateriaReparo">
+                            <div class="form-group">
+                                <label>Voltagem: </label>
+                                <input class="form-control mt-2 col-4" id="input-voltagem" type="number">
+
+                                <input type="checkbox" id="is-notebook-allinone">
+                                <label for="is-notebook-allinone">É notebook/all in one</label>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">    
+                        <button type="button" id="btnRegistrarVoltagem" class="btn btn-success"><i class="fas fa-check"></i><span></span></button>
                     </div>
                 </div>
             </div>
@@ -296,9 +335,19 @@
                     href="<?= $this->config->item('url_ticketsys') ?>index.pl?Action=AgentTicketZoom;TicketID=<?= $chamado->id_ticket_chamado?>">
                     <i class="fas fa-external-link-alt"></i></a> <small>(#<?= $chamado->id_chamado ?>)&nbsp;
                     <button class="btn btn-secondary btn-sm d-inline" id="btnImprimirChamado" data-chamado="<?= $chamado->id_chamado ?>"><i class="fas fa-print"></i></button>
+                    <?php if($usuario->autorizacao_usuario > 3): ?>
+                    <button class="btn btn-primary btn-sm d-inline" id="btnImprimirRelatorioChamado" data-chamado="<?= $chamado->id_chamado ?>"><i class="fas fa-print"></i> Relatório detalhado</button>
+                    <?php endif;?>
                     <span class="text-warning" id="estrela_prioridade" style="display:<?= $chamado->prioridade_chamado == 1 ? 'inline' : 'none' ?>"><i class="fas fa-star"></i></span>
                     <div class="spinner-border spinner-border-sm" role="status" id="spnStatusChamado" style="display: none;">
-                    <span class="sr-only">Loading...</span></div></small>
+                    <span class="sr-only">Loading...</span></div>
+                    <?php if($chamado->infovia == 0) { ?>
+                    <div class="alert alert-danger float-right mr-5" style="font-size: 15px;" role="alert">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Este local não acessa a infovia
+                    </div>
+                    <?php } ?>
+                    </small>
                     
                     
                     
@@ -320,7 +369,7 @@
                 <a class="nav-link" id="comunicacao-tab" data-toggle="tab" href="#comunicacao" role="tab" aria-controls="descricao" aria-selected="false"><i class="fas fa-exchange-alt"></i></i> Comunicação</a>
                 </li>
                 <li class="nav-item">
-                <a class="nav-link" id="atendimento-tab" data-toggle="tab" href="#atendimento" role="tab" aria-controls="atendimento" aria-selected="false"><i class="far fa-hand-pointer"></i> Atendimento</a>
+                <a class="nav-link" id="atendimento-tab" data-toggle="tab" href="#atendimento" role="tab" aria-controls="atendimento" aria-selected="false"><i class="far fa-hand-pointer"></i> Interações</a>
                 </li>
                 
                 <li class="nav-item">
@@ -425,10 +474,8 @@
                     <div class="col-0 my-3 mb-5">
                         <div class="accordion" id="accordionArticles">
                             <div class="d-flex justify-content-end">
-                                <!-- 
-                                    <button class="btn btn-primary mb-3 ms-auto" type="button" data-toggle="modal" data-target="#modalEmail" id="btnModalEmail"><i class="fa fa-envelope" aria-hidden="true"></i> Enviar e-mail</button>
-                                 -->
-                                <button class="btn btn-primary mb-3 ms-auto" type="button" disabled><i class="fa fa-envelope" aria-hidden="true"></i> Enviar e-mail</button>
+                                
+                                <button class="btn btn-primary mb-3 ms-auto" type="button" data-toggle="modal" data-target="#modalEmail" id="btnModalEmail" style="display:none"><i class="fa fa-envelope" aria-hidden="true"></i> Enviar e-mail</button>
                             </div>
                             <?php $count = count($ticket['t_articles']); ?>
                         <?php for($i = 0; $i < $count; $i++): ?>
@@ -524,8 +571,43 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form id="frmEmail" method="post" enctype="multipart/form-data">
                 <div class="modal-body">
+                    <div class="form" id="remetente">
+                        
+                    </div>
+
+                    <div id="formCopiaEmail">
+                        <form class="mt-2 mb-2" id="copiasEmail">
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <div class="input-group-text">CC</div>
+                                </div>
+                                <input type="text" name="" class="form-control copia" id="copia">                                
+                                <div class="input-group-append">
+                                    <button class="btn btn-primary btn-sm" id="btn-add-servico" type="submit">
+                                        <i class="fas fa-plus"></i> Adicionar
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <div class="input-group-text">CCo</div>
+                                </div>
+                                <input type="text" name="" class="form-control copia" id="copiaOculta">
+                                <div class="input-group-append">
+                                    <button class="btn btn-primary btn-sm" id="btn-add-servico" type="submit">
+                                        <i class="fas fa-plus"></i> Adicionar
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                            
+                    <!-- <label for="text">Para: </label> -->
+                
+            <form id="frmEmail" method="post" enctype="multipart/form-data">
+                    
                     <div id="conteudo_form">
                         <!-- <div class="row mb-3">
                             <div class="col">

@@ -10,7 +10,7 @@ class Local_model extends CI_Model {
     //}
 
     public function buscaLocal($id){
-        $sql = "SELECT id_local, status_local, nome_local, secretaria_local, endereco_local, regiao_local 
+        $sql = "SELECT id_local, status_local, nome_local, secretaria_local, endereco_local, regiao_local, infovia 
         FROM `local` WHERE id_local = " . $id ."";
 
         $busca = $this->db->query($sql);
@@ -52,6 +52,7 @@ class Local_model extends CI_Model {
             'secretaria_local' =>     $dados['secretaria_local'],
             'regiao_local' =>         $dados['regiao_local'],
             'status_local' =>         $dados['status_local'],
+            'infovia' =>              $dados['infovia'],
             'alteracao_local' =>      date("Y-m-d H:i:s"),
         );
 
@@ -87,6 +88,7 @@ class Local_model extends CI_Model {
             'secretaria_local' =>     $dados['secretaria_local'],
             'regiao_local' =>         $dados['regiao_local'],
             'status_local' =>         $dados['status_local'],
+            'infovia' =>              $dados['infovia'],
             'alteracao_local' =>      date("Y-m-d H:i:s"),
         );
 

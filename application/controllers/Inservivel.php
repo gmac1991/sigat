@@ -9,6 +9,7 @@ class Inservivel extends CI_Controller {
         $this->load->model("chamado_model");
         $this->load->model("usuario_model"); //carregando o model usuario
         $this->load->model("consultas_model"); //carregando o model das consultas
+        $this->load->model("reparo_model"); // carregando model de reparo
     }
 
     public function index() {
@@ -16,8 +17,12 @@ class Inservivel extends CI_Controller {
             $usuario = $this->usuario_model->buscaUsuario($_SESSION['id_usuario']);
 
             if ($usuario->inservivel_usuario) {
+                
+
                 if (!$this->inservivel_model->lista_remessa_aberta()) {
                     $this->inservivel_model->abre_nova_remessa();
+                } else if (!$this->inservivel_model->lista_remessa_aberta(true)) {
+                    $this->inservivel_model->abre_nova_remessa(true);
                 }
 
                 $this->load->view('templates/cabecalho', $usuario);
@@ -34,6 +39,20 @@ class Inservivel extends CI_Controller {
     public function listarRemessas() {
         if (isset($_SESSION['id_usuario'])){
             $remessas = $this->inservivel_model->listar_remessas();
+            foreach ($remessas as &$remessa) {
+                switch ($remessa['divisao_remessa']) {
+                    case DGTI:
+                        $remessa['cod_divisao'] = DGTI;
+                        $remessa['divisao_remessa'] = "DGTI";
+                        break;
+
+                    case DIN:
+                        $remessa['cod_divisao'] = DIN;
+                        $remessa['divisao_remessa'] = "DIN";
+                        break;
+                }
+            }
+
             http_response_code(200);
             header('Content-Type: application/json');
             echo json_encode($remessas);
@@ -269,5 +288,47 @@ class Inservivel extends CI_Controller {
                 show_404();
             }
         }
+    }
+
+    public function reverter_remessa(){
+        if (isset($_SESSION['id_usuario'])) {
+
+            $equip = $this->input->post('equip');
+            $remessa = $this->input->post('remessa');
+            $reparo = $this->input->post('reparo');
+            $chamado = $this->input->post('chamado');
+            $usuario = $_SESSION['id_usuario'];
+            $result_remessa = null;
+            $result = null;
+            $result_remessa = $this->inservivel_model->listar_remessa($remessa);
+            if($result_remessa != null){
+                if($result_remessa->data_entrega == null){
+                    $result = $this->reparo_model->excluirReparo($reparo);
+                    if($result == true){
+                        $mensagem = $this->inservivel_model->reverterRemessa($equip, $remessa, $reparo, $chamado, $usuario);
+                    }else{
+                        $mensagem['mensagem'] = 'Houve um erro no processamento de remessas.';
+                        $mensagem['status'] = 'error';
+                    }
+                }else{
+                    $mensagem['mensagem'] = 'Este equipamento já foi entregue e sua remessa não pode ser desfeita.';
+                    $mensagem['status'] = 'error';
+                }
+            }else{
+                $mensagem['mensagem'] = 'A remessa para este equipamento não pode ser revertida.';
+                $mensagem['status'] = 'error';
+            }
+
+                
+            header('Content-Type: application/json');
+            echo json_encode($mensagem);
+        }
+    }
+
+    public function listar_remessa($id){
+        $remessa = $this->inservivel_model->listar_remessa($id);
+
+        header('Content-Type: application/json');
+            echo json_encode($remessa);
     }
 }

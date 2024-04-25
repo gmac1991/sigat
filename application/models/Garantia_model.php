@@ -38,20 +38,20 @@ class Garantia_model extends CI_Model {
     }
 
     public function salvarLaudoGarantia($id_garantia, $nome_laudo) {
-        $this->db->set('nome_laudo_garantia', $nome_laudo);
-        $this->db->where('id_garantia', $id_garantia);
-
         // ------------ LOG -------------------
 
         $log = array(
             'acao_evento' => 'GRAVAR_LAUDO_GARANTIA',
-            'desc_evento' => 'ID REPARO: ' . $id_reparo. " - TICKET GARANTIA: " .  $ticket_garantia,
+            'desc_evento' => 'ID GARANTIA: ' . $id_garantia. " - TICKET GARANTIA: " .  $id_garantia,
             'id_usuario_evento' => $_SESSION['id_usuario']
         );
         
         $this->db->insert('evento', $log);
 
         // -------------- /LOG ----------------
+
+        $this->db->set('nome_laudo_garantia', $nome_laudo);
+        $this->db->where('id_garantia', $id_garantia);
 
         return $this->db->update('garantia');
     }

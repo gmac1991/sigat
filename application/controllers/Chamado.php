@@ -16,6 +16,7 @@ class Chamado extends CI_Controller {
     $this->load->model("triagem_model"); //carregando o model triagem
     $this->load->model("reparo_model"); //carregando o model triagem
     $this->load->model("local_model"); //carregando o model local
+    $this->load->model("equipamento_model"); //carregando o model equipamento
   }
 
   public function index($pagina = NULL, $id_chamado = NULL) { //controle dos chamados
@@ -47,7 +48,7 @@ class Chamado extends CI_Controller {
           $dados['telefones'] = $this->local_model->listarTelefones($valores);
           //$this->dd->dd($dados['ticket']);
           $this->load->view('paginas/chamado/'.$pagina, $dados);
-          //$this->dd->dd($dados['chamado']);
+          //$this->dd->dd($dados);
          //
 
         } else {
@@ -172,7 +173,7 @@ class Chamado extends CI_Controller {
 
     $data_arr = array(
         "Ticket" => array(
-        "StateID" => 2,    // novo estado: fechado com êxito   
+        "StateID" => 2,    // -novo estado: fechado com êxito   
       ),        
       "Article" => array(
         "Subject" => "[SIGAT] Encerramento",
@@ -200,6 +201,64 @@ class Chamado extends CI_Controller {
 
   }
 
+  public function reabrir_chamado() { //encerrar chamado
+
+    $dados = array();
+
+    // campos
+
+    $dados['id_chamado'] =        $this->input->post("id_chamado");
+    $dados['id_usuario'] =        $_SESSION['id_usuario'];
+
+    $this->chamado_model->reabreChamado($dados);
+
+    $nome_usuario = $this->usuario_model->buscaUsuario($_SESSION["id_usuario"])->nome_usuario;
+    $result =  $this->chamado_model->buscaChamado($dados['id_chamado']);
+    $id_ticket = $result['chamado']->id_ticket_chamado;
+
+
+    $api_url = $this->config->item('url_ticketsys_api');
+
+    $user = $this->config->item('ticketsys_login');
+    $pwd = $this->config->item('ticketsys_pwd');
+
+    $url = $api_url."Ticket/" . $id_ticket . "?UserLogin=".$user."&Password=".$pwd;
+
+    $data_arr = array();
+
+    $body = $nome_usuario . " reabriu o chamado #". $dados['id_chamado']. "\n\n" .
+            "ID SIGAT: #".$id_ticket." | REABERTURA_SIGAT\n" .
+            "Esta mensagem é automática, não responda.";
+
+    $data_arr = array(
+        "Ticket" => array(
+        "StateID" => 4,    // novo estado: fechado com êxito   
+      ),        
+      "Article" => array(
+        "Subject" => "[SIGAT] Reabertura",
+        "Body" => $body,
+        "ContentType" => "text/plain; charset=utf8",
+        "IsVisibleForCustomer" => 0,
+      )
+    );
+
+    $data = json_encode($data_arr);
+
+    $curl = curl_init();
+    curl_setopt($curl, CURLOPT_URL, $url);
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'PATCH');
+    curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
+    curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+     // SOMENTE DEV
+     if (ENVIRONMENT == 'development') {
+      curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
+      curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
+    }
+    curl_exec($curl);
+    curl_close($curl);
+
+  }
   
 
   public function alterar_chamado() { //alteracao do chamado
@@ -531,7 +590,8 @@ class Chamado extends CI_Controller {
 
       
 
-        $dados = $this->chamado_model->buscaChamado($id,"'FECHADO','ENTREGUE','ATENDIDO','REMESSA','INSERVIVEL','FALHA','ESPERA'");
+        $dados = $this->chamado_model->buscaChamado($id,"'ABERTO','ENTREGA','FECHADO','ATENDIDO','REMESSA','INSERVIVEL','FALHA','ESPERA'");
+        //'FECHADO','ENTREGUE','ATENDIDO','REMESSA','INSERVIVEL','FALHA','ESPERA'
 
         $chamado = $dados['chamado'];
         $equips = $dados['equipamentos'];
@@ -676,6 +736,529 @@ class Chamado extends CI_Controller {
     
   }
 
+  public function imprimir_relatorio_chamado() {
+
+    
+
+    if (isset($_SESSION['id_usuario'])) {
+     
+      
+      $entrada = $this->input->get("chamados");
+
+        
+        //$this->config->item('caminho_img_temp'). 'relatorio2.pdf'
+        //$this->load->library('pdf');
+        
+        $this->load->library('pdf_html');
+        $this->load->library('PDFMerger.php');
+
+        $dados = $this->chamado_model->buscaChamado($entrada);
+        
+        $chamado = $dados['chamado'];
+        $equips = $dados['equipamentos'];
+        $servicos = $dados['servicos'];
+        $responsavel = null;
+        if($chamado->id_responsavel != null) $responsavel = $this->usuario_model->buscaUsuario($chamado->id_responsavel);
+
+        $usuario = $this->usuario_model->buscaUsuario($_SESSION['id_usuario']);
+
+        $interacoes = $this->chamado_model->buscaInteracoes($entrada);
+        $ticket = $this->triagem_model->buscaTicket($dados['chamado']->id_ticket_chamado,43);
+        
+        $reparos = $this->reparo_model->listarReparosChamado($entrada);
+
+        $hist_chamado = $this->chamado_model->buscaHistoricoChamado($entrada);
+
+        $termos = $this->chamado_model->buscaTermoEntrega($entrada);
+
+        
+        $pdf = new PDF_HTML();
+        $pdf->AliasNbPages();
+        $pdf->AddPage();
+        $pdf->SetFont('Arial','B',12);
+        $pdf->Cell(0,10,'CHAMADO - ' . $chamado->id_chamado,0,0,'C');
+        $pdf->Ln(5);
+        $pdf->SetFont('Arial','B',7);
+        $pdf->Cell(0,10,$chamado->ticket_chamado,0,0,'C');
+        $pdf->Ln(10);
+        $pdf->SetFont('Arial','',9);
+        $pdf->Cell(0,10,"Emitido em " . date('d/m/Y - H:i:s'),0,0,'R');
+        $pdf->Ln(5);
+        $pdf->Cell(0,10,"Por: " . utf8_decode($usuario->nome_usuario),0,0,'R');
+        $pdf->Ln(15);
+
+        $pdf->SetFont('Arial','B',12);
+        $pdf->Cell(0,8,utf8_decode('Informações'),0,0,'C');
+
+        //$pdf->Cell(0,8,"","T",0,0);
+        $pdf->Ln(10);
+        $pdf->SetFont('Arial','B',10);
+        $pdf->Cell(35,8,utf8_decode('Solicitante: '),0,0,'L');
+        $pdf->SetFont('Arial','',10);
+        $pdf->Cell(0,8,utf8_decode($chamado->nome_solicitante_chamado),0,0,'L');
+        $pdf->Ln(5);
+        $pdf->SetFont('Arial','B',10);
+        $pdf->Cell(35,8,utf8_decode('Telefone: '),0,0,'L');
+        $pdf->SetFont('Arial','',10);
+        $pdf->Cell(50,8,utf8_decode($chamado->telefone_chamado),0,0,'L');
+        $pdf->SetFont('Arial','B',10);
+        $pdf->Cell(35,8,utf8_decode('Celular: '),0,0,'L');
+        $pdf->SetFont('Arial','',10);
+        $pdf->Cell(50,8,utf8_decode($chamado->celular_chamado),0,0,'L');
+        $pdf->Ln(5);
+        $pdf->SetFont('Arial','B',10);
+        $pdf->Cell(35,8,utf8_decode('Local: '),0,0,'L');
+        $pdf->SetFont('Arial','',10);
+        $pdf->Cell(0,8,utf8_decode($chamado->nome_local),0,0,'L');
+        $pdf->Ln(5);
+        $pdf->SetFont('Arial','B',10);
+        $pdf->Cell(35,8,utf8_decode('Endereço: '),0,0,'L');
+        $pdf->SetFont('Arial','',10);
+        $pdf->Cell(0,8,utf8_decode($chamado->endereco_local),0,0,'L');
+        $pdf->Ln(5);
+        $pdf->SetFont('Arial','B',10);
+        $pdf->Cell(35,8,utf8_decode('Complemento: '),0,0,'L');
+        $pdf->SetFont('Arial','',10);
+        $pdf->Cell(0,8,utf8_decode($chamado->complemento_chamado),0,0,'L');
+        $pdf->Ln(5);
+        $pdf->SetFont('Arial','B',10);
+        $pdf->Cell(35,8,utf8_decode('Região: '),0,0,'L');
+        $pdf->SetFont('Arial','',10);
+        $pdf->Cell(0,8,utf8_decode($chamado->regiao_local),0,0,'L');
+        $pdf->Ln(6);
+        $pdf->SetFont('Arial','B',10);
+        $pdf->Cell(35,8,utf8_decode('Resumo: '),0,0,'L');
+        $pdf->SetFont('Arial','',10);
+        $pdf->MultiCell(0,6,utf8_decode($chamado->resumo_chamado),0,'L');
+        $pdf->SetFont('Arial','B',10);
+        $pdf->Cell(35,8,utf8_decode('Aberto em: '),0,0,'L');
+        $pdf->SetFont('Arial','',10);
+        $pdf->Cell(0,8,utf8_decode($chamado->data_chamado),0,0,'L');
+        $pdf->Ln(5);
+        $pdf->SetFont('Arial','B',10);
+        $pdf->Cell(35,8,utf8_decode('Encerrado em: '),0,0,'L');
+        $pdf->SetFont('Arial','',10);
+        $pdf->Cell(0,8,utf8_decode($chamado->data_encerramento_chamado),0,0,'L');
+        $pdf->Ln(5);
+        $pdf->SetFont('Arial','B',10);
+        $pdf->Cell(35,8,utf8_decode('Status: '),0,0,'L');
+        $pdf->SetFont('Arial','',10);
+        $pdf->Cell(0,8,utf8_decode($chamado->status_chamado),0,0,'L');
+        $pdf->Ln(5);
+        $pdf->SetFont('Arial','B',10);
+        $pdf->Cell(35,8,utf8_decode('Responsável: '),0,0,'L');
+        $pdf->SetFont('Arial','',10);
+        if(isset($responsavel->nome_usuario)){
+          $pdf->Cell(0,8,utf8_decode($responsavel->nome_usuario),0,0,'L');
+        }
+        $pdf->Ln(15);
+        $pdf->Cell(0,8,"","T",0,0);
+        $pdf->Ln(10);
+
+        if(sizeof($equips) > 0){
+          $pdf->SetFont('Arial','B',12);
+          $pdf->Cell(0,8,utf8_decode('Equipamentos'),0,0,'C');
+          $pdf->Ln(15);
+          foreach($equips as $equip){
+            $status_equip = $this->equipamento_model->buscaStatusEquipamento($equip->num_equipamento, true);
+            $status = null;
+            $bg_info = $this->equipamento_model->buscarInfoEquipamento($equip->num_equipamento);
+            $ultimos_usuarios = $this->equipamento_model->buscarUsuariosEquipamento($equip->num_equipamento);
+            $ultimos_chamados = $this->equipamento_model->buscaChamadosEquipamento($equip->num_equipamento);
+            
+            for($i = 0; $i < sizeof($status_equip); $i++){
+              if($status_equip[$i]['id_chamado'] == $entrada){
+                $status = $status_equip[$i]['status_equipamento_chamado'];
+              }
+            }
+            $pdf->SetFont('Arial','B',10);
+            $pdf->Cell(40,8,utf8_decode('Nº de itentificação: '),0,0,'L');
+            $pdf->SetFont('Arial','',10);
+            $pdf->Cell(0,8,utf8_decode($equip->num_equipamento),0,0,'L');
+            $pdf->Ln(5);
+            $pdf->SetFont('Arial','B',10);
+            $pdf->Cell(35,8,utf8_decode('Descrição: '),0,0,'L');
+            $pdf->SetFont('Arial','',10);
+            $pdf->Cell(0,8,utf8_decode($equip->descricao_equipamento),0,0,'L');
+            $pdf->Ln(5);
+            $pdf->SetFont('Arial','B',10);
+            $pdf->Cell(35,8,utf8_decode('Lacre: '),0,0,'L');
+            $pdf->SetFont('Arial','',10);
+            $pdf->Cell(0,8,utf8_decode($equip->tag_equipamento),0,0,'L');
+            $pdf->Ln(5);
+            $pdf->SetFont('Arial','B',10);
+            $pdf->Cell(35,8,utf8_decode('Status: '),0,0,'L');
+            $pdf->SetFont('Arial','',10);
+            $pdf->Cell(0,8,utf8_decode($status),0,0,'L');
+            $pdf->Ln(5);
+            if($bg_info != null){
+              $pdf->SetFont('Arial','B',10);
+              $pdf->Cell(35,8,utf8_decode('Processador: '),0,0,'L');
+              $pdf->SetFont('Arial','',10);
+              $pdf->Cell(0,8,utf8_decode($bg_info[0]['CPU']),0,0,'L');
+              $pdf->Ln(5);
+              $pdf->SetFont('Arial','B',10);
+              $pdf->Cell(35,8,utf8_decode('Endereço IP: '),0,0,'L');
+              $pdf->SetFont('Arial','',10);
+              $ips = explode(' ', $bg_info[0]['IP_2']);
+              $ip = $ips[0];
+              $pdf->Cell(0,8,utf8_decode($ip),0,0,'L');
+              $pdf->Ln(5);
+              $pdf->SetFont('Arial','B',10);
+              $pdf->Cell(35,8,utf8_decode('Ultimo usuário: '),0,0,'L');
+              $pdf->SetFont('Arial','',10);
+              $pdf->Cell(0,8,utf8_decode($bg_info[0]['User_Name']),0,0,'L');
+              $pdf->Ln(5);
+              $pdf->SetFont('Arial','B',10);
+              $pdf->Cell(35,8,utf8_decode('Ultima registro: '),0,0,'L');
+              $pdf->SetFont('Arial','',10);
+              $pdf->Cell(0,8,utf8_decode(date("d/m/Y - H:i:s", strtotime($bg_info[0]['Time_Stamp']))),0,0,'L');
+              $pdf->Ln(5);
+              $pdf->SetFont('Arial','B',10);
+              $pdf->Cell(35,8,utf8_decode('Memória RAM: '),0,0,'L');
+              $pdf->SetFont('Arial','',10);
+              $pdf->Cell(0,8,utf8_decode($bg_info[0]['Memory']),0,0,'L');
+              $pdf->Ln(5);
+              $pdf->SetFont('Arial','B',10);
+              $pdf->Cell(45,8,utf8_decode('Sistema Operacional: '),0,0,'L');
+              $pdf->SetFont('Arial','',10);
+              $pdf->Cell(0,8,utf8_decode($bg_info[0]['OS_Version']),0,0,'L');
+              $pdf->Ln(5);
+              $pdf->SetFont('Arial','B',10);
+              $pdf->Cell(35,8,utf8_decode('Armazenamento: '),0,0,'L');
+              $pdf->Ln(5);
+              $volumes = explode(' ', $bg_info[0]['Volumes']);
+              $livres = explode(' ', $bg_info[0]['Free_Space']);
+              for ($i = 0; $i < sizeof($volumes) -1; $i += 3){
+                $unidade = $volumes[$i];
+                if (isset($volumes[$i + 2])){
+                  $espaco_total = $volumes[$i + 1] . ' ' . $volumes[$i + 2];
+                  $espaco_livre = $livres[$i + 1] . ' ' . $livres[$i + 2];
+                }
+                $pdf->SetFont('Arial','B',10);
+                $pdf->Cell(35,8,utf8_decode($unidade),0,0,'L');
+                $pdf->SetFont('Arial','',10);
+                $pdf->Cell(0,8,utf8_decode($espaco_total),0,0,'L');
+                $pdf->Ln(5);
+                $pdf->SetFont('Arial','B',10);
+                $pdf->Cell(35,8,utf8_decode('Espaço livre:'),0,0,'L');
+                $pdf->SetFont('Arial','',10);
+                $pdf->Cell(0,8,utf8_decode($espaco_livre),0,0,'L');
+                $pdf->Ln(5);
+              }
+              $pdf->SetFont('Arial','B',10);
+              $pdf->Cell(35,8,utf8_decode('Ultimos acessos: '),0,0,'L');
+              $pdf->Ln(5);
+              foreach($ultimos_usuarios as $ultimo){
+                $pdf->SetFont('Arial','B',10);
+                $pdf->Cell(45,8,utf8_decode(date("d/m/Y - H:i:s", strtotime($ultimo['Time_Stamp']))),0,0,'L');
+                $pdf->SetFont('Arial','',10);
+                $pdf->Cell(100,8,utf8_decode($ultimo['User_Name']),0,0,'L');
+                $pdf->SetFont('Arial','B',10);
+                $pdf->Cell(15,8,utf8_decode('IP:'),0,0,'L');
+                $pdf->SetFont('Arial','',10);
+                $pdf->Cell(0,8,utf8_decode($ultimo['IP_2']),0,0,'L');
+                $pdf->Ln(5);
+              }
+            }
+            if(sizeof($reparos) > 0 && $reparos != null){
+              $pdf->SetFont('Arial','B',10);
+              $pdf->Cell(0,8,utf8_decode('Reparos'),0,0,'L');
+              $pdf->Ln(5);
+              
+              foreach($reparos as $reparo){
+                if($reparo->num_equipamento_reparo == $equip->num_equipamento){
+                  //$this->dd->dd($reparo);
+                  $pdf->SetFont('Arial','B',10);
+                  $pdf->Cell(35,8,utf8_decode('Reparo: '),0,0,'L');
+                  $pdf->SetFont('Arial','',10);
+                  $pdf->Cell(45,8,utf8_decode($reparo->id_reparo),0,0,'L');
+                  $pdf->Ln(5);
+                  $pdf->SetFont('Arial','B',10);
+                  $pdf->Cell(35,8,utf8_decode('Inicio: '),0,0,'L');
+                  $pdf->SetFont('Arial','',10);
+                  $pdf->Cell(45,8,utf8_decode(date("d/m/Y - H:i:s", strtotime($reparo->data_inicio_reparo))),0,0,'L');
+                  $pdf->Ln(5);
+                  $pdf->SetFont('Arial','B',10);
+                  $pdf->Cell(35,8,utf8_decode('Término: '),0,0,'L');
+                  $pdf->SetFont('Arial','',10);
+                  $pdf->Cell(45,8,utf8_decode(date("d/m/Y - H:i:s", strtotime($reparo->data_fim_reparo))),0,0,'L');
+                  $pdf->Ln(5);
+                  $pdf->SetFont('Arial','B',10);
+                  $pdf->Cell(35,8,utf8_decode('Bancada: '),0,0,'L');
+                  $pdf->SetFont('Arial','',10);
+                  $pdf->Cell(45,8,utf8_decode($reparo->nome_bancada),0,0,'L');
+                  $pdf->Ln(5);
+                  $pdf->SetFont('Arial','B',10);
+                  $pdf->Cell(35,8,utf8_decode('Status: '),0,0,'L');
+                  $pdf->SetFont('Arial','',10);
+                  $pdf->Cell(45,8,utf8_decode($reparo->status_reparo),0,0,'L');
+                  $pdf->Ln(5);
+                  
+                  $historicos = $this->reparo_model->buscarReparoServicosHistorico($reparo->id_reparo);
+                  
+                  if(sizeof($historicos) > 0){
+                    $pdf->SetFont('Arial','B',10);
+                    $pdf->Cell(0,8,utf8_decode('Histórico'),0,0,'L');
+                    $pdf->Ln(5);
+                    $pdf->SetFont('Arial','B',10);
+                    $pdf->Cell(35,8,utf8_decode($reparo->data_inicio_reparo),0,0,'L');
+                    $pdf->SetFont('Arial','',10);
+                    $pdf->Cell(35,8,utf8_decode($historicos[0]->nome_abertura_usuario . ' iniciou o reparo.'),0,0,'L');
+                    $pdf->Ln(5);
+                    //$this->dd->dd($historicos);
+                    foreach($historicos as $historico){
+                      if($historico->subquery == 3){
+                        $pdf->SetFont('Arial','B',10);
+                        $pdf->Cell(35,8,utf8_decode($historico->data_reparo_servico),0,0,'L');
+                        $pdf->SetFont('Arial','',10);
+                        $pdf->Cell(35,8,utf8_decode("{$historico->nome_fechamento_usuario} {$historico->nome_servico}"),0,0,'L');
+                        $pdf->Ln(5);
+                      }else if($historico->subquery == 1 && $historico->realizado_reparo_servico == 1){
+                        $pdf->SetFont('Arial','B',10);
+                        $pdf->Cell(35,8,utf8_decode($historico->data_encerramento_reparo_servico),0,0,'L');
+                        $pdf->SetFont('Arial','',10);
+                        $pdf->Cell(35,8,utf8_decode("{$historico->nome_fechamento_usuario}  finalizou o serviço '. {$historico->nome_servico}."),0,0,'L');
+                        $pdf->Ln(5);
+                      }else if($historico->subquery == 1 && $historico->status_reparo_servico == 0){
+                        $pdf->SetFont('Arial','B',10);
+                        $pdf->Cell(35,8,utf8_decode($historico->data_encerramento_reparo_servico),0,0,'L');
+                        $pdf->SetFont('Arial','',10);
+                        $pdf->Cell(35,8,utf8_decode($historico->nome_fechamento_usuario . ' removeu o serviço '. $historico->nome_servico .'.'),0,0,'L');
+                        $pdf->Ln(5);
+                      }else{
+                        $pdf->SetFont('Arial','B',10);
+                        $pdf->Cell(35,8,utf8_decode($historico->data_reparo_servico),0,0,'L');
+                        $pdf->SetFont('Arial','',10);
+                        $pdf->Cell(35,8,utf8_decode($historico->nome_abertura_usuario . ' adicionou o serviço '. $historico->nome_servico .'.'),0,0,'L');
+                        $pdf->Ln(5);
+                      }
+                    }
+                  }
+                  $pdf->Ln(5);
+                }
+              }
+            }
+            $pdf->Ln(5);
+          }
+          $pdf->Ln(10);
+          $pdf->Cell(0,8,"","T",0,0);
+          $pdf->Ln(10);
+        }
+        
+        if(sizeof($servicos) > 0){
+          
+          $pdf->SetFont('Arial','B',12);
+          $pdf->Cell(0,8,utf8_decode('Serviços'),0,0,'C');
+          $pdf->Ln(10);
+
+          foreach ($servicos as $servico) {
+            $pdf->SetFont('Arial','B',10);
+            $pdf->Cell(35,8,utf8_decode('Serviço: '),0,0,'L');
+            $pdf->SetFont('Arial','',10);
+            $pdf->Cell(0,8,utf8_decode($servico->nome_servico),0,0,'L');
+            $pdf->Ln(5);
+            $pdf->SetFont('Arial','B',10);
+            $pdf->Cell(35,8,utf8_decode('Status: '),0,0,'L');
+            $pdf->SetFont('Arial','',10);
+            $pdf->Cell(0,8,utf8_decode($servico->status_servico_chamado),0,0,'L');
+            $pdf->Ln(5);
+            $pdf->SetFont('Arial','B',10);
+            $pdf->Cell(35,8,utf8_decode('Quantidade: '),0,0,'L');
+            $pdf->SetFont('Arial','',10);
+            $pdf->Cell(5,8,utf8_decode($servico->quantidade),0,0,'L');
+            $pdf->Cell(5,8,utf8_decode($servico->unidade_medida),0,0,'L');
+            $pdf->Ln(5);
+          }
+
+          $pdf->Ln(10);
+          $pdf->Cell(0,8,"","T",0,0);
+          $pdf->Ln(10);
+        }
+        
+        if(sizeof($interacoes) > 0){
+          $pdf->SetFont('Arial','B',12);
+          $pdf->Cell(0,8,utf8_decode('Interações'),0,0,'C');
+          $pdf->Ln(10);
+          $count = 0;
+          
+          foreach ($interacoes as $interacao) {
+            $pdf->SetFont('Arial','B',10);
+            $pdf->Cell(0,8,"-----------------------------------------------------------------",0,0,"C");
+            $pdf->Ln(10);
+            
+            $textoInteracao = $interacao['texto_interacao'];
+            
+            $equipamentos = null;
+            $equipamentos = explode('::', $interacao['pool_equipamentos']);
+            $servicos = explode('::', $interacao['pool_servicos']);
+            $pdf->SetFont('Arial','B',10);
+            $pdf->Cell(40,8,utf8_decode($interacao['data_interacao']),0,0,'L');
+            $pdf->SetFont('Arial','',10);
+            $pdf->Cell(0,8,utf8_decode($interacao['nome_usuario']),0,0,'L');
+            $pdf->Ln(5);
+            $pdf->SetFont('Arial','B',10);
+            $pdf->Cell(35,8,utf8_decode('Tipo de interação: '),0,0,'L');
+            $pdf->SetFont('Arial','',10);
+            $pdf->Cell(0,8,utf8_decode($interacao['tipo_interacao']),0,0,'L');
+            $pdf->Ln(5);
+            if(sizeof($equipamentos) > 0 && $equipamentos[0] != ''){
+              $pdf->SetFont('Arial','B',10);
+              $pdf->Cell(25,8,utf8_decode('Equipamentos: '),0,0,'L');
+              foreach($equipamentos as $equipamento){
+                $pdf->Ln(5);
+                $pdf->Cell(0,8,utf8_decode($equipamento),0,0,'L');
+              }
+            }
+            $pdf->Ln(7);
+            $pdf->SetFont('Arial','B',10);
+            $pdf->Cell(20,5,utf8_decode('Despacho: '),0,0,'L');
+            $pdf->SetFont('Arial','',10);
+            $textoFiltrado = strip_tags($interacao['texto_interacao'], '<p><strong><hr><br><span>'); //Filtrando por problemas de compatibilidade com a função WriteHTML()
+            $pdf->WriteHTML(utf8_decode($textoFiltrado));
+            do{
+              $teste = stripos($textoInteracao, 'base64');
+              if($teste > 0){
+                //extraindo imagem
+                $texto = substr($textoInteracao,$teste + 7);
+                $teste = stripos($texto, '"');
+                $textoFinal = substr($texto,0, $teste);
+                $imagem = base64_decode($textoFinal);
+                  
+                //extraindo a extensão da imagem
+                $teste = stripos($textoInteracao, 'filename');
+                $texto = substr($textoInteracao,$teste + 10);
+                $teste = stripos($texto, '"');
+                $textoFinal = substr($texto,0, $teste);
+                $ext = explode('.', $textoFinal);
+                if(isset($ext[1])) $extensao = $ext[sizeof($ext) - 1];
+                  
+                //extraindo o tamanho da imagem
+                $teste = stripos($textoInteracao, 'width:');
+                $texto = substr($textoInteracao,$teste + 7);
+                $teste = stripos($texto, 'p');
+                $textoFinal = substr($texto,0, $teste);
+                $tamanho = $textoFinal;
+    
+                if(!is_numeric($textoFinal)){
+                  $teste = stripos($texto, '%');
+                  $textoFinal = substr($texto,0, $teste);
+                  $textoFinal = intval($textoFinal);
+                  $tamanho = $textoFinal * 5;
+                }
+                //gerar o arquivo
+                $nome = $this->config->item('caminho_img_temp') . $count;
+                $arquivo = fopen($nome, 'w');
+                fwrite($arquivo, $imagem);
+                fclose($arquivo);
+                if($teste > 0){
+                  $pdf->Ln(5);
+                  $pdf->image($nome,null,null, $tamanho / 5, null, $extensao);
+                  $pdf->Ln(7);
+                  unlink($nome);
+                  $count++;
+                }
+              }
+              
+              $continuar = stripos($textoInteracao, 'base64');
+              
+             
+              $textoTeste = substr($textoInteracao, $continuar + 4);
+              $textoInteracao = $textoTeste;
+              
+              
+            }while($continuar !== false);
+            $pdf->Ln(15);
+            }
+
+          $pdf->Ln(10);
+          $pdf->Cell(0,8,"","T",0,0);
+          $pdf->Ln(10);
+        }
+
+        if(sizeof($ticket['t_articles']) > 0){
+          
+          $pdf->SetFont('Arial','B',12);
+          $pdf->Cell(0,8,utf8_decode('Comunicação'),0,0,'C');
+          $pdf->Ln(10);
+
+          foreach ($ticket['t_articles'] as $article) {
+            $pdf->SetFont('Arial','B',10);
+            $pdf->Cell(0,8,utf8_decode(date("d/m/Y - H:i:s", strtotime($article->create_time))),0,0,'L');
+            $pdf->Ln(5);
+            $pdf->Cell(10,8,utf8_decode('De:'),0,0,'L');
+            $pdf->SetFont('Arial','',10);
+            $pdf->Cell(0,8,utf8_decode($article->a_from),0,0,'L');
+            $pdf->Ln(5);
+            $pdf->SetFont('Arial','B',10);
+            $pdf->Cell(20,8,utf8_decode('Assunto:'),0,0,'L');
+            $pdf->SetFont('Arial','',10);
+            $pdf->Cell(0,8,utf8_decode($article->a_subject),0,0,'L');
+            $pdf->Ln(7);
+            $pdf->WriteHTML(utf8_decode($article->a_body));
+            $pdf->Ln(5);
+
+            $pdf->Ln(5);
+          }
+
+          $pdf->Ln(10);
+          $pdf->Cell(0,8,"","T",0,0);
+          $pdf->Ln(10);
+        }
+
+        if(sizeof($hist_chamado) > 0){
+          $pdf->SetFont('Arial','B',12);
+          $pdf->Cell(0,8,utf8_decode('Histórico'),0,0,'C');
+          $pdf->Ln(15);
+
+          foreach ($hist_chamado as $historico) {
+            
+            $pdf->SetFont('Arial','B',10);
+            $pdf->Cell(35,5,utf8_decode($historico->data_alteracao),0,0,'L');
+            $pdf->SetFont('Arial','',10);
+            $pdf->WriteHTML(utf8_decode(html_entity_decode($historico->nome_usuario . ' ' . $historico->texto_alteracao)));
+            $pdf->Ln(7);
+          }
+        
+          $pdf->Ln(10);
+          $pdf->Cell(0,8,"","T",0,0);
+          $pdf->Ln(10);
+
+        }
+
+        
+
+        $pdf->SetFont('Arial','',9);
+        $pdf->Cell(0,10,"Emitido em " . date('d/m/Y - H:i:s'),0,0,'C');
+        $pdf->Ln(5);
+        $pdf->Cell(0,10,"Por: " . utf8_decode($usuario->nome_usuario),0,0,'C');
+
+        $pdf->SetTitle('LC_' . date('d-m-Y'));
+
+        if(sizeof($termos) > 0){
+          $pdf2 = new PDFMerger;
+          $pdf->Output('F',$this->config->item('caminho_termos'). 'relatorio.pdf');
+          $pdf2->addPDF($this->config->item('caminho_termos'). 'relatorio.pdf', 'all');
+          foreach ($termos as $termo) {
+            $pdf2->addPDF($this->config->item('caminho_termos'). $termo['nome_termo'], 'all');
+          }
+          $pdf2->merge('browser');
+          
+          unlink($this->config->item('caminho_termos'). 'relatorio.pdf');
+        }else{
+          $pdf->Output('I','impressao_chamado.pdf',FALSE);
+        }
+        
+        //$pdf->Output('F',$this->config->item('caminho_img_temp'). 'relatorio2.pdf');
+
+      
+    }
+    else {
+      header("HTTP/1.1 403 Forbidden");
+    }
+    
+  }
+
   public function listar_servicos_chamado($id_chamado){
     if (isset($_SESSION['id_usuario'])) {
             
@@ -762,10 +1345,11 @@ class Chamado extends CI_Controller {
       $this->chamado_model->zerar_chamados($chamado);
 
       header("Content-Type: application/json");
-
-      echo json_encode('funciona');
+      http_response_code(200);
+      echo json_encode(null);
     }
   }
+
 }
 
 ?>

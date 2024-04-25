@@ -64,15 +64,39 @@ class Interacao extends CI_Controller {
 
                     $reparo = $this->reparo_model->buscarReparo($dados['id_reparo']);
 
-                    $libera_bancada = $this->bancada_model->atualizarBancada($reparo->id_bancada_reparo,0);
+                    try {
+                        $libera_bancada = $this->bancada_model->atualizarBancada($reparo->id_bancada_reparo,0);
+
+                        $fase1 = true;
+                    } catch (\Throwable $th) {
+                        $fase1 = false;
+                    }
 
                    
+                    // caso for lousa ignorar esse trecho
+                    $nao_incluir_remessa = function($id_reparo, &$dados) {
+                        $result = $this->reparo_model->buscarReparoServicos($id_reparo);
+                    
+                        foreach ($result as $servico) {
+                            if ($servico->id_servico == 42 && $servico->realizado_reparo_servico == true) {
+                                $dados['tipo'] = 'INSERVIVEL';
+                                return true;
+                            }
+                        }
+                        return false;
+                    };
+                    
 
-                    if ($libera_bancada) {
+
+                    $equip_inserv = $dados['equip_atendidos'][0];
+                    if ($libera_bancada && $nao_incluir_remessa($reparo->id_reparo, $dados) == false) {
+                        $reparoDivisao = DGTI;
+                        if ($reparo->id_bancada_reparo == $this->config->item('bancada_din')) {
+                            $reparoDivisao = DIN;
+                        }
+
+                        $remessa_aberta = $this->inservivel_model->lista_remessa_aberta($reparoDivisao);
                         //inserindo na ultima remessa 
-                        $equip_inserv = $dados['equip_atendidos'][0];
-                        $remessa_aberta = $this->inservivel_model->lista_remessa_aberta();
-                        $finaliza_reparo = $this->reparo_model->atualizarReparo($dados['id_reparo'],"FINALIZADO", $_SESSION['id_usuario'],$remessa_aberta->id_remessa_inservivel);
                         if ($remessa_aberta->pool_equipamentos == null) {
                             $equipamentos = implode("::", $dados['equip_atendidos']);
                             $this->inservivel_model->alterar_pool($remessa_aberta->id_remessa_inservivel, $equipamentos);
@@ -82,9 +106,20 @@ class Interacao extends CI_Controller {
                             $equipamentos = implode("::", $equips);
                             $this->inservivel_model->alterar_pool($remessa_aberta->id_remessa_inservivel, $equipamentos);
                         }
-
-                        $fase1 = $finaliza_reparo ? $finaliza_reparo : FALSE;
                     }
+
+                    try {
+                        if (isset($remessa_aberta->id_remessa_inservivel)) {
+                            $finaliza_reparo = $this->reparo_model->atualizarReparo($dados['id_reparo'],"FINALIZADO", $_SESSION['id_usuario'], $remessa_aberta->id_remessa_inservivel);
+                        } else {
+                            $finaliza_reparo = $this->reparo_model->atualizarReparo($dados['id_reparo'],"FINALIZADO", $_SESSION['id_usuario']);
+                        }
+
+                        $fase1 = true;
+                    } catch (\Throwable $th) {
+                        return $fase1 = false;
+                    }
+
                     break;
                 case 'SERVICO_REPARO':
                     $reparo = $this->reparo_model->buscarReparo($dados['id_reparo']);
@@ -110,7 +145,7 @@ class Interacao extends CI_Controller {
                 $res['status'] = 200;
                 $res['mensagem'] = "Operação realizada com sucesso.";
 
-                if ($dados['tipo'] == 'INSERVIVEL_REPARO') {
+                if ($dados['tipo'] == 'INSERVIVEL_REPARO' || $dados['tipo'] == 'INSERVIVEL') {
                     /* $dados = $this->chamado_model->buscaChamado($dados['id_chamado'],"'ENTREGA'"); */
                     $laudo = $this->inservivel_model->lista_laudo_equipamento($equip_inserv);
                     $nome_usuario_atual = $this->usuario_model->buscaUsuario($_SESSION['id_usuario'])->nome_usuario;
@@ -215,15 +250,15 @@ class Interacao extends CI_Controller {
                         } else {
                             $responsavel_otobo = $laudo->nome_solicitante_chamado;
                         }
-
+                        $body = "Caro(a) {$responsavel_otobo},<br><br>
+                        O equipamento {$equip_inserv} vinculado a este ticket, solicitado por {$laudo->nome_solicitante_chamado}, foi laudado tecnicamente como inservível.<br>
+                        Encaminhamos anexo o laudo técnico do referido equipamento.
+                        <br><br>Por favor, ao entrar em contato conosco, tenha em mãos o número do ticket criado ou <u><strong>responda sempre neste e-mail</strong></u>.<br><br>--<br>Atenciosamente,<br><strong>Central de Serviços de Tecnologia da Informação</strong><br>Prefeitura Municipal de Sorocaba<br>Av. Eng. Carlos Reinaldo Mendes - Paço Municipal<br>email: <u><strong>informatica@sorocaba.sp.gov.br</strong></u></span>";
                         $data_arr += array(
                             "Article" => array(
                                 "Subject" => "Re: Ticket#$id_ticket_chamado - Laudo técnico - $equip_inserv",// titulo
                                 "From" => "$nome_usuario_atual via SIGAT<informatica@sorocaba.sp.gov.br>",
-                                "Body" => "Caro(a) {$responsavel_otobo},<br><br>
-                                O equipamento {$equip_inserv} vinculado a este ticket, solicitado por {$laudo->nome_solicitante_chamado}, foi laudado tecnicamente como inservível.<br>
-                                Encaminhamos anexo o laudo técnico do referido equipamento.
-                                <br><br>Por favor, ao entrar em contato conosco, tenha em mãos o número do ticket criado ou <u><strong>responda sempre neste e-mail</strong></u>.<br><br>--<br>Atenciosamente,<br><strong>Central de Serviços de Tecnologia da Informação</strong><br>Prefeitura Municipal de Sorocaba<br>Av. Eng. Carlos Reinaldo Mendes - Paço Municipal<br>email: <u><strong>informatica@sorocaba.sp.gov.br</strong></u></span>",
+                                "Body" => $body,
                                 "ContentType" => "text/html; charset=utf8",
                                 "IsVisibleForCustomer" => 1,
                                 "CommunicationChannel" => 'Email',
@@ -254,6 +289,14 @@ class Interacao extends CI_Controller {
                                 "mensagem" => "Otobo não respondeu"
                             );
                         } else {
+                            $this->enviar_email_smtp(array(
+                                array(
+                                    "name_file" =>$nome_arquivo,
+                                    "file" => $patch_arquivo
+                                )
+                            ), $id_ticket_chamado, $res_otobo, $body);
+
+
                             $arquivo = $this->interacao_model->buscarAnexoOtrs($res_otobo, "application/pdf")[0];
         
                             try {
@@ -275,7 +318,7 @@ class Interacao extends CI_Controller {
                                     "error" => true,
                                     "mensagem" => "Ocorreu um erro ao tentar enviar o laudo do equipamento."
                                 );
-                            }    
+                            }
                         }
                     }
                 }
@@ -283,6 +326,9 @@ class Interacao extends CI_Controller {
                 $res['status'] = 500;
                 $res['mensagem'] = "Operação retornou erro.";
             }
+
+
+            /* $this->dd->dd($res); */
 
             http_response_code($res['status']);
             header('Content-Type: application/json');
@@ -626,13 +672,9 @@ class Interacao extends CI_Controller {
     
     }
   
-    public function gerar_laudo($id_interacao) {
-  
-       
+    public function gerar_laudo($id_interacao) {       
         $interacao = $this->interacao_model->buscaInteracaoChamado($id_interacao);
 
-    //    print_r($interacao);
-    //    print_r($id_chamado);
         if ($interacao !== NULL) { 
 
             //$dados = $this->chamado_model->buscaChamado($interacao->id_chamado_interacao,'INSERVIVEL');
@@ -739,10 +781,220 @@ class Interacao extends CI_Controller {
         
     }
 
+    public function busca_email_ldap($login) {
+        $url_api_ldap = $this->config->item('api_ldap');
+        $url_api_ldap .= "ldap/{$login}";
+
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_URL, $url_api_ldap);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'GET');
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+        // SOMENTE DEV
+        if (ENVIRONMENT == 'development') {
+            curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
+            curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
+        }
+        $res_ldap = json_decode(curl_exec($curl));
+        $http_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+
+        curl_close($curl);
+        if ($res_ldap != null) {
+            $response_json = array(
+                "email" => $res_ldap->email,
+                "nome" => $res_ldap->displayName
+            );
+
+            $response = $res_ldap->email;
+        } else {
+            $response_json = null;
+            $response = null;
+        }
+
+        http_response_code($http_code);
+        header('Content-Type: application/json');
+        echo json_encode($response_json);
+
+        return $response;
+    }
+
+
+
+
+
+    private function enviar_email_smtp($upload = null, $id_ticket_chamado, $article, $body, $emails_copia = null) {
+        $this->load->library('Mailer');
+        $email = new PHPMailer(true);
+        // DEV::DEBUG || PRODUCTION::DEBUG OFF
+        if (ENVIRONMENT == 'development') {
+            $email->SMTPDebug = SMTP::DEBUG_SERVER;
+        } else {
+            $email->SMTPDebug = SMTP::DEBUG_OFF;
+        }
+        $email->isSMTP();
+        $email->isHTML(true);
+        $email->CharSet    = 'UTF-8';
+        $email->Host       = "webmail.sorocaba.sp.gov.br";
+        $email->SMTPAuth   = true;
+        $email->Username   = $this->config->item('usr_email');
+        $email->Password   = $this->config->item('pass_email');
+        $email->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $email->Port       = 587;
+        $email->setFrom('informatica@sorocaba.sp.gov.br', 'CSTI');
+
+        if ($upload) {
+            foreach ($upload as $i => $arquivo) {
+                $email->addAttachment($arquivo['file'], $arquivo['name_file']);
+            }
+        }
+
+        $email->Subject = "Re: Ticket#$id_ticket_chamado";
+        $email->Body    = $body;
+        $email->AltBody = "Ticket#$id_ticket_chamado";
+
+        $remetentes = $this->busca_email_solicitante($article->TicketID);
+        // remetente (para)
+
+
+        if ($emails_copia !== null) {
+            $remetentes = array_merge($remetentes, $emails_copia);
+        }
+
+        foreach ($remetentes['address'] as $remetente) {
+            $email->addAddress($remetente);
+        }
+        // email em cópia
+        foreach ($remetentes['cc'] as $remetente) {
+            $email->addCC($remetente);
+        }
+        // email em cópia oculta
+        foreach ($remetentes['cco'] as $remetente) {
+            $email->addBCC($remetente);
+        }
+        //$this->dd->dd($email);
+
+        try {
+            $email->send();
+
+            return array(
+                "status" => 200,
+                "error" => false,
+                "mensagem" => null
+            );
+        } catch (\Throwable $th) {
+            return array(
+                "status" => 500,
+                "error" => true,
+                "message" => "Ocorreu um erro ao enviar o e-mail ao remetente."
+            );
+        }
+    }
+
+    public function busca_email_solicitante($TicketID) {
+        $articles = $this->interacao_model->buscarEmailSolicitanteOtobo($TicketID);
+        $array_emails['address'] = [];
+        $array_emails['cc'] = [];
+        $array_emails['cco'] = [];
+        if (count($articles) == 0) {
+            $articles = $this->interacao_model->buscarEmailSolicitanteOtobo($TicketID, false);
+            
+            //$this->dd->dd($articles);
+            if (preg_match('/<([^>]+)>/', $articles[0]->a_to, $matches)) {
+                // $email->addAddress(strtolower($matches[1]));
+                array_push($array_emails['address'], strtolower($matches[1]));
+            }
+        } else {
+            // insere quem abriu o chamado no indice 0 do array e set como destino
+            if (preg_match('/<([^>]+)>/', $articles[0]->a_from, $matches)) {
+                // $email->addAddress(strtolower($matches[1]));
+                array_push($array_emails['address'], strtolower($matches[1]));
+            }
+        }
+
+
+
+        // percorre todos os emails
+        foreach ($articles as $article) {
+            $emailsCC = explode(",", $article->a_cc);
+            $emailsCCo = explode(",", $article->a_bcc);
+            //$emailsCC = ['t_jopedro', 'gxmacedo'];
+
+            // CCO
+            if ($emailsCCo[0] !== "" || count($emailsCCo) > 1) {
+                foreach ($emailsCC as $email_user) {
+                    // if para caso email esteja 'nome.user <nome.user@sorocaba.sp.gov.br> assim pegando somente o conteúdo dentro das <>
+                    if (preg_match('/<([^>]+)>/', $email_user, $matches)) {
+                        $email_user = strtolower($matches[1]);
+
+                    // if para caso contenha somente o email
+                    } else if (strpos($email_user, '@') !== false) {
+                        $email_user = strtolower($email_user);
+
+                    // if para caso tenha só usuário e consultar a api para pegar o email do usuario
+                    } else if ($email_user != ""){
+                        $email_user = $this->busca_email_ldap($email_user);
+                    }
+
+                    if (!in_array($email_user, $array_emails['cco']) && $email_user != "") {
+                        array_push($array_emails['cco'], $email_user);
+                        // $email->addBCC($email_user);
+                    }
+                }
+            }
+
+            // CC
+            if ($emailsCC[0] !== "" || count($emailsCC) > 1) {
+                foreach ($emailsCC as $email_user) {
+                    // if para caso email esteja 'teste <teste@sorocaba.sp.gov.br> assim pegando somente o conteúdo dentro das <>
+                    if (preg_match('/<([^>]+)>/', $email_user, $matches)) {
+                        $email_user = strtolower($matches[1]);
+
+                    // if para caso tenha só usuário e consultar a api para pegar o email do usuario
+                    } else if (strpos($email_user, '@') !== false) {
+                        $email_user = strtolower($email_user);
+
+                    // if para caso tenha só usuário e consultar a api para pegar o email do usuario
+                    } else if ($email_user != ""){
+                        $url_api_ldap = "{$this->config->item('api_ldap')}ldap/{$email_user}";
+
+                        $curl = curl_init();
+                        curl_setopt($curl, CURLOPT_URL, $url_api_ldap);
+                        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+                        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'GET');
+                        curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+                        // SOMENTE DEV
+                        if (ENVIRONMENT == 'development') {
+                            curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
+                            curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
+                        }
+                        $res_ldap = json_decode(curl_exec($curl));
+                        curl_close($curl);
+
+                        if ($res_ldap != null) {
+                            $email_user = $res_ldap->email;
+                        } else {
+                            $email_user = null;
+                        }
+                    }
+
+                    if (!in_array($email_user, $array_emails['cc']) && $email_user != "") {
+                        array_push($array_emails['cc'], $email_user);
+                        // $email->addCC($email_user);
+                    }
+                }
+            }
+        }
+
+        
+        http_response_code(200);
+        header('Content-Type: application/json');
+        echo json_encode($array_emails);
+        return $array_emails;
+    }
+
     public function enviar_email() {
         if (isset($_SESSION['id_usuario'])) {
-            
-            // validação para caso envie arquivo maior que o servidor PHP aceita            
+            // validação para caso envie arquivo maior que o servidor PHP aceita
             $this->form_validation->set_rules('conteudo', 'Conteudo', 'required');
             if ($this->form_validation->run() == TRUE) {
                 $dados = array();
@@ -750,6 +1002,7 @@ class Interacao extends CI_Controller {
                 $dados['conteudo'] = $this->input->post("conteudo");
                 $anexo = $this->input->post("anexos");
                 $nome_usuario = $this->usuario_model->buscaUsuario($_SESSION["id_usuario"])->nome_usuario;
+                $upload = null;
                 $id_ticket = $this->input->post("id_ticket_chamado");
                 $id_chamado = $this->input->post("id_chamado");
                 $id_ticket_chamado = $this->chamado_model->listaTicketChamado($id_chamado);
@@ -769,9 +1022,8 @@ class Interacao extends CI_Controller {
                 $user = $this->config->item('ticketsys_login');
                 $pwd = $this->config->item('ticketsys_pwd');
                 $url = $api_url."Ticket/" . $id_ticket . "?UserLogin=".$user."&Password=".$pwd;
-                //$url = $api_url."Ticket/" . $id_ticket . "?UserLogin=sigat&Password=A12345678";
-
-                if (isset($_FILES['anexoEmail'])) { //caso tenha anexo
+                $anexo = isset( $_FILES['anexoEmail'] ) ? $_FILES['anexoEmail'] : null;
+                if( !is_null( $anexo ) ) { //caso tenha anexo
                     $this->load->library('files');
                     $arquivos = $_FILES['anexoEmail'];
 
@@ -786,67 +1038,79 @@ class Interacao extends CI_Controller {
                     //Verifica se alguma anexo foi selecionada
                     $anexo = isset( $_FILES['anexoEmail'] ) ? $_FILES['anexoEmail'] : null;
 
-                    if( !is_null( $anexo ) ) {
-                        $anexos = array();
-                        //Seta o arquivo para upload
-                        $this->files->setFile( $anexo );
+                    $anexos = array();
+                    //Seta o arquivo para upload
+                    $this->files->setFile( $anexo );
 
-                        //Processa o arquivo e recebe o retorno
-                        $upload = $this->files->processMultFiles();
+                    //Processa o arquivo e recebe o retorno
+                    $upload = $this->files->processMultFiles();
 
-                        //Verifica retornbou algum código, se sim, ocorreu algum erro no upload
-                        if(!isset($upload['code'])) {
-                            // inicia var data_arr
-                            $data_arr = array();
+                    //Verifica retornbou algum código, se sim, ocorreu algum erro no upload
+                    if(!isset($upload['code'])) {
+                        // inicia var data_arr
+                        $data_arr = array();
 
-                            // percorre os arquivos que foi feito upload
-                            foreach ($upload as $i => $arquivo) {
-                                $fp = fopen($arquivo['file'] , "rb");
-                                if(filesize($arquivo['file']) <= 0) {
-                                    $this->files->deleteFileProcessed($upload);
-                                    $res = array(
-                                        "status" => 400,
-                                        "error" => true,
-                                        "message" => "Não é possivel enviar arquivo do tamanho de 0 KB."
-                                    );
-                                    http_response_code($res['status']);
-                                    header('Content-Type: application/json');
-                                    echo json_encode($res);
-                                    return false;
-                                }
-                                $binario = fread($fp, filesize($arquivo['file']));
-                                $nome_arquivo = explode('/', $arquivo['name_file']);
-                                $nome_arquivo = end($nome_arquivo);
-
-                                $anexo = array(
-                                    "Content" => base64_encode($binario),
-                                    "ContentType" => $arquivos['type'][$i],
-                                    "Filename" => $nome_arquivo
+                        // percorre os arquivos que foi feito upload
+                        foreach ($upload as $i => $arquivo) {
+                            $fp = fopen($arquivo['file'] , "rb");
+                            if(filesize($arquivo['file']) <= 0) {
+                                //$this->files->deleteFileProcessed($upload);
+                                $res = array(
+                                    "status" => 400,
+                                    "error" => true,
+                                    "message" => "Não é possivel enviar arquivo do tamanho de 0 KB."
                                 );
+                                http_response_code($res['status']);
+                                header('Content-Type: application/json');
+                                echo json_encode($res);
+                                return false;
+                            }
+                            $binario = fread($fp, filesize($arquivo['file']));
+                            $anexo = array(
+                                "Content" => base64_encode($binario),
+                                "ContentType" => $arquivos['type'][$i],
+                                "Filename" => $arquivo['name_file']
+                            );
 
                             array_push($anexos,$anexo);
                             $data_arr = array("Attachment" => $anexos);
                             fclose($fp);
-                            }
-                            $this->files->deleteFileProcessed($upload);
-                        } else {
-                            // retorno caso der erro
-                            $res = array(
-                                "status" => 400,
-                                "error" => true,
-                                "message" => $upload['status']
-                            );
-                            http_response_code($res['status']);
-                            header('Content-Type: application/json');
-                            echo json_encode($res);
-                            return false;
                         }
+                    } else {
+                        // retorno caso der erro
+                        $res = array(
+                            "status" => 400,
+                            "error" => true,
+                            "message" => $upload['status']
+                        );
+                        http_response_code($res['status']);
+                        header('Content-Type: application/json');
+                        echo json_encode($res);
+                        return false;
                     }
                 }
 
+                
+                $remetentes = $this->input->post("remetentes");
+                /* $remetente['cc'] = array();
+                $remetente['cco'] = array();
+
+                foreach ($remetentes['cc'] as $cc) {
+                    array_push($remetente['cc'], $cc);
+                }
+                foreach ($remetentes['cco'] as $cco) {
+                    array_push($remetente['cco'], $cco);
+                } */
+                //$this->dd->dd($remetentes);
+
+                //$this->dd->dd($remetentes['cc']);
+                
                 $body = $dados['conteudo'] . "<br><br>" . $assinatura;
                 $data_arr += array(
                     "Article" => array(
+                        // está com bug no Otobo
+                        /* "Cc" => $remetentes['cc'],
+                        'Bcc' => $remetentes['cco'], */
                         "Subject" => "Re: Ticket#$id_ticket_chamado",//$titulo,
                         "Body" => $body,
                         "ContentType" => "text/html; charset=utf8",
@@ -855,6 +1119,17 @@ class Interacao extends CI_Controller {
                         "From" => "$nome_usuario via SIGAT<informatica@sorocaba.sp.gov.br>"
                     )
                 );
+                $note = array(
+                    'title' => 'Título da Nota',
+                    'content' => 'Conteúdo da Nota'
+                );
+                /*
+                    $dadosNota = array(
+                        'title' => 'Título da Nota',
+                        'content' => 'Conteúdo da Nota'
+                    );
+                */
+
                 $data = json_encode($data_arr);
                 $curl = curl_init();
                 curl_setopt($curl, CURLOPT_URL, $url);
@@ -869,16 +1144,20 @@ class Interacao extends CI_Controller {
                 }
                 $dados = array();
                 $res_otobo = json_decode(curl_exec($curl));
+                //$this->dd->dd($res_otobo);
                 curl_close($curl);
 
                 if (isset($res_otobo->Error)) {
                     $res = array(
                         "status" => 500,
                         "error" => true,
-                        "message" => "Ocorreu um erro ao enviar o e-mail."
+                        "message" => "Ocorreu um erro ao criar artigo no Otobo."
                     );
                 } else {
+                    $res = $this->enviar_email_smtp($upload, $id_ticket_chamado, $res_otobo, $body, $remetentes);
+
                     if (!is_null($anexo)) {
+                        $this->files->deleteFileProcessed($upload);
                         $result = $this->interacao_model->buscarAnexoOtrs($res_otobo, $arquivos['type']);
 
                         foreach ($result as $arquivo) {
@@ -886,12 +1165,6 @@ class Interacao extends CI_Controller {
                         }
                     }
                     $this->interacao_model->logEnviarEmail($id_chamado);
-
-                    $res = array(
-                        "status" => 200,
-                        "error" => false,
-                        "message" => null
-                    );
                 }
             } else {
                 $res = array(

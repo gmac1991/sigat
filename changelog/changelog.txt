@@ -1,6 +1,72 @@
 SIGAT Changelog
 ===============
 
+[1.9.1] - 2024-04-25
+
+== Corrigido ==
+
+[Busca Rápida]
+O chamado não abre quando clica na lista dos últimos chamados do equipamento buscado
+
+[Reparo]
+Campo de colocar espera não aceita espaço e caracteres especiais
+
+Histórico fica duplicado ao remover serviço
+
+Ao enviar laudo da garantia, ao abrir novamente o modal da garantia a requisição é duplicada
+
+É possível cancelar o reparo sem escrever a justificativa
+
+[Triagem]
+Alguns tickets não geram chamados no sigat porém o artigo é criado no OTOBO
+
+[Chamado]
+Equipamento em status de garantia não é considerado como equipamento ainda em atendimento
+
+Os equipamentos não são impressos no relatório de chamados
+
+[Usuario]
+Ao alterar a permissão de usuário, visualmente a mesma foi alterada porém esta mudança não é persistida no banco de dados
+
+[Admin]
+Não é possível alterar o campo local na aba de secretarias
+
+== Adicionado ==
+
+[Chamado]
+É possível visualizar o resumo do reparo na aba reparos
+
+implementado o relatório consolidado por chamado
+
+Implementado o aviso que que o local não está conectado à infovia
+
+[Remessas de inserviveis]
+Imprementada a lista de inserviveis para a divisão de infraestrutura e outras que necessitar
+
+Imprementada a possibilidade de se remover um equipamento da remessa de inserviveis, desde que a remessa não tenha sido entrege
+
+== Modificado ==
+
+[Chamado]
+Habilitado o envido envio de e-mails integrado ao OTOBO
+
+Implementado a possibilidade de se adicionar contatos ao email inclusive com cópia e cópia oculta
+
+[Reparo]
+Implementado a possibilidade de se desfazer um serviço
+
+Implementado a possibilidade de se fazer reparos na fila de manutenção independente do responsável pelo chamado
+
+Implementado a possibilidade de se fazer reparo em todas as filas
+
+Implementado a possibilidade de se colocar um reparo em espera para liberar a bancadas
+
+Ajuste no reparo de lousas digitais para que se forem consideradas inserviveis, estas não serão colocadas em remessa
+
+Implementado a verificação de tensão da bateria CMOS, caso a mesma esteja abaixo de 2,7 volts é aberto automaticamente um serviço de troca de bateria
+
+-----FIM------
+
 [1.9.0f] - 2024-03-05
 
 == Modificado ==
@@ -11,13 +77,13 @@ Adicionado campo para celular no chamado
 == Corrigido ==
 
 [Admin]
-Redundancia de ordenÃ§Ã£o ao editar itens nas tabelas
+Redundancia de ordenção ao editar itens nas tabelas
 
 [Equipamento]
 Erro no ping do equipamento
 
 [Reparo]
-Problema que permitia realizar ou cancelar serviÃ§o sem estar o chamado bloqueado pelo usuÃ¡rio autenticado no momento
+Problema que permitia realizar ou cancelar serviço sem estar o chamado bloqueado pelo usuário autenticado no momento
 
 -----FIM------
 
@@ -26,7 +92,7 @@ Problema que permitia realizar ou cancelar serviÃ§o sem estar o chamado bloquead
 == Removido ==
 
 [Chamado]
-BotÃ£o de envio de e-mail na aba 'ComunicaÃ§Ã£o'
+Botão de envio de e-mail na aba 'Comunicação'
 
 -----FIM------
 
@@ -35,7 +101,7 @@ BotÃ£o de envio de e-mail na aba 'ComunicaÃ§Ã£o'
 == Modificado ==
 
 [Outros]
-Apontados dos IDs das filas do Otobo para ficarem no arquivo de configura??o
+Apontados dos IDs das filas do Otobo para ficarem no arquivo de configuração
 
 == Corrigido ==
 
@@ -48,14 +114,14 @@ Erro no changelog
 
 == Corrigido ==
 
-[Usu?rio]
-Erro de n?o persistir permiss?es na tela de 'Usu?rio'
+[Usuário]
+Erro de não persistir permissões na tela de 'Usuário'
 
 [Admin]
-Erro ao mostrar permiss?es na se??o 'Usu?rios'
+Erro ao mostrar permissõees na seção 'Usuários'
 
 [Outros]
-Arquivo amostra de configura??o
+Arquivo amostra de configuração
 
 -----FIM------
 
@@ -64,13 +130,13 @@ Arquivo amostra de configura??o
 == Corrigido ==
 
 [Busca]
-Erro quando n?o ? encontrado nenhum equipamento atrav?s do termo pesquisado
+Erro quando não é encontrado nenhum equipamento através do termo pesquisado
 
 [Admin]
-Erro ao mostrar permiss?es na se??o 'Usu?rios'
+Erro ao mostrar permissões na seção 'Usuários'
 
 [Outros]
-Arquivo amostra de configura??o
+Arquivo amostra de configuração
 
 -----FIM------
 
@@ -78,7 +144,7 @@ Arquivo amostra de configura??o
 
 == Corrigido ==
 
-Arquivo amostra de configura??o
+Arquivo amostra de configuração
 
 -----FIM------
 
@@ -87,74 +153,74 @@ Arquivo amostra de configura??o
 == Adicionado ==
 
 [Geral]
-Novas filas: Gest?o de Redes, Gest?o de Telefonia e Infraestrutura
+Novas filas: Gestão de Redes, Gestão de Telefonia e Infraestrutura
 
 [Chamado]
-Aba 'Infraestrutura', para registrar os servi?os das filas Gest?o de Redes, Gest?o de Telefonia e Infraestrutura
+Aba 'Infraestrutura', para registrar os serviços das filas Gestão de Redes, Gestão de Telefonia e Infraestrutura
 Aba 'Reparos', para registrar os reparos nos equipamentos
-Bot?o na aba 'Equipamentos' que leva ? tela de informa??es por equipamento
-Bot?o na aba 'Equipamentos' que imprime a ficha do equipamento (n?o implementado)
-Campo 'Complemento' na impress?o do chamado
+Botão na aba 'Equipamentos' que leva à tela de informações por equipamento
+Botão na aba 'Equipamentos' que imprime a ficha do equipamento (não implementado)
+Campo 'Complemento' na impressão do chamado
 
-[Intera??o]
+[Interação]
 Lista de modelos de mensagem
-Finaliza??o de servi?os da aba 'Infraestrutura'
-Texto da intera??o ? mantido caso feche acidentalmente a tela
+Finalização de serviços da aba 'Infraestrutura'
+Texto da interação é mantido caso feche acidentalmente a tela
 
 [Busca]
-Quando o termo buscado traz exatamente um equipamento, a busca agora mostra os 10 ?ltimos chamados deste equipamento
+Quando o termo buscado traz exatamente um equipamento, a busca agora mostra os 10 últimos chamados deste equipamento
 
 [Admin]
-Se??o 'Usu?rios'
---> Inclus?o de novos usu?rios
+Seção 'Usuários'
+--> Inclusão de novos Usuários
 --> Permissionamento de 'Triagem' e 'Encerramento'
---> Filtro por 'Nome completo', 'Login de rede' e 'Autoriza??o'
---> O clique na linha do usu?rio direciona para a tela de informa??es daquele usu?rio
+--> Filtro por 'Nome completo', 'Login de rede' e 'Autorização'
+--> O clique na linha do usuário direciona para a tela de informações daquele usuário
 
-Se??o 'Modelos de Mensagem'
+Seção 'Modelos de Mensagem'
 --> Cadastro de modelos de texto por fila e por tipo de atendimento
 --> Filtro por 'Texto', 'Fila' e 'Tipo'
 
-Se??o 'Locais'
---> Cadastro de locais atendidos, por secretaria e regi?o
---> Filtro por 'Nome', 'Endere?o' e 'Secretaria' e 'Regi?o'
+Seção 'Locais'
+--> Cadastro de locais atendidos, por secretaria e região
+--> Filtro por 'Nome', 'Endereço' e 'Secretaria' e 'região'
 
-Se??o 'Secretarias'
+Seção 'Secretarias'
 --> Filtro por 'Nome' e 'Sigla'
 
-Se??o 'Servi?os'
---> Cadastro de servi?os por fila
---> Filtro por 'Servi?o' e 'Fila'
+Seção 'Serviços'
+--> Cadastro de serviços por fila
+--> Filtro por 'Serviço' e 'Fila'
 
-Se??o 'Bancada'
+Seção 'Bancada'
 --> Cadastro de bancadas de reparo
 
-[Remessas de inserv?veis]
-Tabela com as remessas geradas, com tr?s status 'Aberta', 'Fechada', 'Erro' e 'Entregue'
-Visualiza??o da remessa, contendo o laudo por equipamento e com fun??es de impress?o e upload de remessa assinada
+[Remessas de inservíveis]
+Tabela com as remessas geradas, com três status 'Aberta', 'Fechada', 'Erro' e 'Entregue'
+Visualização da remessa, contendo o laudo por equipamento e com funções de impressão e upload de remessa assinada
 
-[Usu?rio]
-Tela restrita ao grupo Master de visualiza??o de informa??es sobre o usu?rio, contendo permissionamento, acompanhamento de atividades, chamados bloqueados no momento e data do ?ltimo acesso
+[Usuário]
+Tela restrita ao grupo Master de visualização de informações sobre o usuário, contendo permissionamento, acompanhamento de atividades, chamados bloqueados no momento e data do último acesso
 
 [Equipamento]
-Tela de visualiza??o de informa??es sobre o equipamento, contendo seus ?ltimos chamados e fun??o de ping de rede e informa??es de hardware do BGInfo
+Tela de visualização de informações sobre o equipamento, contendo seus últimos chamados e função de ping de rede e informações de hardware do BGInfo
 
 [Reparo]
-Tela de registro de reparo, restrita ? fila 'Manuten??o', que permite o registro de servi?os, envio para garantia e baixa como inserv?vel
-Envio autom?tico do laudo t?cnico em caso de baixa como inserv?vel para o solicitante, atrav?s da API do Otobo
+Tela de registro de reparo, restrita à fila 'Manutenção', que permite o registro de serviços, envio para garantia e baixa como inservível
+Envio automático do laudo técnico em caso de baixa como inservível para o solicitante, através da API do Otobo
 
 [Triagem]
-Bloqueio que impede mais de um usu?rio trabalhar na mesma solicita??o ou finaliz?-la
-Exibi??o do campo 'Assunto' enviado pelo solicitante
+Bloqueio que impede mais de um usuário trabalhar na mesma solicitação ou finalizá-la
+Exibição do campo 'Assunto' enviado pelo solicitante
 
 [Outros]
-Novas op??es do arquivo de configura??o
+Novas opções do arquivo de configuração
 
 == Modificado ==
 
 [Chamado]
-A aba 'Descri??o completa' mudou para 'Comunica??o', permitindo a comunica??o direta com o solicitante via e-mail atrav?s da API do Otobo, com envio de anexo, desde que o chamado esteja bloqueado.
-Os itens da aba 'Comunica??o' agora s?o mostrados na ordem do mais recente para o mais antigo
+A aba 'Descrição completa' mudou para 'Comunicação', permitindo a comunicação direta com o solicitante via e-mail através da API do Otobo, com envio de anexo, desde que o chamado esteja bloqueado.
+Os itens da aba 'Comunicação' agora são mostrados na ordem do mais recente para o mais antigo
 
 [Outros]
 O changelog foi trocado para modo texto simples (changelog.txt) e armazenado na pasta 'changelog'
@@ -162,24 +228,24 @@ O changelog foi trocado para modo texto simples (changelog.txt) e armazenado na 
 == Corrigido ==
 
 [Triagem]
-Erro que permitia o usu?rio inserir um equipamento que ainda constava como aberto em chamado
+Erro que permitia o usuário inserir um equipamento que ainda constava como aberto em chamado
 
 [Chamado]
-Erro de formata??o no hist?rico ao se alterar dois ou mais dados do chamado
+Erro de formatação no histórico ao se alterar dois ou mais dados do chamado
 
-[Intera??o]
-Erro ao colocar equipamentos com identifica??o alfanum?rica em espera
+[Interação]
+Erro ao colocar equipamentos com identificação alfanumérica em espera
 
 [Outros]
 Pequenos ajustes visuais
 
 == Removido ==
 
-[Intera??o]
-Tipo 'Classificar como inserv?vel'
+[Interação]
+Tipo 'Classificar como inservível'
 
 [Outros]
-Tabela de configura??o
+Tabela de configuração
 
 -----FIM------
 
@@ -188,41 +254,41 @@ Tabela de configura??o
 == Adicionado ==
 
 [Busca]
-Busca por n?mero de lacre
-N?mero do chamado clic?vel na busca r?pida
+Busca por número de lacre
+Número do chamado clicável na busca rápida
 
 [Painel]
-Coluna 'Regi?o', referente ao local do chamado
-Impress?o dos chamados pelo painel
-Bot?o para resetar os filtros do painel
+Coluna 'região', referente ao local do chamado
+Impressão dos chamados pelo painel
+Botão para resetar os filtros do painel
 
 [Chamado]
-Bot?o para impress?o do chamado
+Botão para impressão do chamado
 Fechamento manual do chamado para casos excepcionais
-Limita??o de 3 bloqueios por usu?rio do grupo Opera??o na fila Atendimento Remoto
+Limitação de 3 bloqueios por usuário do grupo Operação na fila Atendimento Remoto
 
 == Modificado == 
 
 [Painel]
-Permite a visualiza??o dos chamados sem restri??o do respons?vel atual
+Permite a visualização dos chamados sem restrição do responsável atual
 As colunas 'Prioridade' e 'Status' foram agrupadas
 
-[Intera??o]
-Os equipamentos agora s?o ordenados na tela de registro de intera??o
+[Interação]
+Os equipamentos agora são ordenados na tela de registro de interação
 
 == Corrigido ==
 
 [Chamado]
-Altera??es nos equipamentos do chamado n?o eram persistidas
-Atribui??o incorreta de status para todos os chamados de um equipamento
-Hor?rio dos artigos do Otobo com exibi??o incorreta (+3h)
-Impossibilidade de finalizar o chamado ap?s remover um equipamento
+Alterações nos equipamentos do chamado não eram persistidas
+Atribuição incorreta de status para todos os chamados de um equipamento
+Horário dos artigos do Otobo com exibição incorreta (+3h)
+Impossibilidade de finalizar o chamado após remover um equipamento
 
-[Intera??o]
-Sinaliza??o de entrega removida incorretamente
+[Interação]
+Sinalização de entrega removida incorretamente
 
 [Arquivo]
-Erro de ordena??o no painel do arquivo
+Erro de ordenação no painel do arquivo
 
 [Outros]
 Pequenos ajustes visuais
@@ -243,18 +309,18 @@ Patch para permitir parse de imagens PNG pela biblioteca FPDF via HTTPS
 == Corrigido ==
 
 [Painel]
-Ordena??o incorreta dos chamados 
-Clique com o bot?o direito dispara o evento de abrir a tela do chamado
+Ordenação incorreta dos chamados 
+Clique com o botão direito dispara o evento de abrir a tela do chamado
 
 == Adicionado ==
 
 [Painel]
-Clique com o bot?o de rolagem (scroll) no painel de chamados abre a tela do chamado em
+Clique com o botão de rolagem (scroll) no painel de chamados abre a tela do chamado em
 outra aba
-Filtros do painel de chamados s?o salvos em cookies
+Filtros do painel de chamados são salvos em cookies
 
 [Outros]
-Link para o changelog no rodap?
+Link para o changelog no rodapé
 
 -----FIM------
 
@@ -263,12 +329,12 @@ Link para o changelog no rodap?
 == Adicionado ==
 
 [Painel]
-O bot?o de cada fila exibe o total de chamados
+O botão de cada fila exibe o total de chamados
 
 == Modificado ==
 
 [Painel]
-Data de abertura n?o exibe mais a hora, minuto e segundo da cria??o do chamado
+Data de abertura não exibe mais a hora, minuto e segundo da criação do chamado
 
 -----FIM------
 
@@ -276,7 +342,7 @@ Data de abertura n?o exibe mais a hora, minuto e segundo da cria??o do chamado
 
 == Corrigido ==
 
-[Intera??o]
+[Interação]
 Contagem incorreta de equipamentos pendentes
 
 -----FIM------
@@ -286,11 +352,11 @@ Contagem incorreta de equipamentos pendentes
 == Modificado ==
 
 [Busca]
-Os resultados da busca r?pida agora busca os dez ?ltimos registros
+Os resultados da busca rápida agora busca os dez últimos registros
 [Arquivo]
-O arquivo agora traz os ?ltimos 500 registros
-[Intera??o]
-A tela de registro de intera??o foi ligeiramente diminu?da para caber em telas menores
+O arquivo agora traz os últimos 500 registros
+[Interação]
+A tela de registro de interação foi ligeiramente diminuída para caber em telas menores
 
 -----FIM------
 
@@ -298,22 +364,22 @@ A tela de registro de intera??o foi ligeiramente diminu?da para caber em telas m
 
 == Corrigido ==
 
-[Intera??o]
-Timestamps de alterac?es de equipamentos no chamado n?o eram registrados
-Finaliza??o n?o esperada do chamado quando havia equipamentos em espera
+[Interação]
+Timestamps de alterações de equipamentos no chamado não eram registrados
+Finalização não esperada do chamado quando havia equipamentos em espera
 [Chamado]
-Exibi??o de quantidade incorreta de anexos buscados do OTRS
+Exibição de quantidade incorreta de anexos buscados do OTRS
 
 == Adicionado ==
 
 [Chamado]
-Novo bot?o para exibir o endere?o do local do chamado
-Altera??o de prioridade ? registrada no log de eventos e no hist?rico do chamado
+Novo botão para exibir o endereço do local do chamado
+Alteração de prioridade é registrada no log de eventos e no histórico do chamado
 
 == Removido ==
 
 [Painel]
-Atualiza??o autom?tica dos pain?is removida
+Atualização automática dos painéis removida
 
 -----FIM------
 
@@ -322,12 +388,12 @@ Atualiza??o autom?tica dos pain?is removida
 == Corrigido ==
 
 [Busca]
-Erro ao usar a busca r?pida
+Erro ao usar a busca rápida
 
 == Adicionado ==
 
 [Painel]
-A ?ltima fila visitada agora ? gravada em cookie para melhorar a navega??o
+A última fila visitada agora é gravada em cookie para melhorar a navegação
 
 -----FIM------
 
@@ -336,9 +402,9 @@ A ?ltima fila visitada agora ? gravada em cookie para melhorar a navega??o
 == Corrigido ==
 
 [Chamado]
-Retornado valor 0 para ID do chamado ap?s a importa??o.
-[Intera??o]
-Registro duplicado de intera??es do tipo Entrega
+Retornado valor 0 para ID do chamado após a importação.
+[Interação]
+Registro duplicado de interações do tipo Entrega
 
 -----FIM------
 
@@ -347,7 +413,7 @@ Registro duplicado de intera??es do tipo Entrega
 == Corrigido ==
 
 [Chamado]
-Remo??o indevida de equipamentos
+Remoção indevida de equipamentos
 
 -----FIM------
 
@@ -357,46 +423,46 @@ Remo??o indevida de equipamentos
 
 [Chamado]
 Falha ao inserir novo equipamento
-Remo??o indevida de equipamentos
-Rodap? sobrepondo a tabela de equipamentos
+Remoção indevida de equipamentos
+Rodapé sobrepondo a tabela de equipamentos
 
-[Intera??o]
-Texto do registro de falha de entrega n?o ? persistido
-Renderiza??o do laudo t?cnico com dados inconsistentes
-Cria??o de intera??o inv?lida ap?s erros no envio de arquivos
+[Interação]
+Texto do registro de falha de entrega não é persistido
+Renderização do laudo técnico com dados inconsistentes
+Criação de interação inválida após erros no envio de arquivos
 
 [Triagem]
-Usu?rio pode ter acesso ? view de Triagem sem ter permiss?o
+Usuário pode ter acesso à view de Triagem sem ter permissão
 
 == Modificado ==
 
 [Chamado]
-Sinaliza??o de equipamentos em aberto na lista de equipamentos
+Sinalização de equipamentos em aberto na lista de equipamentos
 
 == Adicionado ==
 
 [Triagem]
-Comunica??o com OTRS diretamente via API (devolu??o, importa??o e encerramento)
-Painel com as informa??es em tempo real obtidos do OTRS
-Descri??o do ticket separado por artigo na tela de triagem
+Comunicação com OTRS diretamente via API (devolução, importação e encerramento)
+Painel com as informações em tempo real obtidos do OTRS
+Descrição do ticket separado por artigo na tela de triagem
 Download dos anexos diretamente da base de dados do OTRS
 
 [Chamado] 
-Descri??o do ticket separado por artigo na tela de chamado
-Sinaliza??o de prioridade no chamado
+Descrição do ticket separado por artigo na tela de chamado
+Sinalização de prioridade no chamado
 Download dos anexos diretamente da base de dados do OTRS
 
 [Painel]
-Coluna de percentual de conclus?o no painel de chamados
-Indica??o visual do tempo decorrido desde a ?ltima intera??o no painel de chamados
+Coluna de percentual de conclusão no painel de chamados
+Indicação visual do tempo decorrido desde a última interação no painel de chamados
 
 [Busca]
-Pesquisa pelo n?mero do chamado na busca r?pida
+Pesquisa pelo número do chamado na busca rápida
 
 == Removido ==
 
 [Triagem]
 Removido armazenamento de tickets para triagem
-Removido armazenamento do conte?do dos anexos
+Removido armazenamento do conteúdo dos anexos
 
 -----FIM------

@@ -600,12 +600,12 @@ class Json extends CI_Controller {
             if ($espera == "false") {
 
                 $busca = $this->db->query("select num_equipamento_chamado from equipamento_chamado where id_chamado_equipamento = " . $id_chamado . 
-                " and (status_equipamento_chamado = 'ABERTO' or status_equipamento_chamado = 'FALHA')");
+                " and (status_equipamento_chamado = 'ABERTO' or status_equipamento_chamado = 'FALHA') ORDER BY num_equipamento_chamado");
             
             } else {
                 
                 $busca = $this->db->query("select num_equipamento_chamado from equipamento_chamado where id_chamado_equipamento = " . $id_chamado . 
-                " and status_equipamento_chamado = 'ESPERA'");
+                " and status_equipamento_chamado = 'ESPERA' ORDER BY num_equipamento_chamado");
 
             }
 
@@ -898,8 +898,8 @@ class Json extends CI_Controller {
                 }
                 else {
                     $nome_responsavel = $this->db->query("select nome_usuario from usuario where id_usuario = " . $id_responsavel)->row()->nome_usuario;
-                    $this->dd->dd($nome_responsavel);
-                    echo "Chamado bloqueado por " + $nome_responsavel;
+                    //$this->dd->dd($nome_responsavel);
+                    //echo "Chamado bloqueado por " + $nome_responsavel;
                 }
             } else {
 
@@ -1016,7 +1016,22 @@ class Json extends CI_Controller {
         }
     }
 
+    public function config_js() {
+        if (ENVIRONMENT == 'development') {
+            $file = file_get_contents("{$_SERVER['DOCUMENT_ROOT']}/application/config/config.dev.json");
+        } else {
+            $file = file_get_contents("{$_SERVER['DOCUMENT_ROOT']}/application/config/config.production.json");
+        }
+
+        $array = json_decode($file, true);
+
+        http_response_code(200);
+        header('Content-Type: application/json');
+        echo (json_encode($array));
+    }
 }
+
+
 
 
 ?>

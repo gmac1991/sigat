@@ -12,12 +12,10 @@
 
    <div class="float-right">
       <div class="form-check d-inline">
-         <?php if($usuario->autorizacao_usuario > 3): ?>
-            <input id="chkLocal" class="form-check-input mt-2" id_local="<?= $local['id_local'] ?>" type="checkbox" value=""  <?= $local['status_local'] == 1 ? 'checked' : '' ?>>
-            <label class="form-check-label" style="font-size: 0.9rem;">
+         <input id="chkLocal" class="form-check-input mt-2" id_local="<?= $local['id_local'] ?>" type="checkbox" value=""  <?= $local['status_local'] == 1 ? 'checked' : '' ?> <?php if($usuario->autorizacao_usuario < 3) echo 'disabled' ?>>
+         <label class="form-check-label" style="font-size: 0.9rem;">
                Ativo
-            </label>
-         <?php endif;?>
+         </label>
       </div>
    </div>
    <h3><i class="fas fa-home"></i> <?= $local['nome_local']?></h3>
@@ -49,6 +47,15 @@
                <div id="alerta" class="col-md-auto"></div>
 
             </div>
+            <div class="form-group col-6 mt-4">
+               <h5>
+                  <input class="form-check-input" type="checkbox" name="infovia" <?php if($local['infovia'] == true) echo 'checked'?> disabled>
+                  <label class="form-check-label" for="infovia">
+                  <i class="fas fa-network-wired"></i>
+                     Acessa a Infovia
+                  </label>
+               </h5>
+            </div>
             <div class="row">
                <div class="form-group col">
                   <label for="nome_local">Local</label>
@@ -73,7 +80,7 @@
                <input type="text" class="form-control" name="endereco_local" id="endereco_local" value="<?= $local['endereco_local'] ?>" disabled>
             </div>
             
-            <div class="form-group col-3">
+            <div class="form-group col-6">
                   <label for="regiao_local" class="text-bold">Região</label>
                   <select name="regiao_local" id="regiao_local" class="form-control" disabled>
                         <?php foreach ($regioes as $regiao) { ?>

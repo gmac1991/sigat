@@ -60,7 +60,7 @@
 			  <br />
 			  <label for="local">Local</label>
 			  <input type="text" class="form-control col-8" name="nome_local" id="listaLocais">
-          </div>
+        </div>
 
       </div>
 	  

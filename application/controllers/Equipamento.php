@@ -37,17 +37,19 @@ class Equipamento extends CI_Controller {
                 $armazenamento = array();
                 //Coletando dados e calculando armazenamento por unidade
                 for ($i = 0; $i < sizeof($espco_total) -1; $i += 3){
-                    $percentagem = round((floatval($espco_total[$i + 1]) - floatval($espaco_livre[$i + 1])) / floatval($espco_total[$i + 1]) * 100);
-                    $armazenamento[$i]['percentagem'] = $percentagem;
-                    $armazenamento[$i]['unidade'] = $espco_total[$i];
-                    $armazenamento[$i]['espaco_total'] = $espco_total[$i + 1] . ' ' . $espco_total[$i + 2];
-                    $armazenamento[$i]['livre'] = $espaco_livre[$i + 1] . ' ' . $espaco_livre[$i + 2];
+                    if(isset($espco_total[$i + 2])){
+                        $percentagem = round((floatval($espco_total[$i + 1]) - floatval($espaco_livre[$i + 1])) / floatval($espco_total[$i + 1]) * 100);
+                        $armazenamento[$i]['percentagem'] = $percentagem;
+                        $armazenamento[$i]['unidade'] = $espco_total[$i];
+                        $armazenamento[$i]['espaco_total'] = $espco_total[$i + 1] . ' ' . $espco_total[$i + 2];
+                        $armazenamento[$i]['livre'] = $espaco_livre[$i + 1] . ' ' . $espaco_livre[$i + 2];
+                    }
                 }
                 $dados['armazenamento'] = $armazenamento;
             }
 
             if(!empty($usuarios_equip)){ //Coletando informações dos usuários que utilizaram o equipamento
-                $dados['usuarios_equip'] = $usuarios_equip;
+               $dados['usuarios_equip'] = $usuarios_equip;
             }
             
             $usuario = $this->usuario_model->buscaUsuario($_SESSION['id_usuario']);

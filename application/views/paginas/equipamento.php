@@ -90,6 +90,7 @@
                         <tr>
                             <th scope="col">Usuário</th>
                             <th scope="col">Último acesso</th>
+                            <th>IP</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -97,6 +98,7 @@
                         <tr>
                             <td><?php echo $usuario['User_Name']?></td>
                             <td><?php echo date("d/m/Y - H:i:s", strtotime($usuario['Time_Stamp']));?></td>
+                            <td><?php echo $usuario['IP_2'];?></td>
                         </tr>
                     <?php } ?>
                     </tbody>

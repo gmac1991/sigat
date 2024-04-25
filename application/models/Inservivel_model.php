@@ -25,17 +25,18 @@ class Inservivel_model extends CI_Model {
         return $this->db->insert_id();
     }
 
-    public function abre_nova_remessa() {
+    public function abre_nova_remessa($divisao_remessa = DGTI) {
         $this->db->set('id_usuario', 1);
         $this->db->set('data_abertura', date("Y-m-d H:i:s"));
+        $this->db->set('divisao_remessa', $divisao_remessa);
         $this->db->insert('remessa_inservivel');
-        $id = $this->db->insert_id();
+        $id_remessa = $this->db->insert_id();
 
         // ------------ LOG -------------------
 
         $log = array(
             'acao_evento' => 'CRIAR_NOVA_REMESSA',
-            'desc_evento' => 'ID REMESSA:' . $id,
+            'desc_evento' => 'ID REMESSA:' . $id_remessa,
             'id_usuario_evento' => 1
         );
 
@@ -109,7 +110,7 @@ class Inservivel_model extends CI_Model {
             c.id_chamado
         ');
         $this->db->from('equipamento_chamado as ec');
-        $this->db->join('interacao AS i', "i.tipo_interacao = 'INSERVIVEL_REPARO' AND i.pool_equipamentos = '{$num_equipamento}'", 'INNER');
+        $this->db->join('interacao AS i', "(i.tipo_interacao = 'INSERVIVEL_REPARO' OR i.tipo_interacao = 'INSERVIVEL') AND i.pool_equipamentos = '{$num_equipamento}'", 'INNER');
         $this->db->join('equipamento_reparo as er', "er.num_equipamento_reparo = '{$num_equipamento}'", 'INNER');
         $this->db->join('equipamento AS e', "e.num_equipamento = '{$num_equipamento}'", 'INNER');
         $this->db->join('chamado as c', 'i.id_chamado_interacao = c.id_chamado', 'INNER');
@@ -144,12 +145,13 @@ class Inservivel_model extends CI_Model {
         return $this->db->get()->result_array();
     }
 
-    public function lista_remessa_aberta() {
+    public function lista_remessa_aberta($divisao_remessa = DGTI) {
         $this->db->select('remessa_inservivel.*, usuario.nome_usuario');
         $this->db->from('remessa_inservivel');
         $this->db->order_by('data_abertura', 'DESC');
         $this->db->where('data_fechamento', NULL);
         $this->db->where('falha_envio', false);
+        $this->db->where('divisao_remessa', $divisao_remessa);
         $this->db->join('usuario', 'remessa_inservivel.id_usuario = usuario.id_usuario');
 
         return $this->db->get()->row();
@@ -227,5 +229,88 @@ class Inservivel_model extends CI_Model {
         $this->db->insert('evento', $log);
 
         // -------------- /LOG ----------------
+    }
+
+    public function reverterRemessa($equip, $remessa, $reparo, $chamado, $usuario){
+        $mensagem = [];
+        $sql = "SELECT id_remessa_inservivel, data_abertura, data_fechamento, data_entrega, 
+        nome_recebedor, pool_equipamentos, falha_envio, id_usuario, id_termo
+        FROM remessa_inservivel
+        WHERE pool_equipamentos LIKE '%". $equip ."%' AND id_remessa_inservivel = " . $remessa . " ;";
+
+        $result = $this->db->query($sql)->row();
+        //$this->dd->dd($result);
+        $pool_equips = array();
+        $pool_atualizado = '';
+        if($result->data_entrega === null){
+            $pool = $result->pool_equipamentos;
+            $pool_equips = explode('::', $pool);
+            
+            for($i = 0; $i< sizeof($pool_equips); $i++){
+                if($pool_equips[$i] == $equip){
+                    unset($pool_equips[$i]);
+                }
+            }
+            if(sizeof($pool_equips) > 0){
+                $pool_atualizado = implode("::", $pool_equips);
+            }
+            $this->db->trans_begin();
+            $sql = "UPDATE remessa_inservivel
+            SET pool_equipamentos='". $pool_atualizado ."'
+            WHERE id_remessa_inservivel=" . $remessa . ";";
+            $this->db->query($sql);
+            $sql = "UPDATE equipamento_chamado
+            SET status_equipamento_chamado='ABERTO', ultima_alteracao_equipamento_chamado=CURRENT_TIMESTAMP
+            WHERE num_equipamento_chamado = '" . $equip . "';";
+            $this->db->query($sql);
+            $sql = "UPDATE equipamento_reparo SET status_reparo = 'CANCELADO', justificativa_reparo = 'Equipamento removido da remessa: {$result->id_remessa_inservivel}' WHERE id_reparo = {$reparo};";
+            $this->db->query($sql);
+            $sql = "UPDATE chamado
+            SET status_chamado='ABERTO'
+            WHERE id_chamado={$chamado};";
+            $this->db->query($sql);
+            
+            $this->db->set('status_reparo_servico', false);
+            $this->db->where('id_reparo', $reparo);
+            $this->db->update('reparo_servico');
+            
+            $this->db->set('id_reparo_historico', $reparo);
+            $this->db->set('id_usuario_historico', $usuario);
+            $this->db->set('txt_historico','Remessa revertida');
+            $this->db->set('data_historico','now()', false);
+            $this->db->insert('historico_equipamento_reparo');
+            if ($this->db->trans_status() === FALSE)
+                {
+                   $this->db->trans_rollback();
+                }
+            else
+                {
+                $this->db->trans_commit();
+                }
+            $mensagem['mensagem'] = 'Remessa desfeita para o equipamento: ' . $equip;
+            $mensagem['status'] = 'success';
+        }else{
+            $mensagem['mensagem'] = 'Este equipamento já foi entregue e sua remessa não pode ser desfeita.';
+            $mensagem['status'] = 'error';
+        }
+
+        if($mensagem == ''){
+            $mensagem['mensagem'] = 'Houve um erro no processamento de remessas.';
+            $mensagem['status'] = 'error';
+        }
+
+        // ------------ LOG -------------------
+
+        $log = array(
+            'acao_evento' => 'CANCELAR_REMESSA',
+            'desc_evento' => 'ID REMESSA: ' . $result->id_remessa_inservivel . 'ID EQUIPAMENTO: ' . $equip,
+            'id_usuario_evento' => $_SESSION['id_usuario']
+        );
+        
+        $this->db->insert('evento', $log);
+
+        // -------------- /LOG ----------------
+
+        return $mensagem;
     }
 }

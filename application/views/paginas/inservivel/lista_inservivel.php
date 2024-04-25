@@ -9,10 +9,11 @@
         <h2 class="align-center"><i class="fa fa-tasks mr-2"></i>Remessas de inservíveis</h2>
    </div> -->
     
-    <table class="table" id="tabela">
+    <table class="table" id="tabela-inservivel">
         <thead class="thead-dark">
             <tr>
                 <th scope="col">#</th>
+                <th scope="col">Divisão</th>
                 <th scope="col">Quantidade</th>
                 <th scope="col">Abertura</th>
                 <th scope="col">Fechamento</th>

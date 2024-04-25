@@ -20,15 +20,18 @@ class Local extends CI_Controller {
             $usuario = $this->usuario_model->buscaUsuario($_SESSION['id_usuario']);
             
             $local = $this->local_model->buscaLocal($id);
+            $local[0]["status_local"] = $local[0]["status_local"] === "0" ? FALSE : TRUE;
+            $local[0]["infovia"] = $local[0]["infovia"] === "0" ? FALSE : TRUE;
             $dados = array();
             $dados['id'] = $id;
             $dados['local'] = $local[0];
             $dados['usuario'] = $usuario;
-            $regioes = array("NORTE", "SUL", "LESTE", "OESTE", "CENTRAL", "INTERNA");
+            $regioes = array("NORTE", "SUL", "LESTE", "OESTE", "CENTRO", "INTERNA");
             $dados['regioes'] = $regioes;
             $secretarias = $this->secretaria_model->buscaSecretarias();
             $dados['secretarias'] = $secretarias;
             $dados['tel'] = $this->input->get('tel');
+            
             //-------Pesquisando telefones
             $valores['id_local'] = $id; 
             $telefones = $this->local_model->listarTelefones($valores);
@@ -49,7 +52,9 @@ class Local extends CI_Controller {
                 $valores['secretaria_local'] = $this->input->post('secretaria_local');
                 $valores['regiao_local'] = $this->input->post('regiao_local');
                 $valores["status_local"] = $this->input->post('status_local');
-                
+                $valores["status_local"] = $valores["status_local"] === "1" ? true : false;
+                $valores['infovia'] = $this->input->post('infovia');
+                $valores["infovia"] = $valores["infovia"] === "on" ? true : false;
                 $this->local_model->atualizaLocal($valores);
                 
                 header('Location: ' . base_url('//local/' . $id));
@@ -89,6 +94,7 @@ class Local extends CI_Controller {
             $locais = $this->local_model->buscaLocais();
             foreach($locais as &$local) {
                 $local["status_local"] = $local["status_local"] === "0" ? FALSE : TRUE;
+                $local["infovia"] = $local["infovia"] === "0" ? FALSE : TRUE;
             }
 
             header("Content-Type: application/json");
@@ -112,6 +118,8 @@ class Local extends CI_Controller {
             $dados['secretaria_local'] = $this->input->post('secretaria_local');
             $dados['regiao_local'] = $this->input->post('regiao_local');
             $dados['status_local'] = true;
+            $dados['infovia'] = $this->input->post('infovia');
+            $dados["infovia"] = $dados["infovia"] === "true" ? true : false;
             $valores = $this->local_model->insereLocal($dados);
 
             header("Content-Type: application/json");
@@ -129,6 +137,8 @@ class Local extends CI_Controller {
             $dados['regiao_local'] = $this->input->post('regiao_local');
             $dados['status_local'] = $this->input->post('status_local');
             $dados["status_local"] = $dados["status_local"] === "true" ? true : false;
+            $dados['infovia'] = $this->input->post('infovia');
+            $dados["infovia"] = $dados["infovia"] === "true" ? true : false;
 
             $local = $this->local_model->atualizaLocal($dados);
 

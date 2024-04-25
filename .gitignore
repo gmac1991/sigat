@@ -4,8 +4,11 @@
 anexos/*
 termos/*
 application/config/config.php
+application/config/*.production.*
+application/config/*.dev.*
 application/config/database.php
 sessions/*
+img_temp/*
 application/libraries/Mailer.php
 application/libraries/Consulta_ldap.php
 *~*

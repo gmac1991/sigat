@@ -20,6 +20,7 @@ class Bancada_model extends CI_Model {
         if($nome_bancada != null){
             $this->db->where('nome_bancada', $nome_bancada);
         }
+        
 
         return $this->db->get()->result_array();
         

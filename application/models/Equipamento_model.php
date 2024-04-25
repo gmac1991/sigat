@@ -49,7 +49,7 @@ class Equipamento_model extends CI_Model {
 
     public function buscaChamadosEquipamento($num_equip){
         $sql = "SELECT equipamento_chamado.status_equipamento_chamado, chamado.id_chamado, chamado.resumo_chamado, chamado.data_chamado, chamado.ticket_chamado, chamado.id_ticket_chamado  from equipamento_chamado INNER JOIN chamado ON equipamento_chamado.id_chamado_equipamento = chamado.id_chamado 
-        WHERE equipamento_chamado.num_equipamento_chamado = '". $num_equip ."' ORDER BY chamado.data_chamado desc LIMIT 5; ";
+        WHERE equipamento_chamado.num_equipamento_chamado = '". $num_equip ."' ORDER BY chamado.data_chamado desc LIMIT 15; ";
 
         $busca = $this->db->query($sql);
 
@@ -97,7 +97,13 @@ class Equipamento_model extends CI_Model {
 
         if($busca->num_rows() >= 1) {
 
-            return $busca->result_array();
+            $resultado = $busca->result_array();
+            $url = @file_get_contents($this->config->item('api_ldap') . 'ldap/' . $resultado[0]['User_Name']);
+            $obj = json_decode($url);
+            if(isset($obj->displayName)){
+                $resultado[0]['User_Name'] .= ' - ' . $obj->displayName;
+            }
+            return $resultado;
 
         }
 
@@ -106,8 +112,8 @@ class Equipamento_model extends CI_Model {
     }
 
     public function buscarUsuariosEquipamento($num_equip){
-        $sql = "SELECT BGI.[User_Name], MAX(BGI.Time_Stamp) AS Time_Stamp FROM BGInfoTable BGI
-        WHERE [Host_Name] = 'PMS-" . $num_equip ."' GROUP BY [User_Name]
+        $sql = "SELECT BGI.[User_Name], MAX(BGI.Time_Stamp) AS Time_Stamp, BGI.IP_2 FROM BGInfoTable BGI
+        WHERE [Host_Name] = 'PMS-" . $num_equip ."' GROUP BY [User_Name], BGI.IP_2
         ORDER BY Time_Stamp DESC";
 
         $db_BGinfo = $this->load->database('BG_info', TRUE);
@@ -116,7 +122,23 @@ class Equipamento_model extends CI_Model {
 
         if($busca->num_rows() >= 1) {
 
-            return $busca->result_array();
+            $resultado = $busca->result_array();
+            
+            for($i =0 ; $i < sizeof($resultado); $i++){
+                $url = @file_get_contents($this->config->item('api_ldap') .'ldap/' . $resultado[$i]['User_Name']);
+                $obj = json_decode($url);
+                if(isset($obj->displayName)){
+                    $resultado[$i]['User_Name'] .= ' - ' . $obj->displayName;
+                }
+                
+            }
+
+            for ($i = 0; $i < sizeof($resultado); $i++) {
+                $ip = explode(' ', $resultado[$i]['IP_2']);
+                $resultado[$i]['IP_2'] = $ip[0];
+            }
+
+            return $resultado;
 
         }
 
@@ -124,7 +146,7 @@ class Equipamento_model extends CI_Model {
             return NULL;
     }
 
-    public function alterarStatusEquipamentoChamado($num_equipamento,$id_chamado, $novo_status, $status_atual = null) {
+    public function alterarStatusEquipamentoChamado($num_equipamento, $id_chamado, $novo_status, $status_atual = null) {
 
         $out = FALSE;
 
@@ -136,7 +158,7 @@ class Equipamento_model extends CI_Model {
             $this->db->where('status_equipamento_chamado', $status_atual);
         }
         $status_ant = $this->db->get()->row()->status_equipamento_chamado;
-        // $this->dd->dd($status_ant);
+        
 
         $this->db->set('status_equipamento_chamado', $novo_status);
         $this->db->set('status_equipamento_chamado_ant', $status_ant);

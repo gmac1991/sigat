@@ -193,7 +193,7 @@ class Chamado_model extends CI_Model {
         if ($dados['id_responsavel'] != NULL) { //se foi enviado algum id_responsavel...
             $q_alteraChamado = 
             "update chamado set nome_solicitante_chamado = '" . $dados['nome_solicitante'] . 
-            "', telefone_chamado = " . $dados['telefone'] . 
+            "', telefone_chamado = '" . $dados['telefone'] . 
             "', celular_chamado = '" . $dados['celular'] . "', id_local_chamado = " . $id_local . ", id_usuario_responsavel_chamado = "
             . $dados['id_responsavel'] . " where id_chamado = " . $dados['id_chamado'];
 
@@ -317,11 +317,80 @@ class Chamado_model extends CI_Model {
                 
                 $this->db->query($sql); //inserindo a interacao
 
+                $nova_alteracao = array (
+                    'id_alteracao' => NULL,
+                    'data_alteracao' => date('Y-m-d H:i:s'),
+                    'texto_alteracao' => 'Encerrou o chamado',
+                    'id_chamado_alteracao' => $dados['id_chamado'],
+                    'id_usuario_alteracao' => $dados['id_usuario'],
+           
+                 ); 
+                 
+                 $this->db->insert('alteracao_chamado',$nova_alteracao);
 
                 // ------------ LOG -------------------
 
                 $log = array(
                     'acao_evento' => 'ENCERRAR_CHAMADO',
+                    'desc_evento' => 'ID CHAMADO: ' . $dados['id_chamado'],
+                    'id_usuario_evento' => $_SESSION['id_usuario']
+                );
+                
+                $this->db->insert('evento', $log);
+
+                // -------------- /LOG ----------------
+
+                
+    
+    
+            }
+
+            
+        } else {
+
+            header("HTTP/1.1 403 Forbidden");
+        }
+        
+        
+    }
+
+    public function reabreChamado($dados) {
+
+        
+
+        $usuario = $this->db->query('select autorizacao_usuario, encerramento_usuario from usuario where id_usuario = ' 
+                                    . $dados['id_usuario']);
+
+
+        if($usuario->row()->autorizacao_usuario >= 3 && $usuario->row()->encerramento_usuario == 1) {
+            
+            $q_reabreChamado = $this->db->query("update chamado set status_chamado = 'FECHADO', data_encerramento_chamado = null where id_chamado = " . $dados['id_chamado']);
+
+            if($q_reabreChamado) {
+
+                $sql = "INSERT INTO interacao
+                (id_interacao, tipo_interacao, data_interacao, texto_interacao, id_chamado_interacao, id_usuario_interacao, id_fila_ant_interacao, pool_equipamentos, pool_servicos)
+                VALUES(NULL, 'ENC', NOW(), ' reabriu o chamado', " 
+                . $dados['id_chamado'] . ", " . $dados['id_usuario'] . ", NULL, NULL, NULL)";
+                
+                $this->db->query($sql); //inserindo a interacao
+
+
+                $nova_alteracao = array (
+                    'id_alteracao' => NULL,
+                    'data_alteracao' => date('Y-m-d H:i:s'),
+                    'texto_alteracao' => 'Reabriu o chamado',
+                    'id_chamado_alteracao' => $dados['id_chamado'],
+                    'id_usuario_alteracao' => $dados['id_usuario'],
+           
+                 ); 
+                 
+                 $this->db->insert('alteracao_chamado',$nova_alteracao);
+
+                // ------------ LOG -------------------
+
+                $log = array(
+                    'acao_evento' => 'REABRIR_CHAMADO',
                     'desc_evento' => 'ID CHAMADO: ' . $dados['id_chamado'],
                     'id_usuario_evento' => $_SESSION['id_usuario']
                 );
@@ -399,7 +468,7 @@ class Chamado_model extends CI_Model {
 
     public function buscaChamado($id_chamado, $status = "") {
 
-	   $q_buscaChamado = "select complemento_chamado, id_ticket_chamado, ticket_chamado, id_chamado, id_fila, nome_solicitante_chamado, id_local, endereco_local, nome_local, regiao_local, DATE_FORMAT(data_chamado, '%d/%m/%Y - %H:%i:%s') as data_chamado, telefone_chamado, celular_chamado,
+	   $q_buscaChamado = "select status_chamado, complemento_chamado, id_ticket_chamado, ticket_chamado, id_chamado, id_fila, nome_solicitante_chamado, id_local, endereco_local, nome_local, regiao_local, infovia, DATE_FORMAT(data_chamado, '%d/%m/%Y - %H:%i:%s') as data_chamado, DATE_FORMAT(data_encerramento_chamado, '%d/%m/%Y - %H:%i:%s') as data_encerramento_chamado, telefone_chamado, celular_chamado,
         (select usuario.id_usuario from usuario where usuario.id_usuario = chamado.id_usuario_responsavel_chamado) as id_responsavel, 
         (select fila.nome_fila from fila where fila.id_fila = chamado.id_fila_chamado) as nome_fila_chamado, prioridade_chamado, resumo_chamado, email_nao_lido_chamado
         from local, fila, chamado
@@ -407,7 +476,7 @@ class Chamado_model extends CI_Model {
         fila.id_fila = chamado.id_fila_chamado and
         chamado.id_chamado = " . $id_chamado;
 
-        $q_buscaEquipamentos = "SELECT e.num_equipamento, e.descricao_equipamento
+        $q_buscaEquipamentos = "SELECT e.num_equipamento, e.descricao_equipamento, e.tag_equipamento
         FROM equipamento AS e, equipamento_chamado
         WHERE equipamento_chamado.id_chamado_equipamento = " . $id_chamado .
         " AND equipamento_chamado.num_equipamento_chamado = e.num_equipamento";
@@ -415,8 +484,9 @@ class Chamado_model extends CI_Model {
         if ($status !== "") {
             $q_buscaEquipamentos .= " AND status_equipamento_chamado in (" . $status . ")";
         }
+        //$this->dd->dd($q_buscaEquipamentos);
 
-        $q_buscaServicos = "SELECT s.nome_servico, s.unidade_medida, sc.quantidade
+        $q_buscaServicos = "SELECT s.nome_servico, s.unidade_medida, sc.quantidade, sc.data_ult_alteracao_servico_chamado, sc.status_servico_chamado
         FROM servico s INNER JOIN servico_chamado sc on s.id_servico = sc.id_servico_chamado
         WHERE sc.id_chamado_servico = " . $id_chamado;
         
@@ -450,6 +520,25 @@ class Chamado_model extends CI_Model {
 
 
        
+    }
+
+    public function buscaInteracoes($id_chamado){
+        
+        $result = null;
+
+        $sql = "SELECT nome_usuario, id_interacao, tipo_interacao, " .
+        "id_chamado_interacao, DATE_FORMAT(data_interacao, '%d/%m/%Y - %H:%i:%s') as data_interacao, " .
+        "texto_interacao, nome_usuario, status_chamado, pool_equipamentos, pool_servicos  
+        FROM interacao i, usuario u, chamado c 
+        WHERE i.id_chamado_interacao = c.id_chamado
+        AND c.id_chamado = " . $id_chamado .
+        " AND i.id_usuario_interacao = u.id_usuario 
+        ORDER BY i.data_interacao DESC";
+
+       $result = $this->db->query($sql)->result_array();
+
+        return $result;
+    
     }
 
     public function priorizaChamado($id_chamado) {
@@ -761,6 +850,16 @@ class Chamado_model extends CI_Model {
         WHERE id_chamado={$chamado}";
         
         $this->db->query($sql);
+    }
+
+    public function buscaTermoEntrega($id_chamado){
+        $sql = "SELECT id_termo, nome_termo, tipo_termo, data_termo, id_chamado_termo
+        FROM db_sigat.termo
+        WHERE id_chamado_termo = {$id_chamado}";
+
+        $result = $this->db->query($sql)->result_array();
+
+        return $result;
     }
 
 }

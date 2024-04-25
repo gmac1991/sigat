@@ -219,13 +219,16 @@ class Interacao_model extends CI_Model {
                
             }
 
-            if($dados['tipo'] == 'INSERVIVEL_REPARO') {
-
+            if($dados['tipo'] == 'INSERVIVEL_REPARO' || $dados['tipo'] == 'INSERVIVEL') {
+               $status = '';
                $num_equip = $dados['equip_atendidos'][0];
 
+               if ($dados['tipo'] == 'INSERVIVEL_REPARO')
+                  $status = 'REMESSA';
+               else
+                  $status = 'INSERVIVEL';
                
-              
-               $this->db->query("update equipamento_chamado set status_equipamento_chamado = 'REMESSA', status_equipamento_chamado_ant = 'REPARO',
+               $this->db->query("update equipamento_chamado set status_equipamento_chamado = '{$status}', status_equipamento_chamado_ant = 'REPARO',
                ultima_alteracao_equipamento_chamado = NOW()
                where num_equipamento_chamado = '" . $num_equip  . "' and id_chamado_equipamento = " . $dados['id_chamado']);
 
@@ -233,11 +236,9 @@ class Interacao_model extends CI_Model {
 
                $log = array(
                   'acao_evento' => 'ALTERAR_STATUS_EQUIP',
-                  'desc_evento' => 'ID CHAMADO: ' . $dados['id_chamado'] . " - NUM: " . $num_equip  . " - NOVO STATUS: REMESSA",
+                  'desc_evento' => 'ID CHAMADO: ' . $dados['id_chamado'] . " - NUM: " . $num_equip  . " - NOVO STATUS: {$status}",
                   'id_usuario_evento' => $_SESSION['id_usuario']
                );
-
-               // aqui
 
                $this->db->insert('evento', $log);
 
@@ -1271,6 +1272,28 @@ class Interacao_model extends CI_Model {
       $db_otrs->where('id', $id_ticket_chamado);
 
       return $db_otrs->get()->row()->customer_user_id;
+   }
+
+   public function buscarEmailSolicitanteOtobo($ticked_id, $article_sender_type = true) {
+      $db_otrs = $this->load->database('otrs', TRUE);
+
+      $db_otrs->select('
+         article_data_mime.a_from,
+         article_data_mime.a_reply_to,
+         article_data_mime.a_to,
+         article_data_mime.a_cc,
+         article_data_mime.a_bcc
+      ');
+      $db_otrs->from('article');
+      $db_otrs->join('article_data_mime', 'article.id = article_data_mime.article_id', 'INNER');
+      $db_otrs->where('ticket_id', $ticked_id);
+      $db_otrs->where('is_visible_for_customer', "1");
+
+      if ($article_sender_type) {
+         $db_otrs->where('article_sender_type_id', 3);
+      }
+
+      return $db_otrs->get()->result();
    }
 
    public function insereAnexoSigat($id_chamado_sigat, $id_article, $file_name) {

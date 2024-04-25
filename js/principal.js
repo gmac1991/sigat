@@ -1,8 +1,27 @@
-const patrimonio_regex = /\b[1-9]\d{5}\b/g
+const patrimonio_regex = /\b[1-9]\{5}\b/g
 var fila_atual = null;
 
 var chamados_expo = []
 var cont_imp = 0;
+const config = Promise.resolve(carregaConfig()).then(value => {
+    return value;
+})
+
+async function carregaConfig() {
+    return new Promise((resolve, reject) => {
+        $.ajax({
+            url: base_url + 'json/config_js',
+            type: 'GET',
+            async: true,
+            success: (data) => {
+                resolve(data);
+            },
+            error: (error) => {
+                reject(error);
+            }
+        });
+    });
+}
 
 function checkExpo() {
 
@@ -379,6 +398,16 @@ $('#btnImprimirChamado').on('click', function(e) {
   
 })
 
+$('#btnImprimirRelatorioChamado').on('click', function(e) {
+
+    e.preventDefault();
+
+
+    var out = window.open(base_url + 'chamado/imprimir_relatorio_chamado?chamados=' + $(this).attr("data-chamado"))
+    out.print();
+  
+})
+
 
 $('#btnImprimir').on('click', function(e) {
 
@@ -597,7 +626,7 @@ async function buscaEquipamentos(p_id_chamado, p_id_fila_ant, p_atendimento, ins
    
     $('#divEquipamentos').empty();
 
-    if (num_equipamentos.length > 0) {
+    /*if (num_equipamentos.length > 0) {
 
         num_equipamentos.sort();
 
@@ -639,7 +668,7 @@ async function buscaEquipamentos(p_id_chamado, p_id_fila_ant, p_atendimento, ins
             }
 
         } 
-    }
+    }*/
     $('#divServicos').empty();
 
     var lista_servicos = [];
@@ -767,7 +796,7 @@ function verificaTipo(fila_ant, id_chamado) { //verificar tipo da fila no modal 
             break;
     }
 
-    if (g_fila_chamado === 3) {
+    if (g_fila_chamado < 5 || g_fila_chamado > 7) {
         $("#slctTipo option[value='ATENDIMENTO']").remove();
     }
 }
@@ -776,7 +805,6 @@ function exibeModeloMensagem() {
     // Capturar o evento de alteração de valor
     var textoSelecionado = '<p>' + $("#slctModeloMensagem option:selected").text() + '</p>';
     // Retorna o valor para o summernote
-    // voltar aqui
     $('textarea[name=txtInteracao]').summernote('code', textoSelecionado);
 }
 async function listaModelosMensagems(tipo, id_fila) {
@@ -1419,7 +1447,7 @@ async function carregaChamado(p_id_chamado,sem_equipamentos) {
                 }
             },
             error: function(){
-                console.log('houve um erro');
+                console.error('houve um erro');
             }
         });
         servicos = valor;
@@ -1636,7 +1664,8 @@ async function carregaChamado(p_id_chamado,sem_equipamentos) {
    var status_equips = [];
    var status_servicos = [];
    var id_responsavel = null;
-
+   let remessa = null;
+   
     await $.ajax({
         url: base_url + 'json/chamado',
         dataType: 'json',
@@ -1645,7 +1674,7 @@ async function carregaChamado(p_id_chamado,sem_equipamentos) {
             id_chamado: p_id_chamado
         },
         error: function(request, status, error) {
-            console.log(status)
+            console.error(status)
 
         },
         success: function(data) {
@@ -1680,14 +1709,19 @@ async function carregaChamado(p_id_chamado,sem_equipamentos) {
             fila_atual = data.id_fila; //variavel global fila_atual
             entrega = data.entrega_chamado;
             status_chamado = data.status_chamado;
-
+            
             for (var i = 0; i < data.status_equipamentos.length; ++i) {
 
                 status_equips.push(data.status_equipamentos[i].status_equipamento_chamado);
-   
-               
             }
 
+            for(i = 0; i <data.status_equipamentos.length ; i++){
+                if(data.status_equipamentos[i].status_equipamento_chamado == 'REMESSA'){
+                    remessa = true;
+                }
+            }
+
+            
             for (var i = 0; i < data.status_servicos.length; ++i) {
 
                 status_servicos.push(data.status_servicos[i].status_servico_chamado);
@@ -1765,6 +1799,7 @@ async function carregaChamado(p_id_chamado,sem_equipamentos) {
                     $('#btnEditarChamado').hide();
                     $('#btnDesbloquearChamado').hide();
                     $('#botoesChamado hr').show();
+                    $('#btnModalEmail').hide();
                 }
 
                 if (data.id_responsavel == null && g_auto_usuario >= 3) { //ADM +
@@ -1773,6 +1808,7 @@ async function carregaChamado(p_id_chamado,sem_equipamentos) {
                     $('#btnEditarChamado').show();
                     $('#btnDesbloquearChamado').hide();
                     $('#botoesChamado hr').show();
+                    $('#btnModalEmail').show();
                 }
 
                 if (data.id_responsavel != null && g_auto_usuario >= 3) { //ADM +
@@ -1781,6 +1817,7 @@ async function carregaChamado(p_id_chamado,sem_equipamentos) {
                     $('#btnEditarChamado').show();
                     $('#btnDesbloquearChamado').show();
                     $('#botoesChamado hr').show();
+                    $('#btnModalEmail').show();
                 }
 
                 if (g_id_usuario == data.id_responsavel && g_auto_usuario <= 2) { //Tecnico 
@@ -1812,7 +1849,6 @@ async function carregaChamado(p_id_chamado,sem_equipamentos) {
     if (reparos.length > 0) {
 
         $("#tblReparosChamado tbody").html("")
-
         reparos.forEach((r) => {
             var data_fim = r.data_fim_reparo == null ? '' : r.data_fim_reparo
 
@@ -1825,18 +1861,34 @@ async function carregaChamado(p_id_chamado,sem_equipamentos) {
                 case "FINALIZADO":
                     bg = "table-success"
                     break
-                case "CANCELADO":
+                case "CANCELADO" || "CANCELAMENTO":
+                    bg = "table-secondary"
+                    break
+
+                case "CANCELAMENTO":
                     bg = "table-secondary"
                     break
                 case "GARANTIA":
                     bg = "table-primary"
                     break
+                case "ESPERA":
+                    bg = "table-danger"
+                    break
             }
 
+            
+            if(r.status_reparo == 'FINALIZADO'){
+                for(i=0; i < r.servicos.length; i++){
+                    
+                    if(r.servicos[i].realizado_reparo_servico == 1 && r.servicos[i].subquery == 1){
+                        r.status_reparo += '<br/> <small>' + r.servicos[i].nome_servico + '</small>';
+                    }
+                }
+            }
             $("#tblReparosChamado tbody").append(
                 `<tr class=${bg}>
                     <td>${r.num_equipamento_reparo}</td>
-                    <td>${r.status_reparo == "GARANTIA" ? '-' : r.nome_bancada}</td>
+                    <td>${r.status_reparo == "GARANTIA" || r.status_reparo == "ESPERA" ? '-' : r.nome_bancada}</td>
                     <td>${r.status_reparo}</td>
                     <td>${r.data_inicio_reparo}</td>
                     <td>${data_fim}</td>
@@ -1858,6 +1910,11 @@ async function carregaChamado(p_id_chamado,sem_equipamentos) {
         botoes = '<button id="btnEncerrarChamado" onclick="encerrarChamado()" class="btn btn-success"><i class=\"far fa-check-circle\"></i> Encerrar chamado</button>';
     }
 
+    if (g_auto_usuario >= 3 && g_auto_usuario_enc == 1  && status_chamado == 'ENCERRADO') {//somente ADM+ encerra o chamado
+
+        botoes = '<button id="btnReabrirChamado" class="btn btn-primary" onclick="reabrirChamado()"><i class="fas fa-lock-open"></i> Reabrir chamado</button>';
+    }
+
     for (var i = 0; i < status_equips.length; ++i) {
         if ((p_id_responsavel == g_id_usuario && 
             
@@ -1865,7 +1922,8 @@ async function carregaChamado(p_id_chamado,sem_equipamentos) {
             status_equips[i] == 'ESPERA' || 
             status_equips[i] == 'FALHA' || 
             status_equips[i] == 'ENTREGA' ||
-            status_equips[i] == 'REPARO'))) {
+            status_equips[i] == 'REPARO' ||
+            status_equips[i] == 'GARANTIA'))) {
            
             botoes = "<button type=\"button\" id=\"btnModalRegistro\" class=\"btn btn-primary\"" +
             " data-toggle=\"modal\" data-target=\"#modalRegistro\" data-chamado=\"" + g_id_chamado +
@@ -1882,7 +1940,8 @@ async function carregaChamado(p_id_chamado,sem_equipamentos) {
             status_servicos[i] == 'ESPERA' || 
             status_servicos[i] == 'FALHA' || 
             status_servicos[i] == 'ENTREGA' ||
-            status_servicos[i] == 'REPARO'))) {
+            status_servicos[i] == 'REPARO' ||
+            status_equips[i] == 'GARANTIA'))) {
            
             botoes = "<button type=\"button\" id=\"btnModalRegistro\" class=\"btn btn-primary\"" +
             " data-toggle=\"modal\" data-target=\"#modalRegistro\" data-chamado=\"" + g_id_chamado +
@@ -1898,7 +1957,7 @@ async function carregaChamado(p_id_chamado,sem_equipamentos) {
 
         if (status_equips[i] == 'ABERTO' || status_equips[i] == 'ESPERA' || 
         status_equips[i] == 'FALHA' || status_equips[i] == 'ENTREGA' ||
-        status_equips[i] == 'REPARO'
+        status_equips[i] == 'REPARO' || status_equips[i] == 'GARANTIA'
         ) {
 
             pendentes++;
@@ -1910,7 +1969,7 @@ async function carregaChamado(p_id_chamado,sem_equipamentos) {
 
         if (status_servicos[i] == 'ABERTO' || status_servicos[i] == 'ESPERA' || 
         status_servicos[i] == 'FALHA' || status_servicos[i] == 'ENTREGA' ||
-        status_servicos[i] == 'REPARO'
+        status_servicos[i] == 'REPARO' || status_equips[i] == 'GARANTIA'
         ) {
 
             pendentes++;
@@ -1940,17 +1999,233 @@ async function carregaChamado(p_id_chamado,sem_equipamentos) {
 
     var botoesReparo = null
 
-    if (fila_atual == 3 && p_id_responsavel == g_id_usuario && status_chamado == 'ABERTO') {
+    if ((fila_atual == 3 || p_id_responsavel == g_id_usuario) && status_chamado == 'ABERTO') {
 
         botoesReparo =  "<button type=\"button\" id=\"btnModalIniciarReparo\" class=\"btn btn-primary\" data-toggle=\"modal\" data-chamado=\"" +
                             p_id_chamado + "\" data-target=\"#modalIniciarReparo\"><i class=\"fas fa-wrench\"></i> Iniciar reparo</button>"
     
     }
+    
     $('#botoesAtendimento').html(botoes);
     $('#botoesAtendimentoReparo').html(botoesReparo);
     $("#spnStatusChamado").fadeOut();
     
 }
+
+/* function IsEmail(email) {
+    var exclude=/[^@.\-w]|^[_@.\-]|[._-]{2}|[@.]{2}|(@)[^@]*1/;
+
+    var check=/@[w-]+./;
+    var checkend=/.[a-zA-Z]{2,3}$/;
+    if(((email.search(exclude) != -1)||(email.search(check)) == -1)||(email.search(checkend) == -1)){return false;}
+    else {return true;}
+} */
+
+
+function removerEmail(id_email, email) {
+    // var escapedEmail = email.replace(/[@.]/g, "-$&");
+    Object.values(remetentes).forEach(array => {
+        const index = array.indexOf(email);
+        if (index !== -1) {
+            array.splice(index, 1);
+        }
+    });
+    
+    $(`#${id_email}`).remove();
+}
+
+var remetentes = null;
+//btnModalEmail
+$('#modalEmail').off('show.bs.modal').on('show.bs.modal', async(e) => {
+    const Toast = Swal.mixin({
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 6000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+          toast.onmouseenter = Swal.stopTimer;
+          toast.onmouseleave = Swal.resumeTimer;
+        }
+    });
+
+
+    $.ajax({
+        url: base_url + `chamado/email_solicitante/${g_id_ticket_chamado}`,
+        type: 'GET',
+        //data: `patrimonio=${num_equipamento}`,
+        dataType: 'json',
+        success: (dados) => {
+            remetentes = dados;
+            $('#remetente').html('');
+            remetentes.address.forEach(remetente => {
+                $('#remetente').append(`
+                    <span class="badge badge-info mt-1">Para:</span> ${remetente}<br>
+                `);
+            });
+
+            remetentes.cc.forEach(remetente => {
+                $('#remetente').append(`
+                    <span class="badge badge-info mt-1">CC:</span> ${remetente}<br>
+                `);
+            });
+
+            remetentes.cco.forEach(remetente => {
+                $('#remetente').append(`
+                    <span class="badge badge-info mt-1">CCo:</span> ${remetente}<br>
+                `);
+            });
+
+            $('.copia').off('blur').on('blur', () => {
+                let inputs = [
+                    $('#copia'),
+                    $('#copiaOculta')
+                ];
+
+                inputs.forEach(input => {
+                    input.removeClass('is-invalid');
+                });
+
+                inputs.forEach(input => {
+                    $(`${input[0].id}`).removeClass('is-invalid');
+                });
+
+                inputs.forEach(input => {
+                    let email = input.val();
+                    if (!email.includes('@') && email != "") {
+                        $.ajax({
+                            url: `${base_url}chamado/busca_email/${email}`,
+                            type: 'GET',
+                            dataType: 'json',
+                            xhrFields: {
+                                withCredentials: false // Indica que não são necessárias credenciais para a requisição
+                            },
+                            success: (email, textStatus, xhr) => {
+                                if (xhr.status == 204) {
+                                    Toast.fire({
+                                        icon: "warning",
+                                        title: "Usuário não encontrado. Por favor, insira um nome de usuário válido ou um endereço de e-mail ."
+                                    });
+
+                                    return;
+                                }
+
+                                if (Object.values(remetentes).some(array => array.includes(email.email))) {
+                                    input.addClass('is-invalid');
+
+                                    Toast.fire({
+                                        icon: "error",
+                                        title: "O email deste usuario já esta como destinatario ou em copia"
+                                    });
+                                    return;
+                                }
+
+                                input.val('');
+                                let email_replace = email.email.replace(/[@.]/g, "-");
+                                if (input[0].id == 'copiaOculta') {
+                                    $('#remetente').append(`
+                                        <div id="${email_replace}">
+                                            <span class="badge badge-info mt-1">CCo:</span> ${email.nome}  &lt;${email.email}&gt; <span class="badge badge-danger" id="remover-email" onclick="removerEmail('${email_replace}', '${email.email}')"><i class="fas fa-times"></i></span><br>
+                                        </div>
+                                    `);
+                                    remetentes.cco.push(email.email);
+                                } else {
+                                    $('#remetente').append(`
+                                        <div id="${email_replace}">
+                                            <span class="badge badge-info mt-1">CC:</span> ${email.nome}  &lt;${email.email}&gt; <span class="badge badge-danger" id="remover-email" onclick="removerEmail('${email_replace}', '${email.email}')"><i class="fas fa-times"></i></span><br>
+                                        </div>
+                                    `);
+                                    remetentes.cc.push(email.email);
+                                }
+                            },
+                            error: (erro) => { 
+                                Toast.fire({
+                                    icon: "warning",
+                                    title: "Erro ao consultar usuário no Active Directory!"
+                                });
+                            } 
+                        });
+                    }
+                });
+            });
+        },
+        error: erro => {
+            Toast.fire({
+                icon: "warning",
+                title: "Erro ao consultar os remetentes!"
+            });
+        } 
+    });
+});
+
+
+const regex_email = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+$('#copiasEmail').on('submit', async(e) => {
+    e.preventDefault();
+    
+    const Toast = Swal.mixin({
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 6000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+          toast.onmouseenter = Swal.stopTimer;
+          toast.onmouseleave = Swal.resumeTimer;
+        }
+    });
+
+    let inputs = [
+        $('#copia'),
+        $('#copiaOculta')
+    ];
+
+    inputs.forEach(input => {
+        input.removeClass('is-invalid');
+        let email = input.val();
+        let email_replace = email.replace(/[@.]/g, "-");
+        
+        if (email.trim() == "") {
+            return;
+        }
+        if (!regex_email.test(email.trim())) {
+            input.addClass('is-invalid');
+            Toast.fire({
+                icon: "error",
+                title: "Digite um email válido!"
+            });
+
+            return;
+        }
+        if (Object.values(remetentes).some(array => array.includes(email))) {
+            input.addClass('is-invalid');
+            Toast.fire({
+                icon: "error",
+                title: "O email deste usuario já esta como destinatario ou em copia"
+            });
+
+            return;
+        }
+
+        if (input[0].id == 'copiaOculta') {
+            $('#remetente').append(`
+                <div id="${email_replace}">
+                    <span class="badge badge-info mt-1">CCo:</span> ${email} <span class="badge badge-danger" id="remover-email" onclick="removerEmail('${email_replace}', '${email}')"><i class="fas fa-times"></i></span><br>
+                </div>
+            `);
+            remetentes.cco.push(email);
+        } else {
+            $('#remetente').append(`
+                <div id="${email_replace}">
+                    <span class="badge badge-info mt-1">CC:</span> ${email} <span class="badge badge-danger" id="remover-email" onclick="removerEmail('${email_replace}', '${email}')"><i class="fas fa-times"></i></span><br>
+                </div>
+            `);
+            remetentes.cc.push(email);
+        }
+
+        input.val('');
+    });
+});
 
 $('#btnPingEquipamento').on('click', function() {
     let spinner = 
@@ -2020,6 +2295,72 @@ async function ping(patrimonio) {
     
 }
 
+function reverterRemessa($equip, $remessa, $reparo){
+    $.ajax({
+
+        url: base_url + "inservivel/reverter_remessa/" ,
+        type: 'POST',
+        async: true,
+        dataType: 'json',
+        data: {
+            equip: $equip,
+            remessa: $remessa,
+            reparo: $reparo,
+            chamado: g_id_chamado,
+        },
+        success: function(data) {
+            Swal.fire({
+                title: "Reverter Remessa",
+                text: data.mensagem,
+                icon: data.status
+            });
+            $('#modalReparo').modal('hide');
+            carregaChamado(g_id_chamado);
+
+        },
+        error: function(data){
+            Swal.fire({
+                title: "Reverter Remessa",
+                text: "Erro desfazer a remessa.",
+                icon: "error"
+              });
+        }
+
+    });
+}
+
+function cancelarEntrega($equip, $id_reparo){
+    $.ajax({
+
+        url: base_url + "reparo/cancelar_entrega/" ,
+        type: 'POST',
+        async: true,
+        dataType: 'json',
+        data: {
+            equip: $equip,
+            id_reparo: $id_reparo,
+            id_chamado: g_id_chamado,
+        },
+        success: function(data) {
+            Swal.fire({
+                title: "Cancelar Entrega",
+                text: data.mensagem,
+                icon: data.status
+            });
+            $('#modalReparo').modal('hide');
+            carregaChamado(g_id_chamado);
+
+        },
+        error: function(data){
+            Swal.fire({
+                title: "Cancelar Entrega",
+                text: "Erro desfazer a remessa.",
+                icon: "error"
+              });
+        }
+
+    });
+}
 
 function finalizaManual(p_id_chamado) {
 
@@ -2423,6 +2764,41 @@ function encerrarChamado() {
 
 }
 
+function reabrirChamado() {
+
+    var btn = $('#btnReabrirChamado');
+
+    if (g_auto_usuario >= 3) { // Permissão de ADM+
+        
+
+        $.ajax({
+            type: 'post',
+            url: base_url + 'chamado/reabrir_chamado',
+            data: {
+                id_chamado: g_id_chamado,
+                id_usuario: g_id_usuario
+
+            },
+            beforeSend: function() {
+                btn.prop('disabled', 'true')
+            },
+            success: function() {
+                atualizaInteracoes(g_id_chamado);
+                carregaChamado(g_id_chamado, true);
+            },
+            error: function() {
+                btn.removeAttr('disabled');
+                alert("Operação não permitida!")
+                    
+            }
+        });
+        
+
+    }
+
+}
+
+
 // -------------- VERIFICA BLOQUEIO ---------------
 
 var bloqueado = false;
@@ -2776,11 +3152,10 @@ $("#usuarios-grid").jsGrid({
                 d.resolve(response)
 
             })
-
+            
             return $.grep(usuarios, function(u) {
-                    
                 return (!filter.nome_usuario ||
-                    u.nome_usuario.indexOf(filter.nome_usuario) > -1) && 
+                    u.nome_usuario.toUpperCase().indexOf(filter.nome_usuario.toUpperCase()) > -1) && 
                     (!filter.login_usuario ||
                         u.login_usuario.indexOf(filter.login_usuario) > -1) &&
                     (filter.autorizacao_usuario === "TODOS" ||
@@ -3182,11 +3557,11 @@ secretarias.then(value => {
                 }).done(function(response) {
                     d.resolve(response);
                 });
-
+                
                 return $.grep(locais, function(l) {
                     
                     return (!filter.nome_local ||
-                        l.nome_local.indexOf(filter.nome_local) > -1) && 
+                        l.nome_local.toUpperCase().indexOf(filter.nome_local.toUpperCase()) > -1) && 
                         (!filter.endereco_local ||
                             l.endereco_local.indexOf(filter.endereco_local) > -1) &&
                         (filter.secretaria_local === "TODOS" ||
@@ -3216,16 +3591,14 @@ secretarias.then(value => {
             },
         },
         rowClick: function(args) {
-
+            
             // Disable row click
             let id_local = args.item.id_local;
             window.location.href = `${base_url}local/${id_local}`;
-                    
         // args.event.preventDefault();*/
         },
 
         onItemInserting: function(args){
-            // console.log(args.item);
             for(i=0; i < args.grid.data.length; i++){
                 if(args.item.nome_local == args.grid.data[i].nome_local){
                     args.cancel = true;
@@ -3236,7 +3609,8 @@ secretarias.then(value => {
         
         onItemUpdating: function(args) {
             for(i=0; i < args.grid.data.length; i++){
-                if(args.item.nome_local == args.grid.data[i].nome_local && args.item.id_local != args.grid.data[i].id_local){
+                if(args.item.nome_local == args.grid.data[i].nome_local && args.item.id_local != args.grid.data[i].id_local)
+                {
                     args.cancel = true;
                     alert('O local ' + args.item.nome_local + ' já existe');
                 }
@@ -3249,11 +3623,16 @@ secretarias.then(value => {
             {
                 name: "nome_local",
                 type: "text",
-                validate: "required",
+                validate: [
+                    { validator: "pattern", message: "Atenção!\nDigite um nome para o local.", param: "[a-zA-Z0-9]+.+" },
+                ],
                 title: "Nome",
             }, {
                 name: "endereco_local",
                 type: "text",
+                validate: [
+                    {validator: "pattern", message: "Atenção!\nDigite um endereço.", param: "[a-zA-Z0-9]+.+" },
+                ],
                 title: "Endereço"
             }, {
                 name: "secretaria_local",
@@ -3262,7 +3641,7 @@ secretarias.then(value => {
                 textField: "sigla_secretaria",
                 valueField: "id_secretaria",
                 title: "Secretaria",
-               
+               /*
                 insertTemplate: function() {
                     let secretariasAtivas = value.filter((objeto) => {
                         return objeto.status_secretaria === true;
@@ -3277,18 +3656,18 @@ secretarias.then(value => {
                     });
                     return select;
                 },
-
+                */
                 filterTemplate: function() {
                     var $select = jsGrid.fields.select.prototype.filterTemplate.call(this);
                     $select.prepend($("<option>").prop("value", "TODOS").prop("selected","true").text("Todas"));
                     return $select;
                 },
                 
-                insertValue: function() {
+                /*insertValue: function() {
                     return $("#sigla-secretaria-locais").val();
-                },
+                },*/
                 
-                editTemplate: function() {
+                /*editTemplate: function() {
                     let secretariasAtivas = value.filter((objeto) => {
                         return objeto.status_secretaria === true;
                     });
@@ -3302,13 +3681,13 @@ secretarias.then(value => {
                         }));
                     });
                     return select;
-                },
-                editValue: function() {
+                },*/
+                /*editValue: function() {
                 
                     return $("#sigla-secretaria-locais").val();
                 
-                }
-                
+                }*/
+                 
             }, {
                 name: "regiao_local",
                 type: "select",
@@ -3334,6 +3713,18 @@ secretarias.then(value => {
                 
             },
             {
+                name: "infovia",
+                type: "checkbox",
+                title: "Infovia",
+                insertTemplate: function() {
+                    return $("<input>").attr("type", "checkbox").prop("checked", true).prop("disabled", true); // Set to true for checked, false for unchecked
+                },
+                insertValue: function() {
+                    return "true"; // Set to true for checked
+                }
+                
+            },
+            {
                 name: "alteracao_local",
                 type: "text",
                 readOnly: true,
@@ -3348,7 +3739,7 @@ secretarias.then(value => {
         ]
     });
 }).catch(err => {
-    console.log(err);
+    console.error(err);
 })
 
 
@@ -3393,7 +3784,7 @@ $("#secretarias-grid").jsGrid({
             return $.grep(_sect, function(s) {
                 
                 return (!filter.nome_secretaria ||
-                    s.nome_secretaria.indexOf(filter.nome_secretaria) > -1) && 
+                    s.nome_secretaria.toUpperCase().indexOf(filter.nome_secretaria.toUpperCase()) > -1) && 
                     (!filter.sigla_secretaria ||
                         s.sigla_secretaria.indexOf(filter.sigla_secretaria) > -1) &&
                     (filter.status_secretaria === undefined || 
@@ -3426,13 +3817,17 @@ $("#secretarias-grid").jsGrid({
         {
             name: "nome_secretaria",
             type: "text",
-            validate: "required",
+            validate: [
+                { validator: "pattern", message: "Atenção!\nDigite um nome para a secretaria.", param: "[a-zA-Z0-9]+.+" },
+            ],
             title: "Nome",
             
         }, {
             name: "sigla_secretaria",
             type: "text",
-            validate: "required",
+            validate: [
+                { validator: "pattern", message: "Atenção!\nDigite uma sigla para a secretaria.", param: "[a-zA-Z0-9]+.+" },
+            ],
             title: "Sigla"
         }, {
             name: "status_secretaria",
@@ -3499,9 +3894,9 @@ Promise.resolve(carregaFilas()).then(filas => {
 
         onItemInserting: function(args){
             for(i=0; i < args.grid.data.length; i++){
-                if(args.item.nome_servico == args.grid.data[i].nome_servico){
+                if(args.item.nome_servico.toUpperCase() == args.grid.data[i].nome_servico){
                     args.cancel = true;
-                    alert('O servico ' + args.item.nome_servico + ' já existe');
+                    alert('O servico ' + args.item.nome_servico.toUpperCase() + ' já existe');
                 }
             }
         },
@@ -3513,9 +3908,9 @@ Promise.resolve(carregaFilas()).then(filas => {
 
         onItemUpdating: function(args){
             for(i=0; i < args.grid.data.length; i++){
-                if(args.item.nome_servico == args.grid.data[i].nome_servico && args.item.id_servico != args.grid.data[i].id_servico){
+                if(args.item.nome_servico.toUpperCase() == args.grid.data[i].nome_servico && args.item.id_servico != args.grid.data[i].id_servico){
                     args.cancel = true;
-                    alert('O servico ' + args.item.nome_servico + ' já existe');
+                    alert('O servico ' + args.item.nome_servico.toUpperCase() + ' já existe');
                 }
             }
         },
@@ -3538,7 +3933,7 @@ Promise.resolve(carregaFilas()).then(filas => {
                 return $.grep(servicos, function(s) {
                     
                     return (!filter.nome_servico ||
-                        s.nome_servico.indexOf(filter.nome_servico) > -1) && 
+                        s.nome_servico.toUpperCase().indexOf(filter.nome_servico.toUpperCase()) > -1) && 
                         (filter.id_fila_servico === 0 ||
                         s.id_fila_servico == filter.id_fila_servico) &&
                         (filter.status_servico === undefined || 
@@ -3658,10 +4053,10 @@ Promise.resolve(carregaFilas()).then(filas => {
 //------------ FIM SERVICOS --------------------------
 
 //------------ BANCADAS--------------------------
-async function carregarBancadas(){
+async function carregarBancadas(status = 1){
 
     let lista_bancadas = [];
-    let status = 1;
+    //let status = 1;
     await $.ajax({
 
         url: base_url + "bancada/lista_bancadas/",
@@ -3696,13 +4091,10 @@ async function carregarBancadas(){
         noDataContent: "(vazio)",
         
         onItemInserting: function(args){
-            let ultimo = '';
-            for(i=0; i < args.grid.data.length; i++){
-                ultimo = parseInt(args.grid.data[i].nome_bancada.slice(1));
-            }
-            args.item.nome_bancada = '#' + (ultimo + 1);
             
-            console.log(args.item);
+            let tamanho = args.grid.data.length;
+            
+            args.item.nome_bancada = '#' + (tamanho + 1);
         },
         onItemEditing: function(args){
             args.grid.fields[1].editing = true;
@@ -3717,11 +4109,9 @@ async function carregarBancadas(){
 
         controller: {
             loadData: function() {
-                //console.log(carregarBancadas());
                 return carregarBancadas();
             },
             updateItem: function(item) {
-                console.log(item);
                 if(item.ocupado_bancada == false){
                     return $.ajax({
                         type: "POST",
@@ -4643,7 +5033,7 @@ $('#frmImportarChamado').on('submit',
                 }
             },
             error: erro => {
-                console.log(erro);
+                console.error(erro);
             }
         });
         if(existe == true){
@@ -4772,6 +5162,11 @@ $("#modalBuscaRapida").on("shown.bs.modal", function() {
         window.open(base_url + "equipamento/" + $(this).find("td").first().text());
      });
 
+     $("#tblChamadosEquipBr tbody tr ").on("click", function() {
+ 
+        window.open(base_url + "chamado/" + $(this).find("td").first().text());
+     });
+
 
 });
 
@@ -4860,10 +5255,16 @@ $('#frmEmail').on('submit', function(e) { //submit da interacao
     dados.append("conteudo", p_txtEmail);
     dados.append("id_ticket_chamado", g_id_ticket_chamado);
     dados.append("id_chamado", g_id_chamado);
+    remetentes.cc.forEach((remetente, i) => {
+        dados.append(`remetentes[cc][${i}]`, remetente);
+    });
+    remetentes.cco.forEach((remetente, i) => {
+        dados.append(`remetentes[cco][${i}]`, remetente);
+    });
     //dados.append("anexoEmail", $('textarea[name=txtEmail]'));
     $('input[id="fileAnexosEmail"]').val() !== "" ? dados.append("anexos",1) : dados.append("anexos",0);
-
     if(p_txtEmail.toLowerCase().indexOf('anexo') !== -1 && $('input[id="fileAnexosEmail"]').val() === "") {
+    
         let confirm_anexo = confirm('Você pode ter esquecido de anexar um arquivo.\nDeseja enviar este email mesmo assim?');
 
         if(!confirm_anexo) {
@@ -4892,7 +5293,7 @@ $('#frmEmail').on('submit', function(e) { //submit da interacao
         method: "post",
         data : dados,
         beforeSend: () => {
-            $('#btnEnviarEmail').prop("disabled", true);
+            //$('#btnEnviarEmail').prop("disabled", true);
         },
         success: (() => {
             $('textarea[name=txtEmail]').summernote('reset');
@@ -5091,7 +5492,7 @@ function inserirTelefone(id = 0){
             async: true,
             data: {
                 telefone: telefone,
-                celular: celular,
+                //celular: celular,
                 setor: setor,
                 acao: acao,
                 id: id
@@ -5162,6 +5563,7 @@ $('#modalIniciarReparo').on('show.bs.modal', async function (event) {
         listaBancadas = data
     })
 
+    
     if (listaBancadas.length == 0) {
 
         $("#btnIniciarReparo").prop("disabled","true")
@@ -5204,14 +5606,34 @@ $('#modalIniciarReparo').on('show.bs.modal', async function (event) {
 
     })
 
-    listaBancadas.forEach((b) => {
-        modal.find('.modal-body #listaBancadas')
-        .append(
-        `<option value="${b.id_bancada}">
-        ${b.nome_bancada}
-        </option>`)
+    if(g_fila_chamado == 3){
+        listaBancadas.forEach((b) => {
+            if(b.status_bancada == true){
+                modal.find('.modal-body #listaBancadas')
+                .append(
+                `<option value="${b.id_bancada}">
+                ${b.nome_bancada}
+                </option>`)
+                
+            }
+    
+        })
+    }else{
+        listaBancadas.forEach((b) => {
+            
+            if(b.nome_bancada == '0'){
+                modal.find('.modal-body #listaBancadas')
+                .append(
+                `<option value="${b.id_bancada}" selected>
+                ${b.nome_bancada}
+                </option>`)
+                modal.find('.modal-body #listaBancadas').prop('disabled', true);
+            }
+    
+        })
 
-    })
+    }
+
 
     
   })
@@ -5248,7 +5670,7 @@ async function carregaReparo(p_id_reparo) {
 
 }
 
-async function carregaServicos(id_reparo) {
+async function carregaServicos(id_reparo, id_fila) {
 
     let servicos = [];
 
@@ -5256,7 +5678,8 @@ async function carregaServicos(id_reparo) {
         url: base_url + 'reparo/buscar_servicos',
         method: "POST",
         data: {
-            id_reparo: id_reparo
+            id_reparo: id_reparo,
+            id_fila: id_fila
         },
     })
     .done((data) => {
@@ -5402,8 +5825,12 @@ $('#modalReparo').on('show.bs.modal', async function (event) {
     
     
     $('#btnEncerrarReparo').hide();
+    $('#btnEsperaReparo').hide();
+    $('.btnEsperaReparo').hide();
     $('#btnJustificativaCancelamento').hide();
     $('#btnLaudoGarantiaEquip').hide();
+    $('#btnRmEsperaReparo').hide();
+    $('#collapseEspera').collapse('hide');
     
     $(this).find('.modal-footer #btnJustificativaCancelamento').prop("disabled","true")
     $(this).find('.modal-footer #btnLaudoInservivelEquip').prop("disabled","true")
@@ -5419,9 +5846,7 @@ $('#modalReparo').on('show.bs.modal', async function (event) {
 
     res = await carregaReparo(p_id_reparo);
     res.reparo.servicos = await carregaReparoServicos(p_id_reparo);
-
     num_equip_reparo_atual = res.reparo.num_equipamento_reparo
-    
     modal.find('.modal-title').html(
         `<i class="fas fa-wrench"></i>
         ${res.reparo.num_equipamento_reparo} -
@@ -5430,7 +5855,7 @@ $('#modalReparo').on('show.bs.modal', async function (event) {
     )
 
     // se esta como responsavel do chamado irá exibir os controles do reparo
-    if (p_id_responsavel == g_id_usuario && g_fila_chamado === 3) {
+    if (p_id_responsavel == g_id_usuario || g_fila_chamado === 3) {
         $(this).find('.modal-footer').show();
     } else {
         $(this).find('.modal-footer').hide();
@@ -5438,17 +5863,26 @@ $('#modalReparo').on('show.bs.modal', async function (event) {
 
     if (res.reparo.status_reparo == "ABERTO") {
         $(this).find('.modal-footer #btnGarantiaReparo').removeAttr("disabled")
+        $(this).find('.modal-footer #btnEsperaReparo').removeAttr("disabled")
         $(this).find('.modal-footer #btnJustificativaCancelamento').removeAttr("disabled")
         $(this).find('.modal-footer #btnLaudoInservivelEquip').removeAttr("disabled")
         $(this).find('.modal-footer #btnEncerrarReparo').removeAttr("disabled")
         $(this).find('.modal-footer #btnLaudoInservivelEquip').attr("data-equip",res.reparo.num_equipamento_reparo)
         $(this).find('.modal-footer #btnLaudoInservivelEquip').attr("data-reparo",p_id_reparo)
+        if(g_fila_chamado == 3){
+        $('#btnGarantiaReparo').show();
         $('#btnGarantiaReparo').show();
        
-        $('#btnLaudoInservivelEquip').show();
+            $('#btnGarantiaReparo').show();
+       
+            $('#btnLaudoInservivelEquip').show();
+            $('#btnEsperaReparo').show();
+            $('.btnEsperaReparo').show();
+        }
+        
         $('#btnEncerrarReparo').show();
         $('#btnJustificativaCancelamento').show();
-        $('#btnLaudoGarantiaEquip').hide();
+        // $('#btnLaudoGarantiaEquip').hide(); // Redundante
 
         
         $(this).find('.modal-body').html(`
@@ -5458,7 +5892,7 @@ $('#modalReparo').on('show.bs.modal', async function (event) {
 
                 </div>
             </div>
-            ${p_id_responsavel == g_id_usuario && g_fila_chamado === 3 ? `
+            ${p_id_responsavel == g_id_usuario || g_fila_chamado === 3 ? `
                 <div class="input-group mt-3" id="divSlctListaServicoEquip">
                     <select class="custom-select" id="slctListaServicoEquip">
                         
@@ -5473,16 +5907,16 @@ $('#modalReparo').on('show.bs.modal', async function (event) {
         `);
 
         
-        res.servicos = await carregaServicos(p_id_reparo);
+        res.servicos = await carregaServicos(p_id_reparo, g_fila_chamado);
         res.reparo.servicos.forEach(reparo_servico => {
+            
             if(reparo_servico.realizado_reparo_servico == true) {
                 $('#conteudo-reparo-servico').find(".form-check").append(`
                     <div id="check-servico-${reparo_servico.id_reparo_servico}">
-                       
+                        <input class="form-check-input check-servico" onclick="desfazerReparoServico(${reparo_servico.id_reparo_servico}, '${reparo_servico.nome_servico}', ${reparo_servico.id_servico}, ${p_id_reparo});" type="checkbox" value="${reparo_servico.id_reparo_servico}" checked>
                         <label class="form-check-label">
-                            <s>${reparo_servico.nome_servico}</s>
+                            ${reparo_servico.nome_servico}
                         </label>
-                        <input class="form-check-input check-servico" type="checkbox" value="${reparo_servico.id_reparo_servico}" disabled checked>
                     </div>
                 `);
             } else {
@@ -5496,18 +5930,26 @@ $('#modalReparo').on('show.bs.modal', async function (event) {
                 `);
                 
                 // verifica se o chamado está bloqueado pelo usuario
-                if (p_id_responsavel == g_id_usuario && g_fila_chamado === 3) {
+                //if (/*p_id_responsavel == g_id_usuario &&*/ g_fila_chamado === 3) {
                     // coloca o onclick no checkbox
                     $(`#checkbox-servico-${reparo_servico.id_reparo_servico}`).attr('onclick', `realizaServico(${reparo_servico.id_reparo_servico}, '${reparo_servico.nome_servico}', ${reparo_servico.id_servico})`);
 
-                    // coloca o botão de cancelar reparo
-                    $(`#check-servico-${reparo_servico.id_reparo_servico} > label`).append(`
-                        <span class="badge badge-danger" onclick="cancelaServico(${reparo_servico.id_reparo_servico}, '${reparo_servico.nome_servico}', ${reparo_servico.id_servico})"><i class="fas fa-times"></i></span>
-                    `);
-                } else {
+                    if(p_id_responsavel == g_id_usuario || g_fila_chamado === 3){
+
+                        // coloca o botão de cancelar reparo
+                        $(`#check-servico-${reparo_servico.id_reparo_servico} > label`).append(`
+                            <span class="badge badge-danger" onclick="cancelaServico(${reparo_servico.id_reparo_servico}, '${reparo_servico.nome_servico}', ${reparo_servico.id_servico})"><i class="fas fa-times"></i></span>
+                        `);
+                    }else if(p_id_responsavel != g_id_usuario){
+                        // coloca disable no botão de realizar serviço
+                        $(`#checkbox-servico-${reparo_servico.id_reparo_servico}`).prop('disabled', true);
+                    }
+
+                /*} else {
                     // coloca disable no botão de realizar serviço
                     $(`#checkbox-servico-${reparo_servico.id_reparo_servico}`).prop('disabled', true);
-                }
+                }*/
+                
                 
             }
         });
@@ -5547,7 +5989,6 @@ $('#modalReparo').on('show.bs.modal', async function (event) {
             }).done((data) => {
                 // caso sucesso
                 select.id_reparo_servico = data.id_reparo_servico;
-
                 if (data !== null) {
                     $('#btn-add-servico').removeAttr('disabled');
                     // coloca o reparo na lista como aberto
@@ -5625,15 +6066,18 @@ $('#modalReparo').on('show.bs.modal', async function (event) {
                 id_reparo: p_id_reparo,
             }
         }).done((data) => {
-            console.log(data)
-            if (data.status_equipamento_chamado === "REMESSA" || data.status_equipamento_chamado === "INSERVIVEL")
-            $(this).find('.modal-body').append(`
+            if (data.status_equipamento_chamado === "REMESSA" || data.status_equipamento_chamado === "INSERVIVEL"){
+                $(this).find('.modal-body').append(`
                     <p>Este equipamento foi classificado como ${data.status_equipamento_chamado} e foi incluído na remessa 
                     <a href="${base_url}inservivel/${data.id_remessa}">#${data.id_remessa}</a></p>
                     <a href="${base_url}inservivel/gerartermo/${data.num_equipamento_reparo}" role="button" class="btn btn-primary" target="_blank">
                     <i class="fas fa-file-download"></i> Laudo técnico
                     </a>
                 `)
+                if(g_auto_usuario > 3 && status_chamado != 'ENCERRADO' && res.reparo.id_remessa != null) $(this).find('.modal-body').append(`<button class="btn btn-secondary" onclick="reverterRemessa('${data.num_equipamento_reparo}',${data.id_remessa}, ${p_id_reparo})"><i class="fas fa-redo"></i> Reverter Remessa</button>`);
+            } else if (data.status_equipamento_chamado === "ENTREGA" && status_chamado != 'ENCERRADO'){
+                $(this).find('.modal-body').append(`<button class="btn btn-warning" onclick="cancelarEntrega('${data.num_equipamento_reparo}', ${res.reparo.id_reparo})"><i class="fas fa-redo"></i> Cancelar ENTREGA</button>`);
+            }
         });
 
         $(this).find('.modal-body').html(
@@ -5669,7 +6113,7 @@ $('#modalReparo').on('show.bs.modal', async function (event) {
         });
 
 
-        $('#frmLaudoGarantiaEquip').on("submit", function(e) {
+        $('#modalLaudoGarantiaEquip').find('#frmLaudoGarantiaEquip').off('submit').on('submit', function(e) {
             e.preventDefault();
 
             let dados = new FormData($(this)[0]);
@@ -5724,6 +6168,65 @@ $('#modalReparo').on('show.bs.modal', async function (event) {
             });
         });
     }
+
+    else if(res.reparo.status_reparo == "ESPERA") {
+        $(this).find('.modal-body').html(
+            `<p>O reparo foi para garantia pelo(s) seguinte(s) motivo(s):</p>
+            <p>${res.reparo.justificativa_reparo}</p>
+            `
+        )
+
+        $('#btnRmEsperaReparo').show();
+        $('#btnRmEsperaReparo').removeAttr('disabled');
+
+        $(this).find('#btnRmEsperaReparo').off('click').on('click', async() => {
+            let bancadas = await carregarBancadas(false);
+
+            Swal.fire({
+                title: 'Selecione a bancada',
+                html:
+                    `
+                    <select id="slc-bancadas" class="form-control"> </select>
+                    `,
+                showCancelButton: true,
+                confirmButtonText: 'Enviar',
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true,
+                focusConfirm: false,
+                preConfirm: () => {
+                    return $('#slc-bancadas').val();
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    let val_id_bancada = result.value;
+
+                    $.ajax({
+                        url: base_url + 'reparo/remover_espera_reparo',
+                        type: 'POST',
+                        data: {
+                            id_reparo: p_id_reparo,
+                            id_bancada: val_id_bancada,
+                            id_chamado: g_id_chamado,
+                            num_equip: num_equip_reparo_atual,
+                        }
+                    }).done((data) => {
+                        carregaChamado(g_id_chamado);
+                        Swal.fire('Removido da espera', data.mensagem, 'success');
+                        $('#modalReparo').modal('hide');
+                    }).fail((e) => {
+                        Swal.fire('Erro', 'Falha ao enviar remover da espera!', 'error');
+                    });
+                }
+            });
+
+            bancadas.forEach(bancada => {
+                if(bancada.status_bancada == true){
+                    $('#slc-bancadas').append(`<option value="${bancada.id_bancada}">${bancada.nome_bancada}</option>`);
+
+                }
+            });
+        });
+    }
     
     else {
         $(this).find('.modal-body').html(
@@ -5756,13 +6259,19 @@ $('#modalReparo').on('show.bs.modal', async function (event) {
             `);
 
             data.servicos.forEach(servico => {
-                if (servico.realizado_reparo_servico == true && servico.subquery == 1) {
+                if (servico.subquery == 3) {
+                    $('#conteudo-historico-modal').prepend(`
+                        <p class="border rounded p-2 my-3">
+                            <span class="badge badge-info">${servico.data_reparo_servico}</span> <strong>${servico.nome_abertura_usuario}</strong> ${servico.nome_servico.toUpperCase()}</b>.
+                        </p>
+                    `);
+                } else if (servico.realizado_reparo_servico == true && servico.subquery == 1) {
                     $('#conteudo-historico-modal').prepend(`
                         <p class="border rounded p-2 my-3">
                             <span class="badge badge-info">${servico.data_encerramento_reparo_servico}</span> <strong>${servico.nome_fechamento_usuario}</strong> <strong class="text-success">finalizou</strong> o serviço <b>${servico.nome_servico}</b>.
                         </p>
                     `);
-                } else if (servico.status_reparo_servico == false) {
+                } else if (servico.status_reparo_servico == false && servico.subquery == 1) {
                     $('#conteudo-historico-modal').prepend(`
                         <p class="border rounded p-2 my-3">
                             <span class="badge badge-info">${servico.data_encerramento_reparo_servico}</span> <strong>${servico.nome_fechamento_usuario}</strong> <strong class="text-danger">removeu</strong> o serviço <b>${servico.nome_servico}</b>.
@@ -5802,6 +6311,153 @@ $('#modalReparo').on('show.bs.modal', async function (event) {
         }
     })
 })
+
+function desfazerReparoServico(id_reparo_servico, nome_reparo_servico, id_servico, id_reparo) {
+    Swal.fire({
+        title: "Tem certeza?",
+        text: "Você não poderá reverter isso!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Sim, desfaça o serviço!",
+        cancelButtonText: "Cancelar",
+    }).then((result) => {
+        if (result.isConfirmed && id_reparo == p_id_reparo) {
+            $.ajax({
+                url: base_url + 'reparo/desfazer_reparo_servico',
+                type: 'POST',
+                data: {
+                    id_reparo: id_reparo,
+                    id_reparo_servico: id_reparo_servico
+                },
+                beforeSend: () => {
+                    $(`input[value="${id_reparo_servico}"]`).prop('disabled', true);
+                }
+            }).done((data) => {
+                Swal.fire({
+                    toast: true,
+                    position: "top-end",
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    icon: "success",
+                    title: data.mensagem,
+                    didOpen: (toast) => {
+                      toast.onmouseenter = Swal.stopTimer;
+                      toast.onmouseleave = Swal.resumeTimer;
+                    }
+                });
+
+
+                $(`#check-servico-${id_reparo_servico}`).html(`
+                    <div id="check-servico-${id_reparo_servico}">
+                        <input class="form-check-input check-servico" id="checkbox-servico-${id_reparo_servico}" type="checkbox" value="${id_reparo_servico}" onclick="realizaServico(${id_reparo_servico}, '${nome_reparo_servico}', ${id_servico})">
+                        <label for="check-servico-${id_reparo_servico}" class="form-check-label">
+                            ${nome_reparo_servico}
+                            <span class="badge badge-danger" onclick="cancelaServico(${id_reparo_servico}, '${nome_reparo_servico}', ${id_servico})"><i class="fas fa-times"></i></span>
+                        </label>
+                    </div>
+                `);
+                
+            }).fail((res) => {
+                $(`input[value="${id_reparo_servico}"]`).prop('checked', true);
+                Swal.fire({
+                    toast: true,
+                    position: "top-end",
+                    showConfirmButton: false,
+                    timer: 5000,
+                    timerProgressBar: true,
+                    icon: "error",
+                    text: `${res.responseJSON.mensagem}`,
+                    didOpen: (toast) => {
+                        toast.onmouseenter = Swal.stopTimer;
+                        toast.onmouseleave = Swal.resumeTimer;
+                    }
+                });
+                $(`input[value="${id_reparo_servico}"]`).removeAttr('disabled');
+            });
+            
+        }
+    });
+};
+
+$("#btnEsperaReparo").on('click', async (e) => {
+    Swal.fire({
+        title: "Tem certeza?",
+        text: "Você não poderá reverter isso!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Sim, Coloque em espera!",
+        cancelButtonText: "Cancelar",
+    }).then((result) => {
+        let justificativa_espera = $('#justificativaEspera').val();
+        const regex = /^[A-Za-záàâãéèêíïóôõöúçñÁÀÂÃÉÈÍÏÓÔÕÖÚÇÑ 0-9]+$/;
+        
+        if (result.isConfirmed) {
+            if (!regex.test(justificativa_espera)) {
+                return $('#justificativaEspera').addClass('is-invalid');
+            }
+
+            $.ajax({
+                url: base_url + 'reparo/espera_reparo',
+                type: 'POST',
+                data: {
+                    id_chamado: g_id_chamado,
+                    id_reparo: p_id_reparo,
+                    justificativa_reparo: justificativa_espera,
+                    // id_servico: id_servico
+                },
+                beforeSend: () => {
+                    $('#justificativaEspera').removeClass('is-invalid');
+                    $('#btn-add-servico').prop('disabled', true);
+                    $('#btnJustificativaCancelamento').prop('disabled', true);
+                    $('#btnEsperaReparo').prop('disabled', true);
+                    $('#btnEncerrarReparo').prop('disabled', true);
+                    $('#btnLaudoInservivelEquip').prop('disabled', true);
+                    $('#btnGarantiaReparo').prop('disabled', true);
+                    $('#btnLaudoGarantiaEquip').prop('disabled', true);
+                }
+            }).done((data) => {
+                $('#justificativaEspera').val('');
+                Swal.fire({
+                    title: "Espera!",
+                    text: data.mensagem,
+                    icon: "success"
+                });
+
+                carregaChamado(g_id_chamado);
+                $('#modalReparo').modal('hide');
+            }).fail(() => {
+                Swal.fire({
+                    toast: true,
+                    position: "top-end",
+                    showConfirmButton: false,
+                    timer: 5000,
+                    timerProgressBar: true,
+                    icon: "error",
+                    text: `Falha ao colocar reparo em espera`,
+                    didOpen: (toast) => {
+                        toast.onmouseenter = Swal.stopTimer;
+                        toast.onmouseleave = Swal.resumeTimer;
+                    }
+                });
+            });
+
+            $('#btn-add-servico').prop('disabled', false);
+            $('#btnJustificativaCancelamento').prop('disabled', false);
+            $('#btnEsperaReparo').prop('disabled', false);
+            $('#btnEncerrarReparo').prop('disabled', false);
+            $('#btnLaudoInservivelEquip').prop('disabled', false);
+            $('#btnGarantiaReparo').prop('disabled', false);
+            $('#btnLaudoGarantiaEquip').prop('disabled', false);
+        }
+    });
+});
+
+
 $('#btnEncerrarReparo').on('click', function () {
     if ($('#conteudo-reparo-servico').find('.check-servico').is(':not(:checked)')) {
         $('#modalReparo').find('.modal-body')
@@ -5905,33 +6561,138 @@ $('#btnGarantiaEquip').on(('click'), () => {
 
 async function realizaServico(id_reparo_servico, texto_reparo_servico, id_servico) {
     if (confirm(`Tem certeza que o serviço ${texto_reparo_servico} foi realizado?`)) {
-        // id do servico (5): lacre
-        if (id_servico === 5) {
-            const lacre = prompt("Digite o lacre do equipamento:");
-            if (/^[a-zA-Z0-9]+$/.test(lacre) && lacre !== null) {
-                let num_equipamento = await carregaReparo(p_id_reparo);
-                num_equipamento = num_equipamento.reparo.num_equipamento_reparo;
-    
-                $.ajax({
-                    url: base_url + 'equipamento/controller/registra_lacre',
-                    type: 'POST',
-                    dataType: "json",
-                    data: {
-                        id_reparo_servico: id_reparo_servico,
-                        num_equipamento: num_equipamento,
-                        tag_equipamento: lacre,
-                    }
+        config.then(async(value) => {
+            const config = value;
+
+            if (id_servico === config.id_servico.lacre) {
+                const lacre = prompt("Digite o lacre do equipamento:");
+                if (/^[a-zA-Z0-9]+$/.test(lacre) && lacre !== null) {
+                    let num_equipamento = await carregaReparo(p_id_reparo);
+                    num_equipamento = num_equipamento.reparo.num_equipamento_reparo;
+
+                    $.ajax({
+                        url: base_url + 'equipamento/controller/registra_lacre',
+                        type: 'POST',
+                        dataType: "json",
+                        data: {
+                            id_reparo_servico: id_reparo_servico,
+                            num_equipamento: num_equipamento,
+                            tag_equipamento: lacre,
+                        }
+                    });
+                } else if(lacre !== null){
+                    alert(`Dados inválidos inseridos!\nAtenção!\nCaracteres permitidos:\nA-Z, a-z, 0-9`);
+                    $(`#checkbox-servico-${id_reparo_servico}`).prop('checked', false);
+
+                    return false;
+                } else {
+                    $(`#checkbox-servico-${id_reparo_servico}`).prop('checked', false);
+                    return false;
+                }
+            } else if(id_servico === config.id_servico.CMOS.id_servico) {
+                // #modalVerificarBateria
+                $(document).ready(function() {
+                    $('#modalVerificarBateria').modal({
+                        backdrop: 'static',
+                        keyboard: false,
+                        show: true
+                    });
+
+                    $('#modalVerificarBateria').find('#btnRegistrarVoltagem').off('click').on('click', function() {
+                        $('#btnRegistrarVoltagem').prop('disabled', true);
+                        var id_servico = null, nome_servico = "";
+                        const volts_troca = 2.7;
+                        let volts_bat = $('#input-voltagem').val();
+
+                        if (volts_bat < volts_troca) {
+                            // if caso for serviço para allInOne ou notebook
+                            if ($('#is-notebook-allinone').is(':checked')) {    
+                                id_servico = config.id_servico.CMOS.troca_notebook.id_servico;
+                                nome_servico = config.id_servico.CMOS.troca_notebook.nome_servico;
+                            } else {
+                                id_servico = config.id_servico.CMOS.troca_desktop.id_servico;
+                                nome_servico = config.id_servico.CMOS.troca_desktop.nome_servico;
+                            }
+
+                            $.ajax({
+                                url: base_url + 'reparo/adicionar_reparo_chamado',
+                                type: 'POST',
+                                data: {
+                                    id_chamado: g_id_chamado,
+                                    id_reparo: p_id_reparo,
+                                    id_servico: id_servico
+                                },
+                                beforeSend: (/* jqXHR, settings */) => {
+                                    $('#conteudo-reparo-servico').find(".form-check").append(`
+                                        <div id="check-servico-${id_reparo_servico}">
+                                            <input class="form-check-input check-servico" id="checkbox-servico-${id_reparo_servico}" type="checkbox" value="${id_reparo_servico}">
+                                            <label for="check-servico-${id_reparo_servico}" class="form-check-label">
+                                                ${nome_servico}
+                                            </label>
+                                        </div>
+                                    `)
+
+                                    $('#btn-add-servico').prop('disabled', true);
+                                }
+                            }).done((data) => {
+                                Swal.fire({
+                                    toast: true,
+                                    position: "top-end",
+                                    showConfirmButton: false,
+                                    timer: 5000,
+                                    timerProgressBar: true,
+                                    icon: "warning",
+                                    text: `Bateria ruim, adicionado servico ${nome_servico} ao reparo`,
+                                    didOpen: (toast) => {
+                                        toast.onmouseenter = Swal.stopTimer;
+                                        toast.onmouseleave = Swal.resumeTimer;
+                                    }
+                                });
+                                $('#input-voltagem').val('');
+                            }).fail(() => {
+                                Swal.fire({
+                                    toast: true,
+                                    position: "top-end",
+                                    showConfirmButton: false,
+                                    timer: 5000,
+                                    timerProgressBar: true,
+                                    icon: "error",
+                                    text: `Falha ao adicionar servico ${nome_servico} ao reparo, tente realizar novamente ou adicione-o manualmente`,
+                                    didOpen: (toast) => {
+                                        toast.onmouseenter = Swal.stopTimer;
+                                        toast.onmouseleave = Swal.resumeTimer;
+                                    }
+                                });
+
+                                return false;
+                            });
+
+                            $('#modalVerificarBateria').modal('hide');
+                            $('#btn-add-servico').prop('disabled', false);
+                            $('#btnRegistrarVoltagem').prop('disabled', false);
+                        } else {
+                            $('#modalVerificarBateria').modal('hide');
+                            $('#btn-add-servico').prop('disabled', false);
+                            $('#btnRegistrarVoltagem').prop('disabled', false);
+
+                            Swal.fire({
+                                toast: true,
+                                position: "top-end",
+                                showConfirmButton: false,
+                                timer: 5000,
+                                timerProgressBar: true,
+                                icon: "success",
+                                text: `Bateria está ok, não é necessário a troca`,
+                                didOpen: (toast) => {
+                                    toast.onmouseenter = Swal.stopTimer;
+                                    toast.onmouseleave = Swal.resumeTimer;
+                                }
+                            });
+                        }
+                    });
                 });
-            } else if(lacre !== null){
-                alert(`Dados inválidos inseridos!\nAtenção!\nCaracteres permitidos:\nA-Z, a-z, 0-9`);
-                $(`#checkbox-servico-${id_reparo_servico}`).prop('checked', false);
-    
-                return false;
-            } else {
-                $(`#checkbox-servico-${id_reparo_servico}`).prop('checked', false);
-                return false;
             }
-        }
+        });
     
         $.ajax({
             url: base_url + 'reparo/realizar_servico',
@@ -5944,9 +6705,9 @@ async function realizaServico(id_reparo_servico, texto_reparo_servico, id_servic
             if (data !== null) {
                 $(`#check-servico-${id_reparo_servico}`).html(`
                     <div id="check-servico-${id_reparo_servico}">
-                        <input class="form-check-input check-servico" type="checkbox" value="${id_reparo_servico}" disabled checked>
+                        <input class="form-check-input check-servico" type="checkbox" value="${id_reparo_servico}" onclick="desfazerReparoServico(${id_reparo_servico}, '${texto_reparo_servico}', ${id_servico},${p_id_reparo});" checked>
                         <label class="form-check-label">
-                            <s>${texto_reparo_servico}</s>
+                            ${texto_reparo_servico}
                         </label>
                     </div>
                 `);
@@ -6006,7 +6767,8 @@ $("#frmIniciarReparo").on('submit',(e) => {
 
     const p_num_equipamento = $("#listaEquipReparo").val()
     const p_id_bancada = $("#listaBancadas").val()
-
+    let nome_bancada = $('#listaBancadas :selected').html();
+    const p_nome_bancada = nome_bancada.trim();
     $.ajax({
 
         url: base_url + 'reparo/criar_reparo',
@@ -6014,7 +6776,8 @@ $("#frmIniciarReparo").on('submit',(e) => {
         data: {
             id_chamado: g_id_chamado,
             id_bancada: p_id_bancada,
-            num_equipamento: p_num_equipamento
+            num_equipamento: p_num_equipamento,
+            nome_bancada: p_nome_bancada
         },
         beforeSend: function() {
             $("#btnIniciarReparo").prop("disabled","true")
@@ -6060,6 +6823,22 @@ $("#btnCancelarReparo").on('click', async (e) => {
     const btn = $(this)
 
     const txtJustificativaCancelamento = $('#txtJustificativaCancelamento').val()
+    if(txtJustificativaCancelamento.length < 5) {
+        Swal.fire({
+            toast: true,
+            position: "top-end",
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            icon: "error",
+            text: 'Texto muito curto!',
+            didOpen: (toast) => {
+              toast.onmouseenter = Swal.stopTimer;
+              toast.onmouseleave = Swal.resumeTimer;
+            }
+        });
+        return false;
+    }
     var cancelamento = null
     res = await carregaReparo(p_id_reparo);
     if (res.reparo.status_reparo == 'ABERTO') {
@@ -6448,7 +7227,7 @@ if (window.location.href.includes("inservivel")) {
     let paginaAtual = 1;
 
     function exibirDados() {
-        const tbody = $('#tabela tbody');
+        const tbody = $('#tabela-inservivel tbody');
         tbody.empty();
 
         const totalPages = Math.ceil(dados.length / itensPorPagina);
@@ -6501,6 +7280,7 @@ if (window.location.href.includes("inservivel")) {
             const linhas = $(`
                 <tr class='table-${status.class}' onclick="location.href='${base_url}inservivel/${dado.id_remessa_inservivel}'" style="cursor: pointer;">
                     <td><strong>${dado.id_remessa_inservivel}</strong></td>
+                    <td><strong>${dado.divisao_remessa}</strong></td>
                     <td>${dado.pool_equipamentos}</td>
                     <td>${dado.data_abertura}</td>
                     <td>${dado.data_fechamento}</td>

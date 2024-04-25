@@ -21,6 +21,7 @@ class Usuario extends CI_Controller {
 
             
             $usuario_visualizado = array();
+            $usuario_visualizado['id_usuario_visualizado'] = $id;
             $usuario_visualizado['nivelAutorizacao'] = $usuario_buscado->autorizacao_usuario;
             $usuario_visualizado['nomeUsuario'] = $usuario_buscado->nome_usuario;
             $usuario_visualizado['loginUsuario'] = $usuario_buscado->login_usuario;
@@ -30,6 +31,9 @@ class Usuario extends CI_Controller {
             $usuario_visualizado['produtividade'] = $this->usuario_model->buscaTotalInteracoesUsuarioPorDia($id);
             $usuario_visualizado['chamadosAbertos'] = $this->usuario_model->buscaAberturaChamadosPorDia($id);
             $usuario_visualizado['chamadosFechados'] = $this->usuario_model->buscaEnceramentoChamadosPorDia($id);
+            $usuario_visualizado['encerramento_usuario'] = $usuario_buscado->encerramento_usuario;
+            $usuario_visualizado['triagem_usuario'] = $usuario_buscado->triagem_usuario;
+            $usuario_visualizado['inservivel_usuario'] = $usuario_buscado->inservivel_usuario;
             
 
             switch ($usuario_buscado->autorizacao_usuario) {
@@ -49,8 +53,7 @@ class Usuario extends CI_Controller {
 
             $usuario_buscado->ultimo_login = $this->usuario_model->buscaUltimoLogin($id);
 
-            //$this->dd->dd($usuario_buscado);
-
+            
             if($usuario->autorizacao_usuario == 4 /*|| $_POST['easteregg'] == "dangomes"*/) {
                 $this->load->view('templates/cabecalho', $usuario);
                 $this->load->view('paginas/usuario',$usuario_visualizado);
@@ -180,7 +183,6 @@ class Usuario extends CI_Controller {
           
           if ($usuario->autorizacao_usuario > 3) {
             $this->usuario_model->ativar_permissoes($id_usuario, $permissao);
-           
           }
     
           else {

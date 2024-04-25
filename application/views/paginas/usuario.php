@@ -27,15 +27,15 @@
                <blockquote class="blockquote mb-0">
                   <strong>Permissões</strong><br/>
                   <div class="form-check form-check-inline">
-                     <input id_usuario="<?= $id_usuario?>" type="checkbox" class="form-check-input" id="CheckTriagem" <?= $triagem_usuario == 1 ? 'checked' : '' ?>>
+                     <input id_usuario="<?= $id_usuario_visualizado?>" type="checkbox" class="form-check-input" id="CheckTriagem" <?= $triagem_usuario == 1 ? 'checked' : '' ?>>
                      <label class="form-check-label" for="CheckTriagem">Triagem</label>
                   </div><br/>
                   <div class="form-check form-check-inline">
-                     <input id_usuario="<?= $id_usuario?>" type="checkbox" class="form-check-input" id="CheckEncerramento" <?= $encerramento_usuario == 1 ? 'checked' : '' ?>>
+                     <input id_usuario="<?= $id_usuario_visualizado?>" type="checkbox" class="form-check-input" id="CheckEncerramento" <?= $encerramento_usuario == 1 ? 'checked' : '' ?>>
                      <label class="form-check-label" for="CheckEncerramento">Encerramento de chamados</label>
                   </div><br/>
                   <div class="form-check form-check-inline">
-                     <input type="checkbox" class="form-check-input" id_usuario="<?= $id_usuario?>" id="CheckInserviveis" <?= $inservivel_usuario == 1 ? 'checked' : '' ?>>
+                     <input type="checkbox" class="form-check-input" id_usuario="<?= $id_usuario_visualizado?>" id="CheckInserviveis" <?= $inservivel_usuario == 1 ? 'checked' : '' ?>>
                      <label class="form-check-label" for="CheckInserviveis">Controle de inservíveis</label>
                   </div><br/>
                   <strong>Login de rede: </strong> <?= $loginUsuario?><br/>

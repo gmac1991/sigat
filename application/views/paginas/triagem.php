@@ -199,14 +199,14 @@
             <label for="nome_solicitante">Solicitante</label>
             <input type="text" class="form-control col-5" name="nome_solicitante" id="listaSolicitantes" value="<?= preg_replace("/\s{1}<.+>/","",$triagem['t_info']->a_from,1); ?> ">
             <br />
+            <label for="local">Local</label>
+            <input type="text" class="form-control col-8" name="nome_local" id="listaLocais" data-toggle="popover">
+            <br />
             <label for="telefone">Telefone</label>
             <input type="text" maxlength="15" class="form-control col-4" name="telefone" aria-describedby="" placeholder="Telefone fixo do local">
             <br />
             <label for="telefone">Celular</label>
             <input type="text" maxlength="15" class="form-control col-4" name="celular" aria-describedby="" placeholder="Celular do responsável">
-            <br />
-            <label for="local">Local</label>
-            <input type="text" class="form-control col-8" name="nome_local" id="listaLocais" data-toggle="popover">
             <br />
             <label for="comp_local">Complemento</label>
             <input type="text" class="form-control col-4" name="comp_local" id="listaComplementos">
