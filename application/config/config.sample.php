@@ -540,6 +540,11 @@ $config['ticketsys_login'] = "";
 
 $config['ticketsys_pwd'] = "";
 
+
+$config['usr_email'] = "";
+
+$config['pass_email'] = "";
+
 $config['changelog_url'] = $config['base_url'] .'/changelog/changelog.txt';
 
 $config['limit_size_file'] = 8388608;//8mb
@@ -557,14 +562,19 @@ $config['id_filas'] = array(
 
 );
 
+$config['bancada_din'] = 0;
+define('DGTI', 1);
+define('DIN', 2);
+
+
 // tabela: servico, id_servico
 // config para atrelar serviços padrões quando criado
 $config['id_servicos_equipamento_padrao'] = array(
-    1, // Limpeza
-    2, // Bateria CMOS
-    3, // Backup
-    4, // Atualizar S.O.
-    5, // Instalar / Trocar Lacre
+    // 1, // Limpeza
+    // 2, // Bateria CMOS
+    // 3, // Backup
+    // 4, // Atualizar S.O.
+    // 5, // Instalar / Trocar Lacre
 );
 
 $config['tempo_medio_atendimento'] = 6;
