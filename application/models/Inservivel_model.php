@@ -124,7 +124,7 @@ class Inservivel_model extends CI_Model {
         $this->db->select('remessa_inservivel.*, usuario.nome_usuario, t.id_termo, t.nome_termo');
         $this->db->from('remessa_inservivel');
         $this->db->where('id_remessa_inservivel', $id_remessa);
-        $this->db->join('usuario', 'remessa_inservivel.id_usuario = usuario.id_usuario');
+        $this->db->join('usuario', 'remessa_inservivel.id_usuario = usuario.id_usuario', 'LEFT');
         $this->db->join('termo as t', 'remessa_inservivel.id_termo = t.id_termo', 'LEFT');
 
         return $this->db->get()->row();

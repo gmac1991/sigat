@@ -99,7 +99,6 @@ class Inservivel extends CI_Controller {
                     array_push($dados['remessa_inservivel'], $this->inservivel_model->listar_equipamentos_remessa($id_remessa_inservivel, $equipamento));
                 }
             }
-
             http_response_code(200);
             header('Content-Type: application/json');
             echo json_encode($dados['remessa_inservivel']);

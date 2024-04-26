@@ -1,4 +1,4 @@
-const patrimonio_regex = /\b[1-9]\{5}\b/g
+const patrimonio_regex = /\b[1-9]{1}[0-9]{5}\b/g
 var fila_atual = null;
 
 var chamados_expo = []

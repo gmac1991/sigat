@@ -826,11 +826,9 @@ class Interacao extends CI_Controller {
         $this->load->library('Mailer');
         $email = new PHPMailer(true);
         // DEV::DEBUG || PRODUCTION::DEBUG OFF
-        if (ENVIRONMENT == 'development') {
+        /* if (ENVIRONMENT == 'development') {
             $email->SMTPDebug = SMTP::DEBUG_SERVER;
-        } else {
-            $email->SMTPDebug = SMTP::DEBUG_OFF;
-        }
+        } */
         $email->isSMTP();
         $email->isHTML(true);
         $email->CharSet    = 'UTF-8';
@@ -1146,8 +1144,8 @@ class Interacao extends CI_Controller {
                 $res_otobo = json_decode(curl_exec($curl));
                 //$this->dd->dd($res_otobo);
                 curl_close($curl);
-
-                if (isset($res_otobo->Error)) {
+                //$this->dd->dd($res_otobo);
+                if (isset($res_otobo->Error) || isset($res_otobo->TicketID) != null || $res_otobo == null) {
                     $res = array(
                         "status" => 500,
                         "error" => true,

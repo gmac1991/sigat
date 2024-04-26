@@ -1,6 +1,21 @@
 SIGAT Changelog
 ===============
 
+[1.9.1b] - 2024-04-26
+
+== Corrigido ==
+
+[Triagem]
+Não traz a descrição do equipamento automaticamente
+
+[Chamado]
+Envio de email não cuptura a resposta do banco de dados
+
+[Remessas de inserviveis]
+Erro ao carregar remessa
+
+-----FIM------
+
 [1.9.1a] - 2024-04-25
 
 == Corrigido ==
