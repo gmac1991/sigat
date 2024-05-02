@@ -826,9 +826,9 @@ class Interacao extends CI_Controller {
         $this->load->library('Mailer');
         $email = new PHPMailer(true);
         // DEV::DEBUG || PRODUCTION::DEBUG OFF
-        /* if (ENVIRONMENT == 'development') {
+        if (ENVIRONMENT == 'development') {
             $email->SMTPDebug = SMTP::DEBUG_SERVER;
-        } */
+        }
         $email->isSMTP();
         $email->isHTML(true);
         $email->CharSet    = 'UTF-8';
@@ -838,7 +838,7 @@ class Interacao extends CI_Controller {
         $email->Password   = $this->config->item('pass_email');
         $email->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $email->Port       = 587;
-        $email->setFrom('informatica@sorocaba.sp.gov.br', 'CSTI');
+        $email->setFrom($this->config->item('dominio_email'), 'Central De Serviços De Tecnologia Da Informação');
 
         if ($upload) {
             foreach ($upload as $i => $arquivo) {
@@ -894,9 +894,8 @@ class Interacao extends CI_Controller {
         $array_emails['cc'] = [];
         $array_emails['cco'] = [];
         if (count($articles) == 0) {
-            $articles = $this->interacao_model->buscarEmailSolicitanteOtobo($TicketID, false);
-            
-            //$this->dd->dd($articles);
+            $articles = $this->interacao_model->buscarEmailSolicitanteOtobo($TicketID, false);            
+
             if (preg_match('/<([^>]+)>/', $articles[0]->a_to, $matches)) {
                 // $email->addAddress(strtolower($matches[1]));
                 array_push($array_emails['address'], strtolower($matches[1]));
@@ -983,10 +982,14 @@ class Interacao extends CI_Controller {
             }
         }
 
-        
-        http_response_code(200);
-        header('Content-Type: application/json');
-        echo json_encode($array_emails);
+        if ($this->uri->segment(1) == "chamado") {
+            http_response_code(206);
+            header('Content-Type: application/json');
+            echo json_encode($array_emails);
+
+            return;
+        }
+
         return $array_emails;
     }
 
@@ -1090,19 +1093,6 @@ class Interacao extends CI_Controller {
 
                 
                 $remetentes = $this->input->post("remetentes");
-                /* $remetente['cc'] = array();
-                $remetente['cco'] = array();
-
-                foreach ($remetentes['cc'] as $cc) {
-                    array_push($remetente['cc'], $cc);
-                }
-                foreach ($remetentes['cco'] as $cco) {
-                    array_push($remetente['cco'], $cco);
-                } */
-                //$this->dd->dd($remetentes);
-
-                //$this->dd->dd($remetentes['cc']);
-                
                 $body = $dados['conteudo'] . "<br><br>" . $assinatura;
                 $data_arr += array(
                     "Article" => array(
@@ -1117,16 +1107,6 @@ class Interacao extends CI_Controller {
                         "From" => "$nome_usuario via SIGAT<informatica@sorocaba.sp.gov.br>"
                     )
                 );
-                $note = array(
-                    'title' => 'Título da Nota',
-                    'content' => 'Conteúdo da Nota'
-                );
-                /*
-                    $dadosNota = array(
-                        'title' => 'Título da Nota',
-                        'content' => 'Conteúdo da Nota'
-                    );
-                */
 
                 $data = json_encode($data_arr);
                 $curl = curl_init();
@@ -1142,10 +1122,9 @@ class Interacao extends CI_Controller {
                 }
                 $dados = array();
                 $res_otobo = json_decode(curl_exec($curl));
-                //$this->dd->dd($res_otobo);
                 curl_close($curl);
-                //$this->dd->dd($res_otobo);
-                if (isset($res_otobo->Error) || isset($res_otobo->TicketID) != null || $res_otobo == null) {
+
+                if (isset($res_otobo->Error) || (isset($res_otobo->TicketID) && $res_otobo == null)) {
                     $res = array(
                         "status" => 500,
                         "error" => true,
