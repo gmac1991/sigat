@@ -1025,6 +1025,9 @@ class Json extends CI_Controller {
 
         $array = json_decode($file, true);
 
+        $this->dd->dd($array);
+        
+
         http_response_code(200);
         header('Content-Type: application/json');
         echo (json_encode($array));
