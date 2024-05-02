@@ -828,7 +828,7 @@ class Interacao extends CI_Controller {
         // DEV::DEBUG || PRODUCTION::DEBUG OFF
         $email->SMTPDebug = SMTP::DEBUG_OFF;
         if (ENVIRONMENT == 'development') {
-            $email->SMTPDebug = SMTP::DEBUG_ON;
+            $email->SMTPDebug = SMTP::DEBUG_SERVER;
         }
         $email->isSMTP();
         $email->isHTML(true);
