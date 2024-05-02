@@ -1,6 +1,15 @@
 SIGAT Changelog
 ===============
 
+[1.9.1c] - 2024-05-02
+
+== Corrigido ==
+
+[Chamado]
+Retorna 500 quando envia email acusando erro ao criar artigo no otobo
+
+-----FIM------
+
 [1.9.1b] - 2024-04-26
 
 == Corrigido ==
