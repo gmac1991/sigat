@@ -540,6 +540,7 @@ $config['ticketsys_login'] = "";
 
 $config['ticketsys_pwd'] = "";
 
+$config['dominio_email'] = "informatica@sorocaba.sp.gov.br";
 
 $config['usr_email'] = "";
 
