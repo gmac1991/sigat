@@ -826,8 +826,9 @@ class Interacao extends CI_Controller {
         $this->load->library('Mailer');
         $email = new PHPMailer(true);
         // DEV::DEBUG || PRODUCTION::DEBUG OFF
+        $email->SMTPDebug = SMTP::DEBUG_OFF;
         if (ENVIRONMENT == 'development') {
-            $email->SMTPDebug = SMTP::DEBUG_OFF;
+            $email->SMTPDebug = SMTP::DEBUG_ON;
         }
         $email->isSMTP();
         $email->isHTML(true);
