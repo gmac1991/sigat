@@ -364,7 +364,7 @@ class Chamado_model extends CI_Model {
 
         if($usuario->row()->autorizacao_usuario >= 3 && $usuario->row()->encerramento_usuario == 1) {
             
-            $q_reabreChamado = $this->db->query("update chamado set status_chamado = 'FECHADO', data_encerramento_chamado = null where id_chamado = " . $dados['id_chamado']);
+            $q_reabreChamado = $this->db->query("update chamado set status_chamado = 'ABERTO', data_encerramento_chamado = null where id_chamado = " . $dados['id_chamado']);
 
             if($q_reabreChamado) {
 
