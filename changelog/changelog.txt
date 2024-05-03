@@ -1,6 +1,23 @@
 SIGAT Changelog
 ===============
 
+[1.9.1d] - 2024-05-03
+
+== Modificado ==
+
+[Chamado]
+Mensagem de quando encerra informa que não possível desfazer a ação, mas agora é possível desfazer
+
+== Corrigido ==
+
+[Chamado]
+Não exibe equipamento quando coloca em espera ou remove
+
+[Remessa]
+Não cria remessa da DIN automaticamente
+
+-----FIM------
+
 [1.9.1c] - 2024-05-02
 
 == Corrigido ==
