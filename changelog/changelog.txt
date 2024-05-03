@@ -1,6 +1,15 @@
 SIGAT Changelog
 ===============
 
+[1.9.1e] - 2024-05-03
+
+== Corrigido ==
+
+[Chamado]
+Mesmo reabrindo o chamado ele continua com status fechado
+
+-----FIM------
+
 [1.9.1d] - 2024-05-03
 
 == Modificado ==
