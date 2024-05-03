@@ -1,19 +1,19 @@
 {
     "id_servico": {
-        "lacre": 5,
+        "lacre": 100,
         "CMOS": {
-            "id_servico": 43,
+            "id_servico": 101,
             "troca_notebook": {
-                "id_servico": 14, 
-                "nome_servico": "TROCA DE BATERIA CMOS (NOTEBOOK)"
+                "id_servico": 102, 
+                "nome_servico": "TROCA DE BATERIA CMOS (NOTEBOOK) / ALL-IN-ONE"
             },
             "troca_desktop": {
-                "id_servico": 2,
+                "id_servico": 103,
                 "nome_servico": "TROCA DE BATERIA CMOS"
             }
         },
         "lousa_digital": {
-            "id_servico": 1,
+            "id_servico": 125,
             "nome_servico": "VERIFICAR LOUSA DIGITAL"
         }
     }

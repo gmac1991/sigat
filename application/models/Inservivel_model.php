@@ -25,7 +25,7 @@ class Inservivel_model extends CI_Model {
         return $this->db->insert_id();
     }
 
-    public function abre_nova_remessa($divisao_remessa) {
+    public function abre_nova_remessa($divisao_remessa = DGTI) {
         $this->db->set('id_usuario', 1);
         $this->db->set('data_abertura', date("Y-m-d H:i:s"));
         $this->db->set('divisao_remessa', $divisao_remessa);
