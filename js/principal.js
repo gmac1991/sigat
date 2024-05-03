@@ -626,7 +626,7 @@ async function buscaEquipamentos(p_id_chamado, p_id_fila_ant, p_atendimento, ins
    
     $('#divEquipamentos').empty();
 
-    /*if (num_equipamentos.length > 0) {
+    if (num_equipamentos.length > 0) {
 
         num_equipamentos.sort();
 
@@ -668,7 +668,7 @@ async function buscaEquipamentos(p_id_chamado, p_id_fila_ant, p_atendimento, ins
             }
 
         } 
-    }*/
+    }
     $('#divServicos').empty();
 
     var lista_servicos = [];
@@ -724,7 +724,7 @@ function verificaTipo(fila_ant, id_chamado) { //verificar tipo da fila no modal 
 
         case 'ATENDIMENTO':
             buscaEquipamentos(id_chamado, fila_ant, true, false, false);
-            $('#divEquipamentos').show();
+            $('#divEquipamentos').hide();
             $('#divServicos').show();
             $('#divFila').show();
             $('#slctFila').attr('disabled', true);
@@ -894,7 +894,7 @@ function criaFormRegistro(p_id_chamado, p_id_fila_ant) { //carregar o form no mo
         "</div>" +
         "<div class=\"row mb-3\">" +
         "<div class=\"col\">" +
-        "<div id=\"divServicos\">teste</div>" +
+        "<div id=\"divServicos\"></div>" +
         "</div>" +
         "</div>" +
         "<div class=\"row mb-3\">" +
@@ -2735,7 +2735,7 @@ function encerrarChamado() {
     var btn = $('#btnEncerrarChamado');
 
     if (g_auto_usuario >= 3) { // Permissão de ADM+
-        if (confirm('Deseja realmente encerrar? Isso não poderá ser desfeito!')) {
+        if (confirm('Deseja realmente encerrar?')) {
 
             $.ajax({
                 type: 'post',

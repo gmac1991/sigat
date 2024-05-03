@@ -195,8 +195,8 @@ class Interacao_model extends CI_Model {
                foreach ($dados['equip_atendidos'] as $num_equip) { //marcando os patrimonios escolhidos como ABERTO
                   $this->db->query("update equipamento_chamado set status_equipamento_chamado = 'ABERTO',
                   ultima_alteracao_equipamento_chamado = NOW()" .
-                  " where num_equipamento_chamado = " . $num_equip . 
-                  " and status_equipamento_chamado = 'ESPERA'" .
+                  " where num_equipamento_chamado = '" . $num_equip . 
+                  "' and status_equipamento_chamado = 'ESPERA'" .
                   " and id_chamado_equipamento = " . $dados['id_chamado']);
 
                   // ------------ LOG -------------------
@@ -1121,8 +1121,8 @@ class Interacao_model extends CI_Model {
             foreach ($pool_equips as $num_equip) { //patrimonios[0] é o vetor com a lista de patrimonios da interacao
                $this->db->query("update equipamento_chamado set status_equipamento_chamado = 'ABERTO',
                ultima_alteracao_equipamento_chamado = NOW()" .
-               " where num_equipamento_chamado = " . $num_equip . 
-               " and status_equipamento_chamado = 'ESPERA'" .
+               " where num_equipamento_chamado = '" . $num_equip . 
+               "' and status_equipamento_chamado = 'ESPERA'" .
                " and id_chamado_equipamento = " . $interacao->id_chamado_interacao);
 
                 // ------------ LOG -------------------

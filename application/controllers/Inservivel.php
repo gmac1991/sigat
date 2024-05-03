@@ -20,9 +20,11 @@ class Inservivel extends CI_Controller {
                 
 
                 if (!$this->inservivel_model->lista_remessa_aberta()) {
-                    $this->inservivel_model->abre_nova_remessa();
-                } else if (!$this->inservivel_model->lista_remessa_aberta(true)) {
-                    $this->inservivel_model->abre_nova_remessa(true);
+                    $this->inservivel_model->abre_nova_remessa(DGTI);
+                }
+
+                if (!$this->inservivel_model->lista_remessa_aberta(DIN)) {
+                    $this->inservivel_model->abre_nova_remessa(DIN);
                 }
 
                 $this->load->view('templates/cabecalho', $usuario);
@@ -124,7 +126,7 @@ class Inservivel extends CI_Controller {
         $remessa = $this->inservivel_model->listar_remessa($id_remessa_inservivel);
         if ($remessa->data_fechamento == null && $remessa->pool_equipamentos) {
             $this->inservivel_model->fechar_remessa($id_remessa_inservivel);
-            $this->inservivel_model->abre_nova_remessa();
+            // $this->inservivel_model->abre_nova_remessa();
         } else {
             http_response_code(400);
             header('Content-Type: application/json');
